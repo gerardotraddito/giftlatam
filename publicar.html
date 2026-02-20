@@ -1,0 +1,833 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GiftLatam - Publicar Gift Card</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --verde: #00C853;
+    --verde-dark: #009624;
+    --verde-glow: rgba(0,200,83,0.15);
+    --negro: #080808;
+    --gris-card: #161616;
+    --gris-borde: #242424;
+    --blanco: #F0F0F0;
+    --naranja: #FF6B35;
+    --texto-gris: #777;
+    --texto-medio: #AAAAAA;
+    --azul: #3B82F6;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: var(--negro);
+    color: var(--blanco);
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+  }
+
+  nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 24px;
+    height: 60px;
+    border-bottom: 1px solid var(--gris-borde);
+    position: sticky;
+    top: 0;
+    background: rgba(8,8,8,0.97);
+    backdrop-filter: blur(20px);
+    z-index: 100;
+  }
+
+  .logo {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+    color: var(--blanco);
+  }
+
+  .logo-icon {
+    width: 32px; height: 32px;
+    background: var(--verde);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px;
+  }
+
+  .logo span { color: var(--verde); }
+
+  .nav-back {
+    color: var(--texto-medio);
+    font-size: 14px;
+    cursor: pointer;
+    transition: color 0.2s;
+  }
+
+  .nav-back:hover { color: var(--blanco); }
+
+  /* MAIN */
+  .main {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 28px 20px 120px;
+  }
+
+  .page-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 26px;
+    font-weight: 800;
+    margin-bottom: 6px;
+  }
+
+  .page-sub {
+    font-size: 14px;
+    color: var(--texto-gris);
+    margin-bottom: 28px;
+  }
+
+  /* STEPS */
+  .steps {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    margin-bottom: 32px;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .steps::-webkit-scrollbar { display: none; }
+
+  .step {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    white-space: nowrap;
+  }
+
+  .step-num {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 13px;
+    border: 2px solid var(--gris-borde);
+    color: var(--texto-gris);
+    transition: all 0.3s;
+  }
+
+  .step-label { font-size: 13px; color: var(--texto-gris); transition: color 0.3s; }
+
+  .step.active .step-num { border-color: var(--verde); background: var(--verde); color: var(--negro); }
+  .step.active .step-label { color: var(--verde); font-weight: 600; }
+  .step.done .step-num { border-color: var(--verde); background: var(--verde-glow); color: var(--verde); }
+  .step.done .step-label { color: var(--texto-medio); }
+
+  .step-line {
+    width: 32px;
+    height: 2px;
+    background: var(--gris-borde);
+    margin: 0 4px;
+  }
+
+  /* FORM SECTIONS */
+  .form-section {
+    background: var(--gris-card);
+    border: 1px solid var(--gris-borde);
+    border-radius: 20px;
+    padding: 24px;
+    margin-bottom: 16px;
+    display: none;
+  }
+
+  .form-section.active { display: block; animation: fadeUp 0.4s ease forwards; }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .section-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 17px;
+    font-weight: 700;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  /* FORM ELEMENTS */
+  .form-group { margin-bottom: 18px; }
+
+  .form-label {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--texto-medio);
+    margin-bottom: 8px;
+    display: block;
+  }
+
+  .form-label span { color: var(--naranja); }
+
+  .form-input, .form-select, .form-textarea {
+    width: 100%;
+    background: var(--negro);
+    border: 1px solid var(--gris-borde);
+    border-radius: 12px;
+    padding: 13px 16px;
+    color: var(--blanco);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+
+  .form-input:focus, .form-select:focus, .form-textarea:focus {
+    border-color: var(--verde);
+    box-shadow: 0 0 0 3px var(--verde-glow);
+  }
+
+  .form-input::placeholder, .form-textarea::placeholder { color: var(--texto-gris); font-size: 14px; }
+  .form-select { cursor: pointer; }
+  .form-textarea { resize: vertical; min-height: 100px; line-height: 1.6; }
+
+  .form-hint {
+    font-size: 12px;
+    color: var(--texto-gris);
+    margin-top: 6px;
+  }
+
+  /* TIPO DE PRODUCTO */
+  .tipo-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+
+  .tipo-card {
+    background: var(--negro);
+    border: 2px solid var(--gris-borde);
+    border-radius: 14px;
+    padding: 16px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: center;
+  }
+
+  .tipo-card:hover { border-color: var(--texto-gris); }
+  .tipo-card.selected { border-color: var(--verde); background: var(--verde-glow); }
+
+  .tipo-icon { font-size: 28px; margin-bottom: 8px; }
+  .tipo-name { font-family: 'Syne', sans-serif; font-size: 14px; font-weight: 700; margin-bottom: 4px; }
+  .tipo-desc { font-size: 12px; color: var(--texto-gris); line-height: 1.4; }
+  .tipo-card.selected .tipo-desc { color: var(--texto-medio); }
+
+  /* ENTREGA */
+  .entrega-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .entrega-card {
+    background: var(--negro);
+    border: 2px solid var(--gris-borde);
+    border-radius: 14px;
+    padding: 16px 20px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+  }
+
+  .entrega-card:hover { border-color: var(--texto-gris); }
+  .entrega-card.selected { border-color: var(--verde); background: var(--verde-glow); }
+
+  .entrega-icon {
+    width: 42px; height: 42px;
+    border-radius: 12px;
+    background: var(--gris-card);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px;
+    flex-shrink: 0;
+  }
+
+  .entrega-card.selected .entrega-icon { background: rgba(0,200,83,0.2); }
+
+  .entrega-info h4 {
+    font-family: 'Syne', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+
+  .entrega-info p { font-size: 13px; color: var(--texto-gris); line-height: 1.5; }
+  .entrega-card.selected .entrega-info p { color: var(--texto-medio); }
+
+  .entrega-badge {
+    margin-left: auto;
+    font-size: 10px;
+    font-weight: 700;
+    border-radius: 6px;
+    padding: 3px 8px;
+    flex-shrink: 0;
+    align-self: center;
+  }
+
+  .badge-green { background: rgba(0,200,83,0.12); color: var(--verde); border: 1px solid rgba(0,200,83,0.3); }
+  .badge-orange { background: rgba(255,107,53,0.12); color: var(--naranja); border: 1px solid rgba(255,107,53,0.3); }
+
+  /* PLAZO SELECTOR */
+  .plazo-options {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 14px;
+    display: none;
+  }
+
+  .plazo-options.show { display: flex; }
+
+  .plazo-pill {
+    background: var(--negro);
+    border: 1px solid var(--gris-borde);
+    border-radius: 20px;
+    padding: 7px 16px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s;
+    color: var(--texto-medio);
+  }
+
+  .plazo-pill:hover { border-color: var(--verde); color: var(--verde); }
+  .plazo-pill.active { border-color: var(--verde); background: var(--verde-glow); color: var(--verde); font-weight: 600; }
+
+  /* CODIGO AREA */
+  .codigo-area { display: none; margin-top: 14px; }
+  .codigo-area.show { display: block; }
+
+  .codigo-input {
+    width: 100%;
+    background: var(--negro);
+    border: 1px solid var(--gris-borde);
+    border-radius: 12px;
+    padding: 13px 16px;
+    color: var(--verde);
+    font-family: 'DM Mono', monospace;
+    font-size: 16px;
+    letter-spacing: 2px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .codigo-input:focus { border-color: var(--verde); }
+  .codigo-input::placeholder { color: var(--texto-gris); letter-spacing: 0; font-size: 14px; }
+
+  /* UPLOAD */
+  .upload-area {
+    border: 2px dashed var(--gris-borde);
+    border-radius: 14px;
+    padding: 32px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: none;
+    margin-top: 14px;
+  }
+
+  .upload-area.show { display: block; }
+  .upload-area:hover { border-color: var(--verde); background: var(--verde-glow); }
+
+  .upload-icon { font-size: 36px; margin-bottom: 10px; }
+  .upload-text { font-size: 14px; color: var(--texto-medio); }
+  .upload-sub { font-size: 12px; color: var(--texto-gris); margin-top: 4px; }
+
+  /* PRECIO */
+  .precio-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  .precio-display {
+    background: var(--negro);
+    border: 1px solid var(--gris-borde);
+    border-radius: 12px;
+    padding: 13px 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .precio-display .label { font-size: 13px; color: var(--texto-gris); }
+  .precio-display .value { font-family: 'Syne', sans-serif; font-weight: 700; color: var(--verde); }
+
+  /* POLITICA DISPUTAS */
+  .politica-card {
+    background: rgba(59,130,246,0.06);
+    border: 1px solid rgba(59,130,246,0.2);
+    border-radius: 14px;
+    padding: 16px;
+    margin-top: 16px;
+  }
+
+  .politica-card h4 {
+    font-family: 'Syne', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    margin-bottom: 10px;
+    color: #93C5FD;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .politica-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    font-size: 13px;
+    color: var(--texto-medio);
+    padding: 4px 0;
+    line-height: 1.5;
+  }
+
+  .politica-item .ic { flex-shrink: 0; margin-top: 1px; }
+
+  /* PREVIEW */
+  .preview-card {
+    background: var(--negro);
+    border: 1px solid var(--gris-borde);
+    border-radius: 16px;
+    padding: 16px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-top: 16px;
+  }
+
+  .preview-icon {
+    width: 52px; height: 52px;
+    background: var(--gris-card);
+    border-radius: 14px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 26px;
+  }
+
+  .preview-info { flex: 1; }
+  .preview-name { font-family: 'Syne', sans-serif; font-size: 15px; font-weight: 600; margin-bottom: 4px; }
+  .preview-meta { font-size: 12px; color: var(--texto-gris); }
+  .preview-price { font-family: 'Syne', sans-serif; font-size: 20px; font-weight: 800; color: var(--verde); }
+
+  /* BTNS */
+  .form-btns {
+    display: flex;
+    gap: 12px;
+    margin-top: 24px;
+  }
+
+  .btn-next {
+    flex: 1;
+    background: var(--verde);
+    color: var(--negro);
+    border: none;
+    border-radius: 14px;
+    padding: 15px;
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 15px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .btn-next:hover { background: var(--verde-dark); transform: translateY(-1px); box-shadow: 0 8px 24px rgba(0,200,83,0.3); }
+
+  .btn-back {
+    background: transparent;
+    color: var(--texto-medio);
+    border: 1px solid var(--gris-borde);
+    border-radius: 14px;
+    padding: 15px 20px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .btn-back:hover { border-color: var(--texto-gris); color: var(--blanco); }
+
+  /* BOTTOM NAV */
+  .bottom-nav {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    background: rgba(17,17,17,0.97);
+    border-top: 1px solid var(--gris-borde);
+    display: flex;
+    justify-content: space-around;
+    padding: 10px 0 20px;
+    backdrop-filter: blur(20px);
+    z-index: 999;
+  }
+
+  .nav-item {
+    display: flex; flex-direction: column;
+    align-items: center; gap: 4px;
+    cursor: pointer;
+    color: var(--texto-gris);
+    font-size: 10px;
+    transition: color 0.2s;
+  }
+
+  .nav-item svg { width: 22px; height: 22px; }
+  .nav-item.active { color: var(--verde); }
+
+  @media (min-width: 768px) {
+    .bottom-nav { display: none; }
+    .main { padding-bottom: 60px; }
+    .tipo-grid { grid-template-columns: repeat(4, 1fr); }
+    .entrega-grid { grid-template-columns: 1fr; }
+  }
+
+  @media (min-width: 1024px) {
+    nav { padding: 0 48px; }
+    .main { padding: 32px 48px 60px; max-width: 860px; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="#" class="logo">
+    <div class="logo-icon">🎁</div>
+    Gift<span>Latam</span>
+  </a>
+  <div class="nav-back">← Volver al panel</div>
+</nav>
+
+<div class="main">
+  <div class="page-title">📦 Publicar gift card</div>
+  <div class="page-sub">Completá los pasos para publicar tu listing</div>
+
+  <!-- STEPS -->
+  <div class="steps">
+    <div class="step active" id="step-1">
+      <div class="step-num">1</div>
+      <div class="step-label">Tipo de producto</div>
+    </div>
+    <div class="step-line"></div>
+    <div class="step" id="step-2">
+      <div class="step-num">2</div>
+      <div class="step-label">Detalles</div>
+    </div>
+    <div class="step-line"></div>
+    <div class="step" id="step-3">
+      <div class="step-num">3</div>
+      <div class="step-label">Entrega</div>
+    </div>
+    <div class="step-line"></div>
+    <div class="step" id="step-4">
+      <div class="step-num">4</div>
+      <div class="step-label">Precio</div>
+    </div>
+    <div class="step-line"></div>
+    <div class="step" id="step-5">
+      <div class="step-num">5</div>
+      <div class="step-label">Publicar</div>
+    </div>
+  </div>
+
+  <!-- PASO 1: TIPO DE PRODUCTO -->
+  <div class="form-section active" id="section-1">
+    <div class="section-title">🎯 ¿Qué querés vender?</div>
+    <div class="tipo-grid">
+      <div class="tipo-card selected" onclick="selectTipo(this)">
+        <div class="tipo-icon">🎁</div>
+        <div class="tipo-name">Gift Card</div>
+        <div class="tipo-desc">Código digital de una tarjeta de regalo</div>
+      </div>
+      <div class="tipo-card" onclick="selectTipo(this)">
+        <div class="tipo-icon">👤</div>
+        <div class="tipo-name">Cuenta</div>
+        <div class="tipo-desc">Usuario y contraseña de una cuenta de servicio</div>
+      </div>
+      <div class="tipo-card" onclick="selectTipo(this)">
+        <div class="tipo-icon">🔑</div>
+        <div class="tipo-name">Licencia</div>
+        <div class="tipo-desc">Clave de activación de software o juego</div>
+      </div>
+      <div class="tipo-card" onclick="selectTipo(this)">
+        <div class="tipo-icon">📄</div>
+        <div class="tipo-name">Otro</div>
+        <div class="tipo-desc">Voucher, cupón o cualquier producto digital</div>
+      </div>
+    </div>
+    <div class="form-btns">
+      <button class="btn-next" onclick="goStep(2)">Siguiente →</button>
+    </div>
+  </div>
+
+  <!-- PASO 2: DETALLES -->
+  <div class="form-section" id="section-2">
+    <div class="section-title">📋 Detalles del producto</div>
+
+    <div class="form-group">
+      <label class="form-label">Marca / Plataforma <span>*</span></label>
+      <select class="form-select">
+        <option value="">Seleccioná la marca</option>
+        <option>🎮 Steam</option>
+        <option>🎬 Netflix</option>
+        <option>🎵 Spotify</option>
+        <option>🎮 PlayStation (PSN)</option>
+        <option>🎮 Xbox</option>
+        <option>📦 Amazon</option>
+        <option>🍔 Rappi</option>
+        <option>🎮 Roblox</option>
+        <option>🎮 Free Fire</option>
+        <option>🎮 Fortnite</option>
+        <option>📱 Google Play</option>
+        <option>🍎 Apple / iTunes</option>
+        <option>Otra marca...</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Título del listing <span>*</span></label>
+      <input type="text" class="form-input" placeholder="Ej: Steam Gift Card $20 USD - Global" id="titulo">
+      <div class="form-hint">Sé claro y específico. Ej: Steam Gift Card $20 USD</div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Descripción</label>
+      <textarea class="form-textarea" placeholder="Describí el producto, para qué sirve, restricciones, etc."></textarea>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Cantidad disponible <span>*</span></label>
+      <input type="number" class="form-input" placeholder="Ej: 5" min="1">
+      <div class="form-hint">¿Cuántas unidades tenés para vender?</div>
+    </div>
+
+    <div class="form-btns">
+      <button class="btn-back" onclick="goStep(1)">← Atrás</button>
+      <button class="btn-next" onclick="goStep(3)">Siguiente →</button>
+    </div>
+  </div>
+
+  <!-- PASO 3: ENTREGA -->
+  <div class="form-section" id="section-3">
+    <div class="section-title">🚀 Tipo de entrega</div>
+
+    <div class="entrega-grid">
+      <div class="entrega-card selected" onclick="selectEntrega(this, 'auto')">
+        <div class="entrega-icon">⚡</div>
+        <div class="entrega-info">
+          <h4>Entrega automática</h4>
+          <p>Subís el código ahora. Cuando alguien compra, el sistema lo entrega solo e inmediatamente. Sin que tengas que hacer nada.</p>
+        </div>
+        <div class="entrega-badge badge-green">RECOMENDADO</div>
+      </div>
+
+      <div class="entrega-card" onclick="selectEntrega(this, 'manual')">
+        <div class="entrega-icon">⏱️</div>
+        <div class="entrega-info">
+          <h4>Entrega manual</h4>
+          <p>Vos entregás el código o archivo dentro del plazo que elegís. Ideal si no tenés el stock todavía.</p>
+        </div>
+        <div class="entrega-badge badge-orange">MANUAL</div>
+      </div>
+
+      <div class="entrega-card" onclick="selectEntrega(this, 'archivo')">
+        <div class="entrega-icon">📄</div>
+        <div class="entrega-info">
+          <h4>Entrega de archivo</h4>
+          <p>Subís un PDF, imagen o archivo de texto. Ideal para cuentas con usuario y contraseña o documentos.</p>
+        </div>
+        <div class="entrega-badge badge-green">AUTO</div>
+      </div>
+    </div>
+
+    <!-- CODIGO AUTOMATICO -->
+    <div class="codigo-area show" id="area-codigo">
+      <label class="form-label" style="margin-top:16px;">🔑 Código de la gift card <span style="color:var(--naranja)">*</span></label>
+      <input type="text" class="codigo-input" placeholder="XXXX-XXXX-XXXX-XXXX">
+      <div class="form-hint">El código se guarda cifrado y solo se revela al comprador tras el pago.</div>
+    </div>
+
+    <!-- PLAZO MANUAL -->
+    <div class="plazo-options" id="area-plazo">
+      <label class="form-label" style="width:100%; margin-bottom:8px;">⏱️ ¿En cuánto tiempo entregás?</label>
+      <div class="plazo-pill active" onclick="selectPlazo(this)">30 min</div>
+      <div class="plazo-pill" onclick="selectPlazo(this)">1 hora</div>
+      <div class="plazo-pill" onclick="selectPlazo(this)">2 horas</div>
+      <div class="plazo-pill" onclick="selectPlazo(this)">6 horas</div>
+      <div class="plazo-pill" onclick="selectPlazo(this)">12 horas</div>
+      <div class="plazo-pill" onclick="selectPlazo(this)">24 horas</div>
+    </div>
+
+    <!-- UPLOAD ARCHIVO -->
+    <div class="upload-area" id="area-archivo">
+      <div class="upload-icon">📁</div>
+      <div class="upload-text">Arrastrá tu archivo acá o tocá para seleccionar</div>
+      <div class="upload-sub">PDF, TXT, JPG, PNG · Máx 5MB</div>
+    </div>
+
+    <!-- POLITICA DE DISPUTAS -->
+    <div class="politica-card">
+      <h4>🛡️ Política de protección para vendedores</h4>
+      <div class="politica-item"><span class="ic">✅</span> El comprador tiene máximo 24hs para reclamar que el código no funciona</div>
+      <div class="politica-item"><span class="ic">✅</span> Todo reclamo requiere captura de pantalla como prueba</div>
+      <div class="politica-item"><span class="ic">✅</span> Si no hay reclamo en 24hs, el dinero se libera automáticamente a tu wallet</div>
+      <div class="politica-item"><span class="ic">✅</span> En caso de disputa, un moderador revisa las pruebas de ambos lados</div>
+      <div class="politica-item"><span class="ic">✅</span> Compradores con historial de reclamos falsos son marcados como sospechosos</div>
+    </div>
+
+    <div class="form-btns">
+      <button class="btn-back" onclick="goStep(2)">← Atrás</button>
+      <button class="btn-next" onclick="goStep(4)">Siguiente →</button>
+    </div>
+  </div>
+
+  <!-- PASO 4: PRECIO -->
+  <div class="form-section" id="section-4">
+    <div class="section-title">💰 Precio</div>
+
+    <div class="form-group">
+      <label class="form-label">Precio en USDT <span>*</span></label>
+      <input type="number" class="form-input" placeholder="Ej: 18.40" step="0.01" id="precio" oninput="updatePrecio()">
+      <div class="form-hint">Fijá el precio en dólares (USDT). El comprador paga en cripto.</div>
+    </div>
+
+    <div class="precio-row">
+      <div class="precio-display">
+        <span class="label">Comisión GiftLatam (5%)</span>
+        <span class="value" id="comision">-$0.00</span>
+      </div>
+      <div class="precio-display">
+        <span class="label">Vos recibís</span>
+        <span class="value" id="recibis">$0.00</span>
+      </div>
+    </div>
+
+    <div class="form-group" style="margin-top:18px;">
+      <label class="form-label">Descuento (opcional)</label>
+      <input type="number" class="form-input" placeholder="Ej: 10 (para 10% de descuento)" min="0" max="50">
+      <div class="form-hint">Un descuento atrae más compradores. Máximo 50%.</div>
+    </div>
+
+    <div class="form-btns">
+      <button class="btn-back" onclick="goStep(3)">← Atrás</button>
+      <button class="btn-next" onclick="goStep(5)">Ver resumen →</button>
+    </div>
+  </div>
+
+  <!-- PASO 5: CONFIRMAR -->
+  <div class="form-section" id="section-5">
+    <div class="section-title">✅ Revisá y publicá</div>
+
+    <div class="preview-card">
+      <div class="preview-icon">🎮</div>
+      <div class="preview-info">
+        <div class="preview-name" id="preview-titulo">Steam Gift Card $20 USD</div>
+        <div class="preview-meta">⚡ Entrega automática · 🌎 Global · Stock: 1</div>
+      </div>
+      <div class="preview-price" id="preview-precio">$18.40</div>
+    </div>
+
+    <div class="politica-card" style="margin-top:16px;">
+      <h4>📋 Antes de publicar</h4>
+      <div class="politica-item"><span class="ic">✅</span> Tu listing estará visible para miles de compradores en Latam</div>
+      <div class="politica-item"><span class="ic">✅</span> El código queda cifrado y seguro hasta la venta</div>
+      <div class="politica-item"><span class="ic">✅</span> Recibirás una notificación cuando alguien compre</div>
+      <div class="politica-item"><span class="ic">✅</span> El pago se acredita en tu wallet en USDT automáticamente</div>
+    </div>
+
+    <div class="form-btns">
+      <button class="btn-back" onclick="goStep(4)">← Atrás</button>
+      <button class="btn-next" onclick="publicar()">🚀 Publicar ahora</button>
+    </div>
+  </div>
+
+</div>
+
+<!-- BOTTOM NAV -->
+<div class="bottom-nav">
+  <div class="nav-item">
+    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+    Inicio
+  </div>
+  <div class="nav-item">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+    Explorar
+  </div>
+  <div class="nav-item active">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+    Vender
+  </div>
+  <div class="nav-item">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+    Perfil
+  </div>
+</div>
+
+<script>
+  let currentStep = 1;
+
+  function goStep(n) {
+    document.getElementById(`section-${currentStep}`).classList.remove('active');
+    document.getElementById(`step-${currentStep}`).classList.remove('active');
+    document.getElementById(`step-${currentStep}`).classList.add('done');
+
+    currentStep = n;
+    document.getElementById(`section-${currentStep}`).classList.add('active');
+    document.getElementById(`step-${currentStep}`).classList.remove('done');
+    document.getElementById(`step-${currentStep}`).classList.add('active');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function selectTipo(el) {
+    document.querySelectorAll('.tipo-card').forEach(c => c.classList.remove('selected'));
+    el.classList.add('selected');
+  }
+
+  function selectEntrega(el, tipo) {
+    document.querySelectorAll('.entrega-card').forEach(c => c.classList.remove('selected'));
+    el.classList.add('selected');
+
+    document.getElementById('area-codigo').classList.remove('show');
+    document.getElementById('area-plazo').classList.remove('show');
+    document.getElementById('area-archivo').classList.remove('show');
+
+    if (tipo === 'auto') document.getElementById('area-codigo').classList.add('show');
+    if (tipo === 'manual') document.getElementById('area-plazo').classList.add('show');
+    if (tipo === 'archivo') document.getElementById('area-archivo').classList.add('show');
+  }
+
+  function selectPlazo(el) {
+    document.querySelectorAll('.plazo-pill').forEach(p => p.classList.remove('active'));
+    el.classList.add('active');
+  }
+
+  function updatePrecio() {
+    const precio = parseFloat(document.getElementById('precio').value) || 0;
+    const comision = precio * 0.05;
+    const recibe = precio - comision;
+    document.getElementById('comision').textContent = `-$${comision.toFixed(2)}`;
+    document.getElementById('recibis').textContent = `$${recibe.toFixed(2)}`;
+    document.getElementById('preview-precio').textContent = `$${precio.toFixed(2)}`;
+  }
+
+  function publicar() {
+    alert('🎉 ¡Listing publicado con éxito! Ya está visible para compradores en GiftLatam. (Demo)');
+  }
+</script>
+
+</body>
+</html>
