@@ -801,8 +801,8 @@
 
 <!-- NAVBAR -->
 <nav>
-  <a href="#" class="logo">
-    <svg width="160" height="36" viewBox="0 0 200 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <a href="index.html" class="logo">
+    <svg width="140" height="32" viewBox="0 0 200 48" fill="none" xmlns="http://www.w3.org/2000/svg">
       <defs>
         <linearGradient id="navIconGrad" x1="0" y1="0" x2="1" y2="1">
           <stop offset="0%" stop-color="#00E676"/>
@@ -830,8 +830,8 @@
   </div>
 
   <div class="nav-links">
-    <a href="#">Comprar</a>
-    <a href="#">Categorías</a>
+    <a href="detalle.html">Comprar</a>
+    <a href="index.html#categorias">Categorías</a>
     <a href="#">Cómo funciona</a>
   </div>
 
@@ -1082,7 +1082,7 @@
       </div>
       <div class="footer-col">
         <h4>Vender</h4>
-        <a href="#">Publicar gift card</a>
+        <a href="publicar.html">Publicar gift card</a>
         <a href="#">Cómo vender</a>
         <a href="#">Comisiones</a>
         <a href="#">Tienda oficial</a>
@@ -1091,7 +1091,7 @@
         <h4>Soporte</h4>
         <a href="#">Centro de ayuda</a>
         <a href="#">Cómo funciona</a>
-        <a href="#">Centro de disputas</a>
+        <a href="disputas.html">Centro de disputas</a>
         <a href="#">Tutorial</a>
       </div>
       <div class="footer-col">
@@ -1116,23 +1116,23 @@
 
 <!-- BOTTOM NAV (solo mobile) -->
 <div class="bottom-nav">
-  <div class="nav-item active">
+  <div class="nav-item active" onclick="window.location='index.html'">
     <svg viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
     Inicio
   </div>
-  <div class="nav-item">
+  <div class="nav-item" onclick="window.location='detalle.html'">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
     Explorar
   </div>
-  <div class="nav-item">
+  <div class="nav-item" onclick="window.location='publicar.html'">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
     Vender
   </div>
-  <div class="nav-item">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 12V22H4V12"/><path d="M22 7H2v5h20V7z"/><path d="M12 22V7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg>
+  <div class="nav-item" onclick="window.location='pago.html'">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 12V22H4V12"/><path d="M22 7H2v5h20V7z"/><path d="M12 22V7"/></svg>
     Ofertas
   </div>
-  <div class="nav-item">
+  <div class="nav-item" onclick="window.location='panel.html'">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
     Perfil
   </div>
