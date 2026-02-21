@@ -1,0 +1,935 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GiftLatam - Compra y Vende Gift Cards</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --negro: #080808;
+    --gris-oscuro: #111111;
+    --gris-card: #161616;
+    --gris-borde: #222222;
+    --blanco: #F0F0F0;
+    --texto-gris: #888888;
+    --texto-medio: #AAAAAA;
+    --verde: #00C853;
+    --verde-dark: #009624;
+    --naranja: #FF6B35;
+  }
+
+  html { max-width: 100%; overflow-x: hidden; }
+
+  body {
+    font-family: 'Syne', system-ui, sans-serif;
+    background: var(--negro);
+    color: var(--blanco);
+    max-width: 100%;
+    overflow-x: hidden;
+    padding-bottom: 80px;
+  }
+
+  /* ===== NAVBAR ===== */
+  nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 16px;
+    min-height: 56px;
+    border-bottom: 1px solid var(--gris-borde);
+    position: sticky;
+    top: 0;
+    background: rgba(8,8,8,0.97);
+    backdrop-filter: blur(20px);
+    z-index: 1000;
+    gap: 10px;
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+    flex-shrink: 0;
+    white-space: nowrap;
+  }
+
+  .logo-text {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 20px;
+    color: #F0F0F0;
+    white-space: nowrap;
+  }
+
+  .logo-verde { color: #00C853; }
+
+  .nav-search {
+    flex: 1;
+    max-width: 500px;
+    background: var(--gris-card);
+    border: 1px solid var(--gris-borde);
+    border-radius: 12px;
+    display: none;
+    align-items: center;
+    gap: 8px;
+    padding: 0 14px;
+    height: 40px;
+  }
+
+  .nav-search input {
+    background: none;
+    border: none;
+    outline: none;
+    color: var(--blanco);
+    font-size: 14px;
+    width: 100%;
+    font-family: inherit;
+  }
+
+  .search-icon { color: var(--texto-gris); flex-shrink: 0; }
+
+  .nav-links { display: none; gap: 4px; }
+
+  .nav-links a {
+    color: var(--texto-gris);
+    text-decoration: none;
+    font-size: 14px;
+    padding: 8px 12px;
+    border-radius: 10px;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+
+  .nav-links a:hover { color: var(--blanco); background: var(--gris-card); }
+
+  .nav-actions { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+
+  .mobile-search-btn {
+    background: var(--gris-card);
+    border: 1px solid var(--gris-borde);
+    color: var(--texto-gris);
+    border-radius: 10px;
+    width: 36px; height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+  }
+
+  .btn-login {
+    background: transparent;
+    color: var(--blanco);
+    border: 1px solid var(--gris-borde);
+    border-radius: 10px;
+    padding: 8px 14px;
+    font-size: 13px;
+    font-family: inherit;
+    cursor: pointer;
+    white-space: nowrap;
+    display: flex;
+  }
+
+  .btn-login:hover { border-color: var(--verde); color: var(--verde); }
+
+  .btn-vender {
+    background: var(--verde);
+    color: var(--negro);
+    border: none;
+    border-radius: 10px;
+    padding: 8px 14px;
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 13px;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+
+  /* ===== CAT BAR ===== */
+  .cat-bar {
+    display: flex;
+    gap: 8px;
+    padding: 10px 16px;
+    overflow-x: auto;
+    border-bottom: 1px solid var(--gris-borde);
+    scrollbar-width: none;
+    background: var(--gris-oscuro);
+  }
+  .cat-bar::-webkit-scrollbar { display: none; }
+
+  .cat-pill {
+    background: transparent;
+    border: 1px solid var(--gris-borde);
+    color: var(--texto-gris);
+    border-radius: 20px;
+    padding: 6px 14px;
+    font-size: 13px;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: inherit;
+  }
+  .cat-pill.active { border-color: var(--verde); color: var(--verde); background: rgba(0,200,83,0.08); }
+
+  /* ===== CONTAINER ===== */
+  .container { max-width: 1280px; margin: 0 auto; padding: 0 16px; }
+  .main { padding: 24px 0; }
+
+  /* ===== HERO ===== */
+  .hero-grid { display: grid; grid-template-columns: 1fr; gap: 16px; margin-bottom: 24px; }
+
+  .hero-banner {
+    background: linear-gradient(135deg, #003D1A 0%, #001A0D 50%, #002510 100%);
+    border: 1px solid rgba(0,200,83,0.2);
+    border-radius: 24px;
+    padding: 28px 24px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(0,200,83,0.12);
+    border: 1px solid rgba(0,200,83,0.25);
+    border-radius: 20px;
+    padding: 5px 12px;
+    font-size: 12px;
+    color: var(--verde);
+    font-weight: 600;
+    margin-bottom: 16px;
+  }
+
+  .hero-title {
+    font-size: clamp(28px, 6vw, 52px);
+    font-weight: 800;
+    line-height: 1.15;
+    margin-bottom: 14px;
+  }
+
+  .hero-title .accent { color: var(--verde); }
+
+  .hero-sub {
+    font-size: 15px;
+    color: var(--texto-medio);
+    line-height: 1.6;
+    margin-bottom: 24px;
+    max-width: 500px;
+  }
+
+  .hero-btns { display: flex; gap: 12px; flex-wrap: wrap; }
+
+  .btn-primary {
+    background: var(--verde);
+    color: var(--negro);
+    border: none;
+    border-radius: 14px;
+    padding: 13px 22px;
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 15px;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .btn-secondary {
+    background: transparent;
+    color: var(--blanco);
+    border: none;
+    padding: 13px 16px;
+    font-size: 15px;
+    font-family: inherit;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+  }
+
+  /* ===== STATS ===== */
+  .stats-row { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+
+  .stat-card {
+    background: var(--gris-card);
+    border: 1px solid var(--gris-borde);
+    border-radius: 16px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    text-align: center;
+  }
+
+  .stat-num {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(20px, 4vw, 28px);
+    font-weight: 800;
+    color: var(--verde);
+  }
+
+  .stat-label { font-size: 12px; color: var(--texto-gris); }
+
+  /* ===== SECTIONS ===== */
+  .section { margin-bottom: 36px; }
+
+  .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 14px;
+  }
+
+  .section-title { font-size: clamp(16px, 2.5vw, 20px); font-weight: 700; }
+  .ver-todo { color: var(--verde); font-size: 13px; cursor: pointer; }
+
+  /* ===== BRANDS ===== */
+  .brands-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+
+  .brand-card {
+    background: var(--gris-card);
+    border: 1px solid var(--gris-borde);
+    border-radius: 14px;
+    padding: 12px 6px;
+    text-align: center;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s;
+  }
+
+  .brand-card:hover { border-color: rgba(0,200,83,0.4); transform: translateY(-2px); }
+
+  .brand-icon {
+    width: 40px; height: 40px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+  }
+
+  .brand-name { font-size: 11px; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; width: 100%; }
+  .brand-count { font-size: 10px; color: var(--texto-gris); }
+
+  /* ===== VOUCHERS - REESCRITO DESDE CERO ===== */
+  .vouchers-grid { display: grid; grid-template-columns: 1fr; gap: 10px; }
+
+  .voucher-card {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 12px;
+    background: var(--gris-card);
+    border: 1px solid var(--gris-borde);
+    border-radius: 16px;
+    padding: 12px 14px;
+    cursor: pointer;
+    text-decoration: none;
+    color: inherit;
+    width: 100%;
+    transition: border-color 0.2s;
+  }
+
+  .voucher-card:hover { border-color: rgba(0,200,83,0.35); background: #1A1A1A; }
+
+  .voucher-icon {
+    width: 48px;
+    height: 48px;
+    min-width: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    flex-shrink: 0;
+  }
+
+  .voucher-info {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .voucher-name {
+    font-family: 'Syne', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--blanco);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-bottom: 5px;
+    /* line-height alto para que g/p/y no se corten */
+    line-height: 1.6;
+  }
+
+  .voucher-meta {
+    font-size: 12px;
+    color: var(--texto-gris);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .badge {
+    background: rgba(0,200,83,0.12);
+    color: var(--verde);
+    border: 1px solid rgba(0,200,83,0.25);
+    border-radius: 6px;
+    padding: 2px 6px;
+    font-size: 10px;
+    font-weight: 700;
+  }
+
+  .badge-orange {
+    background: rgba(255,107,53,0.12);
+    color: var(--naranja);
+    border-color: rgba(255,107,53,0.25);
+  }
+
+  /* PRECIOS - fuente del sistema, números siempre alineados */
+  .voucher-price {
+    flex-shrink: 0;
+    width: 78px;
+    text-align: right;
+  }
+
+  .price-main {
+    /* Sistema sans-serif: dígitos de ancho fijo garantizado */
+    font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--verde);
+    display: block;
+    text-align: right;
+    line-height: 1.3;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.2px;
+  }
+
+  .price-old {
+    font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    font-size: 11px;
+    color: var(--texto-gris);
+    text-decoration: line-through;
+    display: block;
+    text-align: right;
+    line-height: 1.3;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* ===== SELL BANNER ===== */
+  .sell-banner {
+    background: linear-gradient(135deg, #1A0800, #2D1200);
+    border: 1px solid rgba(255,107,53,0.25);
+    border-radius: 24px;
+    padding: 28px 24px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    flex-wrap: wrap;
+  }
+
+  .sell-content { flex: 1; min-width: 200px; }
+  .sell-title { font-size: clamp(18px, 3vw, 22px); font-weight: 700; margin-bottom: 8px; }
+  .sell-sub { font-size: 14px; color: var(--texto-medio); line-height: 1.5; }
+
+  .btn-sell {
+    background: var(--naranja);
+    color: white;
+    border: none;
+    border-radius: 14px;
+    padding: 13px 22px;
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 15px;
+    cursor: pointer;
+    white-space: nowrap;
+    flex-shrink: 0;
+    text-decoration: none;
+  }
+
+  /* ===== HOW IT WORKS ===== */
+  .how-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+
+  .how-card {
+    background: var(--gris-card);
+    border: 1px solid var(--gris-borde);
+    border-radius: 18px;
+    padding: 20px 16px;
+  }
+
+  .how-num {
+    width: 32px; height: 32px;
+    background: rgba(0,200,83,0.1);
+    border: 1px solid rgba(0,200,83,0.25);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    font-size: 14px;
+    color: var(--verde);
+    margin-bottom: 12px;
+  }
+
+  .how-title { font-size: 14px; font-weight: 700; margin-bottom: 6px; }
+  .how-desc { font-size: 12px; color: var(--texto-gris); line-height: 1.5; }
+
+  /* ===== FOOTER ===== */
+  footer {
+    background: var(--gris-oscuro);
+    border-top: 1px solid var(--gris-borde);
+    padding: 36px 0 24px;
+  }
+
+  .footer-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 28px; margin-bottom: 28px; }
+  .footer-col-title { font-size: 13px; font-weight: 700; margin-bottom: 12px; color: var(--blanco); }
+
+  .footer-col a {
+    display: block;
+    font-size: 13px;
+    color: var(--texto-gris);
+    text-decoration: none;
+    margin-bottom: 8px;
+  }
+
+  .footer-bottom {
+    border-top: 1px solid var(--gris-borde);
+    padding-top: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    align-items: center;
+    text-align: center;
+  }
+
+  .footer-copy { font-size: 12px; color: var(--texto-gris); }
+
+  .crypto-badges { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
+
+  .crypto-badge {
+    background: var(--gris-card);
+    border: 1px solid var(--gris-borde);
+    border-radius: 8px;
+    padding: 4px 10px;
+    font-size: 11px;
+    color: var(--texto-medio);
+  }
+
+  /* ===== BOTTOM NAV ===== */
+  .bottom-nav {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    width: 100%;
+    background: rgba(17,17,17,0.97);
+    border-top: 1px solid var(--gris-borde);
+    display: flex !important;
+    justify-content: space-around;
+    align-items: center;
+    padding: 8px 0 16px;
+    backdrop-filter: blur(20px);
+    z-index: 9999;
+  }
+
+  .nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+    color: var(--texto-gris);
+    font-size: 10px;
+    padding: 4px 12px;
+  }
+
+  .nav-item.active { color: var(--verde); }
+  .nav-item svg { width: 22px; height: 22px; }
+
+  /* ===== RESPONSIVE ===== */
+  @media (max-width: 767px) {
+    .vouchers-grid { grid-template-columns: 1fr !important; }
+  }
+
+  @media (min-width: 768px) {
+    .nav-search { display: flex; }
+    .btn-login { display: flex; }
+    .mobile-search-btn { display: none; }
+    .hero-grid { grid-template-columns: 1fr 1fr; align-items: start; }
+    .stats-row { grid-template-columns: repeat(2, 1fr); }
+    .brands-grid { grid-template-columns: repeat(4, 1fr); }
+    .how-grid { grid-template-columns: repeat(4, 1fr); }
+    .footer-grid { grid-template-columns: repeat(4, 1fr); }
+    .footer-bottom { flex-direction: row; justify-content: space-between; text-align: left; }
+  }
+
+  @media (min-width: 1024px) {
+    .nav-links { display: flex; }
+    .stats-row { grid-template-columns: repeat(4, 1fr); }
+    .brands-grid { grid-template-columns: repeat(8, 1fr); }
+    .sell-banner { padding: 36px 40px; }
+  }
+
+  @media (min-width: 1280px) {
+    .bottom-nav { display: none !important; }
+    footer { padding-bottom: 40px; }
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .hero-banner { animation: fadeUp 0.5s ease forwards; }
+</style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav>
+  <a href="index.html" class="logo">
+    <svg width="34" height="34" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="ig" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="#00E676"/>
+          <stop offset="100%" stop-color="#00C853"/>
+        </linearGradient>
+      </defs>
+      <rect width="44" height="44" rx="11" fill="url(#ig)"/>
+      <rect x="7" y="14" width="30" height="18" rx="3" fill="#003D1A" opacity="0.5"/>
+      <rect x="20" y="0" width="2" height="44" rx="1" fill="#003D1A" opacity="0.5"/>
+      <polygon points="21,12 26,22 21,32 16,22" fill="#00FF6E" opacity="0.95"/>
+      <circle cx="34" cy="8" r="2.5" fill="#00FF6E" opacity="0.8"/>
+    </svg>
+    <span class="logo-text">Gift<span class="logo-verde">Latam</span></span>
+  </a>
+
+  <div class="nav-search">
+    <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+    </svg>
+    <input type="text" placeholder="Buscar Netflix, Steam, PSN...">
+  </div>
+
+  <div class="nav-links">
+    <a href="detalle.html">Comprar</a>
+    <a href="index.html#categorias">Categorías</a>
+    <a href="#">Cómo funciona</a>
+  </div>
+
+  <div class="nav-actions">
+    <div class="mobile-search-btn">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+      </svg>
+    </div>
+    <button class="btn-login">Iniciar sesión</button>
+    <button class="btn-vender">+ Vender</button>
+  </div>
+</nav>
+<div class="page-wrap">
+
+<!-- CAT BAR -->
+<div class="cat-bar">
+  <div class="cat-pill active">🎮 Gaming</div>
+  <div class="cat-pill">🎬 Streaming</div>
+  <div class="cat-pill">🛒 Retail</div>
+  <div class="cat-pill">🍔 Comida</div>
+  <div class="cat-pill">✈️ Viajes</div>
+  <div class="cat-pill">📱 Telecom</div>
+  <div class="cat-pill">💳 Finanzas</div>
+  <div class="cat-pill">🎵 Música</div>
+  <div class="cat-pill">📚 Ebooks</div>
+  <div class="cat-pill">💄 Belleza</div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+
+  <!-- HERO -->
+  <div class="hero-grid" style="margin-bottom:40px;">
+    <div class="hero-banner">
+      <div class="hero-tag">✦ Marketplace #1 de Latam</div>
+      <h1>Comprá y vendé<br>Gift Cards <span>al mejor<br>precio</span></h1>
+      <p>Miles de tarjetas de regalo disponibles. Pagá con USDT, Bitcoin o cualquier cripto. Sin fronteras, sin bancos.</p>
+      <div class="hero-btns">
+        <button class="btn-primary">🔍 Ver catálogo</button>
+        <button class="btn-ghost">Cómo funciona</button>
+      </div>
+    </div>
+
+    <div class="stats-row">
+      <div class="stat-card">
+        <span class="stat-num">50K+</span>
+        <span class="stat-label">Usuarios activos en Latam</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-num">200+</span>
+        <span class="stat-label">Marcas disponibles</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-num">98%</span>
+        <span class="stat-label">Transacciones exitosas</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-num">0%</span>
+        <span class="stat-label">Comisión para compradores</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- MARCAS -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-title">🔥 Marcas populares</div>
+      <div class="ver-todo">Ver todas →</div>
+    </div>
+    <div class="brands-grid">
+      <div class="brand-card">
+        <div class="brand-icon" style="background:#1A1A2E">🎮</div>
+        <div class="brand-name">Steam</div>
+        <div class="brand-count">1.2K</div>
+      </div>
+      <div class="brand-card">
+        <div class="brand-icon" style="background:#1A0000">🎬</div>
+        <div class="brand-name">Netflix</div>
+        <div class="brand-count">890</div>
+      </div>
+      <div class="brand-card">
+        <div class="brand-icon" style="background:#001A0D">🎵</div>
+        <div class="brand-name">Spotify</div>
+        <div class="brand-count">654</div>
+      </div>
+      <div class="brand-card">
+        <div class="brand-icon" style="background:#1A0D00">🛒</div>
+        <div class="brand-name">Mercado Libre</div>
+        <div class="brand-count">543</div>
+      </div>
+      <div class="brand-card">
+        <div class="brand-icon" style="background:#000E1A">🎮</div>
+        <div class="brand-name">PSN</div>
+        <div class="brand-count">478</div>
+      </div>
+      <div class="brand-card">
+        <div class="brand-icon" style="background:#0D1A00">🎮</div>
+        <div class="brand-name">Xbox</div>
+        <div class="brand-count">390</div>
+      </div>
+      <div class="brand-card">
+        <div class="brand-icon" style="background:#1A001A">📦</div>
+        <div class="brand-name">Amazon</div>
+        <div class="brand-count">320</div>
+      </div>
+      <div class="brand-card">
+        <div class="brand-icon" style="background:#001A1A">🍔</div>
+        <div class="brand-name">Rappi</div>
+        <div class="brand-count">280</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- OFERTAS -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-title">⚡ Ofertas del día</div>
+      <div class="ver-todo">Ver todas →</div>
+    </div>
+    <div class="vouchers-grid">
+      <div class="voucher-card">
+        <div class="voucher-icon" style="background:#1A1A2E">🎮</div>
+        <div class="voucher-info">
+          <div class="voucher-name">Steam Gift Card $20 USD</div>
+          <div class="voucher-meta">⭐ 4.9 · 245 vendidos <span class="badge">-8%</span></div>
+        </div>
+        <div class="voucher-price">
+          <div class="price-main">$18.40</div>
+          <div class="price-old">$20.00</div>
+        </div>
+      </div>
+      <div class="voucher-card">
+        <div class="voucher-icon" style="background:#1A0000">🎬</div>
+        <div class="voucher-info">
+          <div class="voucher-name">Netflix 1 mes Premium</div>
+          <div class="voucher-meta">⭐ 4.8 · 189 vendidos <span class="badge">-12%</span></div>
+        </div>
+        <div class="voucher-price">
+          <div class="price-main">$10.56</div>
+          <div class="price-old">$12.00</div>
+        </div>
+      </div>
+      <div class="voucher-card">
+        <div class="voucher-icon" style="background:#001A0D">🎵</div>
+        <div class="voucher-info">
+          <div class="voucher-name">Spotify Premium 3 meses</div>
+          <div class="voucher-meta">⭐ 4.9 · 312 vendidos <span class="badge">-5%</span></div>
+        </div>
+        <div class="voucher-price">
+          <div class="price-main">$14.25</div>
+          <div class="price-old">$15.00</div>
+        </div>
+      </div>
+      <div class="voucher-card">
+        <div class="voucher-icon" style="background:#000E1A">🎮</div>
+        <div class="voucher-info">
+          <div class="voucher-name">PSN $50 USD</div>
+          <div class="voucher-meta">⭐ 4.7 · 156 vendidos <span class="badge badge-orange">HOT</span></div>
+        </div>
+        <div class="voucher-price">
+          <div class="price-main">$45.00</div>
+          <div class="price-old">$50.00</div>
+        </div>
+      </div>
+      <div class="voucher-card">
+        <div class="voucher-icon" style="background:#1A1000">🎮</div>
+        <div class="voucher-info">
+          <div class="voucher-name">Roblox 4500 Robux</div>
+          <div class="voucher-meta">⭐ 4.8 · 421 vendidos <span class="badge">-7%</span></div>
+        </div>
+        <div class="voucher-price">
+          <div class="price-main">$13.95</div>
+          <div class="price-old">$15.00</div>
+        </div>
+      </div>
+      <div class="voucher-card">
+        <div class="voucher-icon" style="background:#001A12">🎮</div>
+        <div class="voucher-info">
+          <div class="voucher-name">Free Fire 1080 Diamantes</div>
+          <div class="voucher-meta">⭐ 4.9 · 687 vendidos <span class="badge">-10%</span></div>
+        </div>
+        <div class="voucher-price">
+          <div class="price-main">$8.99</div>
+          <div class="price-old">$9.99</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SELL BANNER -->
+  <div class="sell-banner">
+    <div>
+      <h3>¿Tenés gift cards sin usar? Convertílas en cripto.</h3>
+      <p>Vendelas en minutos. Cobrás en USDT directo a tu wallet. Sin intermediarios, sin complicaciones.</p>
+    </div>
+    <button class="btn-naranja">Vender ahora →</button>
+  </div>
+
+  <!-- HOW IT WORKS -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-title">🔐 ¿Cómo funciona?</div>
+    </div>
+    <div class="how-grid">
+      <div class="how-card">
+        <div class="how-num">1</div>
+        <div class="how-content">
+          <h4>Elegís tu gift card</h4>
+          <p>Buscás entre miles de opciones de las marcas más populares de Latam.</p>
+        </div>
+      </div>
+      <div class="how-card">
+        <div class="how-num">2</div>
+        <div class="how-content">
+          <h4>Pagás en cripto</h4>
+          <p>USDT, BTC u otras criptos. Rápido, seguro y sin fronteras.</p>
+        </div>
+      </div>
+      <div class="how-card">
+        <div class="how-num">3</div>
+        <div class="how-content">
+          <h4>Recibís el código</h4>
+          <p>El sistema entrega el código automáticamente. Sin esperas, sin intermediarios.</p>
+        </div>
+      </div>
+      <div class="how-card">
+        <div class="how-num">4</div>
+        <div class="how-content">
+          <h4>Confirmás y listo</h4>
+          <p>Confirmás que el código funciona y el pago se libera al vendedor.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>Comprar</h4>
+        <a href="#">Todas las gift cards</a>
+        <a href="#">Gaming</a>
+        <a href="#">Streaming</a>
+        <a href="#">Ofertas del día</a>
+      </div>
+      <div class="footer-col">
+        <h4>Vender</h4>
+        <a href="publicar.html">Publicar gift card</a>
+        <a href="#">Cómo vender</a>
+        <a href="#">Comisiones</a>
+        <a href="#">Tienda oficial</a>
+      </div>
+      <div class="footer-col">
+        <h4>Soporte</h4>
+        <a href="#">Centro de ayuda</a>
+        <a href="#">Cómo funciona</a>
+        <a href="disputas.html">Centro de disputas</a>
+        <a href="#">Tutorial</a>
+      </div>
+      <div class="footer-col">
+        <h4>GiftLatam</h4>
+        <a href="#">Sobre nosotros</a>
+        <a href="#">Términos y condiciones</a>
+        <a href="#">Política de privacidad</a>
+        <a href="#">Contacto</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>© 2026 GiftLatam. Todos los derechos reservados.</p>
+      <div class="crypto-badges">
+        <div class="crypto-badge">₮ USDT</div>
+        <div class="crypto-badge">₿ BTC</div>
+        <div class="crypto-badge">Ξ ETH</div>
+        <div class="crypto-badge">◎ SOL</div>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<!-- BOTTOM NAV (solo mobile) -->
+<div class="bottom-nav">
+  <div class="nav-item active" onclick="window.location='index.html'">
+    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+    Inicio
+  </div>
+  <div class="nav-item" onclick="window.location='detalle.html'">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+    Explorar
+  </div>
+  <div class="nav-item" onclick="window.location='publicar.html'">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+    Vender
+  </div>
+  <div class="nav-item" onclick="window.location='pago.html'">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 12V22H4V12"/><path d="M22 7H2v5h20V7z"/><path d="M12 22V7"/></svg>
+    Ofertas
+  </div>
+  <div class="nav-item" onclick="window.location='panel.html'">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+    Perfil
+  </div>
+</div>
+
+</body>
+</html>
