@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gift Latam</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        body {
+            background-color: #f5f5f5;
+            color: #222;
+            line-height: 1.4;
+        }
+
+        header {
+            background: #111;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 28px;
+            letter-spacing: 1px;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        .products {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            transition: 0.2s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        .card h2 {
+            font-size: 18px;
+            margin-bottom: 10px;
+            overflow: visible;
+        }
+
+        .price {
+            font-size: 20px;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+
+        .btn {
+            display: inline-block;
+            background: #25D366;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .btn:hover {
+            opacity: 0.9;
+        }
+
+        footer {
+            text-align: center;
+            padding: 20px;
+            margin-top: 40px;
+            font-size: 14px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>GIFT LATAM</h1>
+</header>
+
+<div class="container">
+    <div class="products">
+
+        <div class="card">
+            <h2>iPhone 13 128GB</h2>
+            <div class="price">$899 USD</div>
+            <a class="btn" href="https://wa.me/5490000000000" target="_blank">Comprar por WhatsApp</a>
+        </div>
+
+        <div class="card">
+            <h2>Samsung Galaxy S23</h2>
+            <div class="price">$799 USD</div>
+            <a class="btn" href="https://wa.me/5490000000000" target="_blank">Comprar por WhatsApp</a>
+        </div>
+
+        <div class="card">
+            <h2>Smart TV 55” 4K</h2>
+            <div class="price">$650 USD</div>
+            <a class="btn" href="https://wa.me/5490000000000" target="_blank">Consultar</a>
+        </div>
+
+    </div>
+</div>
+
+<footer>
+    © 2026 Gift Latam - Todos los derechos reservados
+</footer>
+
+</body>
+</html>
