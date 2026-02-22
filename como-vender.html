@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cómo Vender - GiftLatam</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root { --negro: #080808; --gris-oscuro: #111; --gris-card: #161616; --gris-borde: #222; --blanco: #F0F0F0; --gris: #888; --verde: #00C853; --naranja: #FF6B35; }
+    html, body { max-width: 100%; overflow-x: hidden; }
+    body { font-family: 'Inter', sans-serif; background: var(--negro); color: var(--blanco); padding-bottom: 80px; }
+    nav { display: flex; align-items: center; justify-content: space-between; padding: 0 16px; height: 52px; border-bottom: 1px solid var(--gris-borde); position: sticky; top: 0; z-index: 1000; background: rgba(8,8,8,0.97); backdrop-filter: blur(20px); gap: 8px; }
+    .logo { display: flex; align-items: center; gap: 7px; text-decoration: none; flex-shrink: 0; }
+    .logo-icon { width: 32px; height: 32px; background: var(--verde); border-radius: 9px; display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
+    .logo-text { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 18px; color: #F0F0F0; white-space: nowrap; }
+    .logo-text span { color: var(--verde); }
+    .nav-actions { display: flex; align-items: center; gap: 6px; }
+    .btn-login { background: transparent; color: var(--blanco); border: 1px solid var(--gris-borde); border-radius: 9px; padding: 7px 12px; font-size: 13px; font-family: inherit; cursor: pointer; white-space: nowrap; }
+    .btn-vender { background: var(--verde); color: #000; border: none; border-radius: 9px; padding: 7px 12px; font-family: 'Inter', sans-serif; font-weight: 700; font-size: 13px; cursor: pointer; white-space: nowrap; }
+    .container { max-width: 860px; margin: 0 auto; padding: 0 16px; }
+    .page-header { padding: 32px 0 24px; border-bottom: 1px solid var(--gris-borde); margin-bottom: 32px; }
+    .page-header h1 { font-family: 'Syne', sans-serif; font-size: clamp(24px, 5vw, 36px); font-weight: 800; margin-bottom: 8px; }
+    .page-header p { color: var(--gris); font-size: 14px; line-height: 1.6; }
+    .card { background: var(--gris-card); border: 1px solid var(--gris-borde); border-radius: 16px; padding: 24px; margin-bottom: 16px; }
+    .card h2 { font-family: 'Syne', sans-serif; font-size: 16px; font-weight: 700; margin-bottom: 12px; color: var(--verde); }
+    .card p, .card li { font-size: 14px; color: #ccc; line-height: 1.7; margin-bottom: 8px; }
+    .card ul { padding-left: 20px; }
+    .card li { margin-bottom: 6px; }
+    .back-link { display: inline-flex; align-items: center; gap: 6px; color: var(--verde); font-size: 13px; text-decoration: none; margin-bottom: 24px; }
+    .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+    .stat-big { text-align: center; padding: 20px; }
+    .stat-big .num { font-family: 'Syne', sans-serif; font-size: 32px; font-weight: 800; color: var(--verde); display: block; }
+    .stat-big .label { font-size: 12px; color: var(--gris); }
+    .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(14,14,14,0.97); border-top: 1px solid var(--gris-borde); display: flex; justify-content: space-around; align-items: center; padding: 8px 0 14px; z-index: 9999; }
+    .nav-item { display: flex; flex-direction: column; align-items: center; gap: 3px; cursor: pointer; color: var(--gris); font-size: 10px; padding: 2px 8px; }
+    .nav-item.active { color: var(--verde); }
+    .nav-item svg { width: 21px; height: 21px; }
+    @media (min-width: 1024px) { .bottom-nav { display: none; } }
+  </style>
+</head>
+<body>
+<nav>
+  <a href="index.html" class="logo">
+    <div class="logo-icon">💎</div>
+    <span class="logo-text">Gift<span>Latam</span></span>
+  </a>
+  <div class="nav-actions">
+    <button class="btn-login" onclick="window.location='login.html'">Iniciar sesión</button>
+    <button class="btn-vender" onclick="window.location='publicar.html'">+ Vender</button>
+  </div>
+</nav>
+<div class="container" style="padding-top:24px">
+  <a href="javascript:history.back()" class="back-link">← Volver</a>
+  <div class="page-header">
+    <h1>💸 Cómo Vender</h1>
+  </div>
+  
+      <div class="card"><h2>Paso 1 — Creá tu cuenta</h2><p>Registrate en GiftLatam con tu email. Es gratis y tarda menos de 2 minutos.</p></div>
+      <div class="card"><h2>Paso 2 — Publicá tu gift card</h2><p>Ir a <a href="publicar.html" style="color:var(--verde)">Publicar gift card</a> y completá el formulario: tipo de tarjeta, valor, precio y método de entrega. Podés poner el código directamente o entregarlo manualmente.</p></div>
+      <div class="card"><h2>Paso 3 — Esperá un comprador</h2><p>Tu listing aparece en el catálogo. Cuando alguien compra, el pago queda en escrow (custodia segura) hasta que entregues el código.</p></div>
+      <div class="card"><h2>Paso 4 — Entregá el código</h2><p>El sistema entrega el código automáticamente si lo cargaste al publicar. Si elegiste entrega manual, tenés 30 minutos para enviarlo.</p></div>
+      <div class="card"><h2>Paso 5 — Cobrá en USDT</h2><p>El comprador confirma que el código funciona y el pago se libera a tu wallet USDT. Instantáneo, sin intermediarios.</p></div>
+      <div class="card"><h2>💡 Consejos para vender más</h2><ul><li>Ofrecé descuentos del 5-15% para atraer compradores</li><li>Entregá siempre códigos válidos para mantener buena reputación</li><li>Respondé rápido en entregas manuales</li></ul></div>
+    
+</div>
+<div class="bottom-nav">
+  <div class="nav-item " onclick="window.location='index.html'">
+    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>Inicio</div>
+  <div class="nav-item " onclick="window.location='detalle.html'">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>Explorar</div>
+  <div class="nav-item " onclick="window.location='publicar.html'">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>Vender</div>
+  <div class="nav-item " onclick="window.location='detalle.html'">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 12V22H4V12"/><path d="M22 7H2v5h20V7z"/><path d="M12 22V7"/></svg>Ofertas</div>
+  <div class="nav-item " onclick="window.location='panel.html'">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Perfil</div>
+</div>
+</body>
+</html>
