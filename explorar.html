@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Explorar Gift Cards - GiftLatam</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root { --negro: #080808; --gris-oscuro: #111; --gris-card: #161616; --gris-borde: #222; --blanco: #F0F0F0; --gris: #888; --verde: #00C853; --naranja: #FF6B35; }
+    html, body { max-width: 100%; overflow-x: hidden; }
+    body { font-family: 'Inter', sans-serif; background: var(--negro); color: var(--blanco); padding-bottom: 90px; }
+
+    /* NAV */
+    nav { display: flex; align-items: center; justify-content: space-between; padding: 0 14px; height: 52px; border-bottom: 1px solid var(--gris-borde); position: sticky; top: 0; z-index: 1000; background: rgba(8,8,8,0.97); backdrop-filter: blur(20px); gap: 8px; }
+    .logo { display: flex; align-items: center; gap: 7px; text-decoration: none; flex-shrink: 0; }
+    .logo-icon { width: 32px; height: 32px; background: var(--verde); border-radius: 9px; display: flex; align-items: center; justify-content: center; font-size: 16px; }
+    .logo-text { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 18px; color: #F0F0F0; }
+    .logo-text span { color: var(--verde); }
+    .nav-actions { display: flex; gap: 6px; align-items: center; flex-shrink: 0; }
+    .btn-login { background: transparent; color: var(--blanco); border: 1px solid var(--gris-borde); border-radius: 9px; padding: 7px 12px; font-size: 12px; font-family: inherit; cursor: pointer; white-space: nowrap; }
+    .btn-vender { background: var(--verde); color: #000; border: none; border-radius: 9px; padding: 7px 12px; font-family: 'Syne', sans-serif; font-weight: 700; font-size: 12px; cursor: pointer; white-space: nowrap; }
+
+    /* SEARCH BAR */
+    .search-wrap { background: var(--gris-oscuro); padding: 10px 14px; border-bottom: 1px solid var(--gris-borde); position: sticky; top: 52px; z-index: 999; }
+    .search-inner { display: flex; align-items: center; gap: 10px; background: #1a1a1a; border: 1px solid var(--gris-borde); border-radius: 12px; padding: 10px 14px; transition: border-color 0.2s; }
+    .search-inner:focus-within { border-color: var(--verde); }
+    .search-inner svg { color: var(--gris); flex-shrink: 0; }
+    .search-inner input { background: none; border: none; outline: none; color: var(--blanco); font-size: 15px; width: 100%; font-family: inherit; }
+    .search-inner input::placeholder { color: var(--gris); }
+    .clear-btn { background: none; border: none; color: var(--gris); font-size: 18px; cursor: pointer; padding: 0; display: none; flex-shrink: 0; }
+
+    /* CATEGORIES */
+    .cat-bar { display: flex; gap: 8px; padding: 10px 14px; overflow-x: auto; scrollbar-width: none; border-bottom: 1px solid var(--gris-borde); }
+    .cat-bar::-webkit-scrollbar { display: none; }
+    .cat-pill { border: 1px solid var(--gris-borde); color: var(--gris); border-radius: 20px; padding: 6px 14px; font-size: 12px; white-space: nowrap; cursor: pointer; background: transparent; font-family: inherit; flex-shrink: 0; transition: all 0.2s; }
+    .cat-pill.active { border-color: var(--verde); color: var(--verde); background: rgba(0,200,83,0.08); }
+
+    /* FILTERS ROW */
+    .filters-row { display: flex; gap: 8px; padding: 10px 14px; overflow-x: auto; scrollbar-width: none; align-items: center; border-bottom: 1px solid var(--gris-borde); background: var(--negro); }
+    .filters-row::-webkit-scrollbar { display: none; }
+    .filter-btn { border: 1px solid var(--gris-borde); color: var(--gris); border-radius: 8px; padding: 5px 12px; font-size: 12px; white-space: nowrap; cursor: pointer; background: transparent; font-family: inherit; flex-shrink: 0; }
+    .filter-btn.active { border-color: var(--verde); color: var(--verde); background: rgba(0,200,83,0.08); }
+    .results-count { font-size: 12px; color: var(--gris); white-space: nowrap; margin-left: auto; flex-shrink: 0; }
+
+    /* GRID */
+    .container { padding: 14px; max-width: 1280px; margin: 0 auto; }
+
+    .voucher-card { display: flex; flex-direction: row; align-items: center; gap: 12px; background: var(--gris-card); border: 1px solid var(--gris-borde); border-radius: 14px; padding: 12px 14px; cursor: pointer; text-decoration: none; color: inherit; margin-bottom: 8px; transition: border-color 0.15s; }
+    .voucher-card:hover { border-color: rgba(0,200,83,0.35); }
+    .voucher-icon { width: 46px; height: 46px; min-width: 46px; border-radius: 11px; display: flex; align-items: center; justify-content: center; font-size: 22px; flex-shrink: 0; }
+    .voucher-info { flex: 1; min-width: 0; }
+    .voucher-name { font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 700; color: var(--blanco); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; padding-bottom: 4px; }
+    .voucher-meta { font-size: 11px; color: var(--gris); display: flex; align-items: center; gap: 5px; flex-wrap: wrap; }
+    .badge { background: rgba(0,200,83,0.12); color: var(--verde); border: 1px solid rgba(0,200,83,0.25); border-radius: 5px; padding: 1px 6px; font-size: 10px; font-weight: 700; }
+    .badge-hot { background: rgba(255,107,53,0.12); color: var(--naranja); border-color: rgba(255,107,53,0.25); }
+    .voucher-price { flex-shrink: 0; width: 70px; display: flex; flex-direction: column; align-items: flex-end; gap: 2px; }
+    .price-main { font-family: 'Syne', sans-serif; font-size: 15px; font-weight: 800; color: var(--verde); display: block; text-align: right; line-height: 1.4; font-variant-numeric: tabular-nums; }
+    .price-old { font-family: 'Syne', sans-serif; font-size: 11px; color: var(--gris); text-decoration: line-through; display: block; text-align: right; line-height: 1.4; font-variant-numeric: tabular-nums; }
+
+    /* NO RESULTS */
+    .no-results { text-align: center; padding: 60px 20px; display: none; }
+    .no-results-emoji { font-size: 48px; margin-bottom: 14px; display: block; }
+    .no-results-title { font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 700; margin-bottom: 8px; }
+    .no-results-sub { font-size: 13px; color: var(--gris); }
+
+    /* BOTTOM NAV */
+    .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(14,14,14,0.97); border-top: 1px solid var(--gris-borde); display: flex; justify-content: space-around; align-items: center; padding: 8px 0 14px; z-index: 9999; backdrop-filter: blur(20px); }
+    .nav-item { display: flex; flex-direction: column; align-items: center; gap: 3px; cursor: pointer; color: var(--gris); font-size: 10px; padding: 2px 8px; }
+    .nav-item.active { color: var(--verde); }
+    .nav-item svg { width: 21px; height: 21px; }
+
+
+    /* AUTOCOMPLETE */
+    .search-wrap { position: relative; }
+    .autocomplete-list { position: absolute; top: 100%; left: 14px; right: 14px; background: #1a1a1a; border: 1px solid var(--gris-borde); border-radius: 12px; overflow: hidden; z-index: 9999; display: none; max-height: 300px; overflow-y: auto; box-shadow: 0 8px 32px rgba(0,0,0,0.6); }
+    .autocomplete-item { display: flex; align-items: center; gap: 12px; padding: 12px 16px; cursor: pointer; transition: background 0.15s; border-bottom: 1px solid #222; }
+    .autocomplete-item:last-child { border-bottom: none; }
+    .autocomplete-item:hover, .autocomplete-item.selected { background: rgba(0,200,83,0.08); }
+    .autocomplete-icon { font-size: 20px; width: 32px; text-align: center; flex-shrink: 0; }
+    .autocomplete-name { font-size: 14px; font-weight: 600; color: var(--blanco); }
+    .autocomplete-name span { color: var(--verde); }
+    .autocomplete-cat { font-size: 11px; color: var(--gris); margin-top: 1px; }
+    .autocomplete-price { margin-left: auto; font-size: 13px; font-weight: 700; color: var(--verde); flex-shrink: 0; }
+    .autocomplete-empty { padding: 16px; text-align: center; color: var(--gris); font-size: 13px; }
+
+    @media (min-width: 768px) { .vouchers-list { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; } .voucher-card { margin-bottom: 0; } }
+    @media (min-width: 1024px) { .bottom-nav { display: none; } .vouchers-list { grid-template-columns: repeat(3, 1fr); } }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="logo">
+    <div class="logo-icon">💎</div>
+    <span class="logo-text">Gift<span>Latam</span></span>
+  </a>
+  <div class="nav-actions">
+    <button class="btn-login" onclick="window.location='login.html'">Iniciar sesión</button>
+    <button class="btn-vender" onclick="window.location='publicar.html'">+ Vender</button>
+  </div>
+</nav>
+
+<!-- BUSCADOR PRINCIPAL -->
+<div class="search-wrap">
+  <div class="search-inner">
+    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+    <input type="text" id="searchInput" placeholder="Buscar Netflix, Steam, Spotify, PSN..." oninput="doSearch(this.value)" autofocus>
+    <button class="clear-btn" id="clearBtn" onclick="clearSearch()">✕</button>
+  </div>
+  <div class="autocomplete-list" id="autocompleteList"></div>
+</div>
+
+<!-- CATEGORÍAS -->
+<div class="cat-bar">
+  <div class="cat-pill active" data-cat="all" onclick="filterCat(this, 'all')">🔥 Todos</div>
+  <div class="cat-pill" data-cat="gaming" onclick="filterCat(this, 'gaming')">🎮 Gaming</div>
+  <div class="cat-pill" data-cat="streaming" onclick="filterCat(this, 'streaming')">🎬 Streaming</div>
+  <div class="cat-pill" data-cat="retail" onclick="filterCat(this, 'retail')">🛒 Retail</div>
+  <div class="cat-pill" data-cat="comida" onclick="filterCat(this, 'comida')">🍔 Comida</div>
+  <div class="cat-pill" data-cat="musica" onclick="filterCat(this, 'musica')">🎵 Música</div>
+  <div class="cat-pill" data-cat="viajes" onclick="filterCat(this, 'viajes')">✈️ Viajes</div>
+</div>
+
+<!-- FILTROS -->
+<div class="filters-row">
+  <button class="filter-btn active" onclick="filterSort(this, 'relevancia')">Relevancia</button>
+  <button class="filter-btn" onclick="filterSort(this, 'precio-asc')">Precio ↑</button>
+  <button class="filter-btn" onclick="filterSort(this, 'precio-desc')">Precio ↓</button>
+  <button class="filter-btn" onclick="filterSort(this, 'descuento')">Mayor descuento</button>
+  <button class="filter-btn" onclick="filterSort(this, 'vendidos')">Más vendidos</button>
+  <div class="results-count" id="resultsCount">24 resultados</div>
+</div>
+
+<div class="container">
+  <div class="vouchers-list" id="vouchersList"></div>
+
+  <!-- NO RESULTS -->
+  <div class="no-results" id="noResults">
+    <span class="no-results-emoji">🔍</span>
+    <div class="no-results-title">Sin resultados</div>
+    <div class="no-results-sub">No encontramos nada para "<span id="searchTerm"></span>".<br>Probá con otro nombre.</div>
+  </div>
+
+</div>
+
+<!-- BOTTOM NAV -->
+<div class="bottom-nav">
+  <div class="nav-item" onclick="window.location='index.html'">
+    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>Inicio</div>
+  <div class="nav-item active">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>Explorar</div>
+  <div class="nav-item" onclick="window.location='publicar.html'">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>Vender</div>
+  <div class="nav-item" onclick="window.location='explorar.html'">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 12V22H4V12"/><path d="M22 7H2v5h20V7z"/><path d="M12 22V7"/></svg>Ofertas</div>
+  <div class="nav-item" onclick="window.location='panel.html'">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Perfil</div>
+</div>
+
+<script>
+  // ── Todos los productos ──
+  const PRODUCTOS = [
+    { nombre: 'Steam Gift Card $20 USD',      icon: '🎮', bg: '#1A1A2E', cat: 'gaming',    precio: 18.40, precioOld: 20.00, sold: 245, rating: 4.9 },
+    { nombre: 'Steam Gift Card $50 USD',      icon: '🎮', bg: '#1A1A2E', cat: 'gaming',    precio: 46.00, precioOld: 50.00, sold: 180, rating: 4.9 },
+    { nombre: 'PSN $50 USD',                  icon: '🎮', bg: '#000E1A', cat: 'gaming',    precio: 45.00, precioOld: 50.00, sold: 156, rating: 4.7 },
+    { nombre: 'PSN $20 USD',                  icon: '🎮', bg: '#000E1A', cat: 'gaming',    precio: 18.50, precioOld: 20.00, sold: 210, rating: 4.8 },
+    { nombre: 'Xbox Game Pass Ultimate 3 meses', icon: '🎮', bg: '#0D1A00', cat: 'gaming', precio: 27.00, precioOld: 30.00, sold: 312, rating: 4.8 },
+    { nombre: 'Xbox Gift Card $25 USD',       icon: '🎮', bg: '#0D1A00', cat: 'gaming',    precio: 23.50, precioOld: 25.00, sold: 145, rating: 4.7 },
+    { nombre: 'Roblox 4500 Robux',            icon: '🎮', bg: '#1A1000', cat: 'gaming',    precio: 13.95, precioOld: 15.00, sold: 421, rating: 4.8 },
+    { nombre: 'Roblox 10000 Robux',           icon: '🎮', bg: '#1A1000', cat: 'gaming',    precio: 28.50, precioOld: 30.00, sold: 289, rating: 4.9 },
+    { nombre: 'Free Fire 1080 Diamantes',     icon: '🎮', bg: '#001A12', cat: 'gaming',    precio: 8.99,  precioOld: 9.99,  sold: 687, rating: 4.9 },
+    { nombre: 'Minecraft Java Edition',       icon: '🎮', bg: '#1A1000', cat: 'gaming',    precio: 9.50,  precioOld: 10.00, sold: 198, rating: 4.9 },
+    { nombre: 'Netflix 1 mes Premium',        icon: '🎬', bg: '#1A0000', cat: 'streaming', precio: 10.56, precioOld: 12.00, sold: 189, rating: 4.8 },
+    { nombre: 'Netflix 3 meses Premium',      icon: '🎬', bg: '#1A0000', cat: 'streaming', precio: 29.00, precioOld: 33.00, sold: 134, rating: 4.8 },
+    { nombre: 'Spotify Premium 1 mes',        icon: '🎵', bg: '#001A0D', cat: 'musica',    precio: 4.85,  precioOld: 5.00,  sold: 210, rating: 4.8 },
+    { nombre: 'Spotify Premium 3 meses',      icon: '🎵', bg: '#001A0D', cat: 'musica',    precio: 14.25, precioOld: 15.00, sold: 312, rating: 4.9 },
+    { nombre: 'Disney+ 1 mes',                icon: '📺', bg: '#1A000D', cat: 'streaming', precio: 8.50,  precioOld: 10.00, sold: 276, rating: 4.7 },
+    { nombre: 'HBO Max 1 mes',                icon: '📺', bg: '#00101A', cat: 'streaming', precio: 6.80,  precioOld: 8.00,  sold: 143, rating: 4.6 },
+    { nombre: 'Apple Music 1 mes',            icon: '🎶', bg: '#1A001A', cat: 'musica',    precio: 9.70,  precioOld: 10.00, sold: 134, rating: 4.7 },
+    { nombre: 'Mercado Libre $20 USD',        icon: '🛒', bg: '#1A0D00', cat: 'retail',    precio: 19.00, precioOld: 20.00, sold: 543, rating: 4.8 },
+    { nombre: 'Amazon Gift Card $50 USD',     icon: '📦', bg: '#1A001A', cat: 'retail',    precio: 47.50, precioOld: 50.00, sold: 320, rating: 4.9 },
+    { nombre: 'Amazon Gift Card $25 USD',     icon: '📦', bg: '#1A001A', cat: 'retail',    precio: 23.75, precioOld: 25.00, sold: 198, rating: 4.9 },
+    { nombre: 'Rappi $10 USD',                icon: '🍔', bg: '#001A1A', cat: 'comida',    precio: 9.70,  precioOld: 10.00, sold: 280, rating: 4.7 },
+    { nombre: 'PedidosYa $20 USD',            icon: '🍕', bg: '#1A0800', cat: 'comida',    precio: 19.40, precioOld: 20.00, sold: 165, rating: 4.6 },
+    { nombre: 'Booking.com $100 USD',         icon: '✈️', bg: '#001A14', cat: 'viajes',    precio: 97.00, precioOld: 100.00,sold: 89,  rating: 4.8 },
+    { nombre: 'Airbnb $50 USD',               icon: '🏨', bg: '#0A001A', cat: 'viajes',    precio: 48.50, precioOld: 50.00, sold: 67,  rating: 4.7 },
+  ];
+
+  let activeCat = 'all';
+  let activeSort = 'relevancia';
+  let searchQuery = '';
+  let acSelected = -1;
+
+  // ── Renderizar todos los productos al cargar ──
+  function renderAll() {
+    const list = document.getElementById('vouchersList');
+    list.innerHTML = PRODUCTOS.map((p, i) => `
+      <a href="detalle.html" class="voucher-card" 
+         data-cat="${p.cat}" 
+         data-price="${p.precio}" 
+         data-discount="${Math.round((1 - p.precio/p.precioOld)*100)}" 
+         data-sold="${p.sold}"
+         data-name="${p.nombre.toLowerCase()}">
+        <div class="voucher-icon" style="background:${p.bg}">${p.icon}</div>
+        <div class="voucher-info">
+          <span class="voucher-name">${p.nombre}</span>
+          <div class="voucher-meta">⭐ ${p.rating} · ${p.sold} vendidos 
+            <span class="badge">-${Math.round((1 - p.precio/p.precioOld)*100)}%</span>
+          </div>
+        </div>
+        <div class="voucher-price">
+          <span class="price-main">$${p.precio.toFixed(2)}</span>
+          <span class="price-old">$${p.precioOld.toFixed(2)}</span>
+        </div>
+      </a>
+    `).join('');
+    document.getElementById('resultsCount').textContent = PRODUCTOS.length + ' resultados';
+  }
+
+  // ── Autocompletado ──
+  function showAutocomplete(val) {
+    const q = val.toLowerCase().trim();
+    const box = document.getElementById('acBox');
+    acSelected = -1;
+
+    if (q.length < 1) { box.classList.remove('show'); return; }
+
+    const matches = PRODUCTOS.filter(p => p.nombre.toLowerCase().includes(q)).slice(0, 6);
+
+    if (matches.length === 0) {
+      box.innerHTML = '<div class="ac-empty">Sin resultados para "' + val + '"</div>';
+    } else {
+      box.innerHTML = matches.map((p, i) => {
+        const hi = p.nombre.replace(new RegExp('(' + q.replace(/[.*+?^${}()|[\]\]/g, '\$&') + ')', 'gi'), '<mark>$1</mark>');
+        return `<div class="ac-item" onclick="selectProduct('${p.nombre}')" data-index="${i}">
+          <div class="ac-icon" style="background:${p.bg}">${p.icon}</div>
+          <div class="ac-info">
+            <div class="ac-name">${hi}</div>
+            <div class="ac-meta">${p.cat} · ⭐ ${p.rating}</div>
+          </div>
+          <div class="ac-price">$${p.precio.toFixed(2)}</div>
+        </div>`;
+      }).join('');
+    }
+
+    box.classList.add('show');
+  }
+
+  function selectProduct(nombre) {
+    document.getElementById('searchInput').value = nombre;
+    document.getElementById('acBox').classList.remove('show');
+    document.getElementById('clearBtn').style.display = 'block';
+    searchQuery = nombre.toLowerCase();
+    applyFilters();
+  }
+
+  function handleKey(e) {
+    const box = document.getElementById('acBox');
+    const items = box.querySelectorAll('.ac-item');
+    if (!items.length) return;
+    if (e.key === 'ArrowDown') {
+      acSelected = Math.min(acSelected + 1, items.length - 1);
+    } else if (e.key === 'ArrowUp') {
+      acSelected = Math.max(acSelected - 1, -1);
+    } else if (e.key === 'Enter' && acSelected >= 0) {
+      items[acSelected].click(); return;
+    } else if (e.key === 'Escape') {
+      box.classList.remove('show'); return;
+    }
+    items.forEach((item, i) => item.classList.toggle('selected', i === acSelected));
+  }
+
+  // Cerrar autocomplete si toca afuera
+  document.addEventListener('click', function(e) {
+    if (!e.target.closest('.search-wrap')) {
+      document.getElementById('acBox').classList.remove('show');
+    }
+  });
+
+  function doSearch(val) {
+    searchQuery = val.toLowerCase().trim();
+    document.getElementById('clearBtn').style.display = searchQuery ? 'block' : 'none';
+    applyFilters();
+  }
+
+  function clearSearch() {
+    document.getElementById('searchInput').value = '';
+    searchQuery = '';
+    document.getElementById('clearBtn').style.display = 'none';
+    document.getElementById('acBox').classList.remove('show');
+    applyFilters();
+    document.getElementById('searchInput').focus();
+  }
+
+  function filterCat(el, cat) {
+    document.querySelectorAll('.cat-pill').forEach(p => p.classList.remove('active'));
+    el.classList.add('active');
+    activeCat = cat;
+    applyFilters();
+  }
+
+  function filterSort(el, sort) {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    el.classList.add('active');
+    activeSort = sort;
+    applyFilters();
+  }
+
+  function applyFilters() {
+    const cards = Array.from(document.querySelectorAll('.voucher-card'));
+    let visible = [];
+
+    cards.forEach(card => {
+      const matchCat = activeCat === 'all' || card.dataset.cat === activeCat;
+      const matchSearch = !searchQuery || card.dataset.name.includes(searchQuery);
+      card.style.display = (matchCat && matchSearch) ? '' : 'none';
+      if (matchCat && matchSearch) visible.push(card);
+    });
+
+    // Ordenar
+    const list = document.getElementById('vouchersList');
+    visible.sort((a, b) => {
+      if (activeSort === 'precio-asc')  return parseFloat(a.dataset.price) - parseFloat(b.dataset.price);
+      if (activeSort === 'precio-desc') return parseFloat(b.dataset.price) - parseFloat(a.dataset.price);
+      if (activeSort === 'descuento')   return parseInt(b.dataset.discount) - parseInt(a.dataset.discount);
+      if (activeSort === 'vendidos')    return parseInt(b.dataset.sold) - parseInt(a.dataset.sold);
+      return 0;
+    });
+    visible.forEach(card => list.appendChild(card));
+
+    document.getElementById('resultsCount').textContent = visible.length + ' resultado' + (visible.length !== 1 ? 's' : '');
+    document.getElementById('noResults').style.display = visible.length === 0 ? 'block' : 'none';
+    if (document.getElementById('searchTerm')) document.getElementById('searchTerm').textContent = searchQuery;
+  }
+
+  // URL params y render inicial
+  window.addEventListener('DOMContentLoaded', function() {
+    renderAll();
+    const params = new URLSearchParams(window.location.search);
+    const cat = params.get('cat');
+    const q = params.get('q');
+    if (cat) {
+      const pill = document.querySelector('.cat-pill[data-cat="' + cat + '"]');
+      if (pill) { pill.click(); }
+    }
+    if (q) {
+      document.getElementById('searchInput').value = q;
+      doSearch(q);
+    }
+  });
+
+</script>
+
+</body>
+</html>

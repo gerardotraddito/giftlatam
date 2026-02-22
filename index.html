@@ -294,6 +294,18 @@
     .search-inner input { background: none; border: none; outline: none; color: var(--blanco); font-size: 14px; width: 100%; font-family: inherit; }
     .search-inner input::placeholder { color: var(--gris); }
     @media (min-width: 600px) { .nav-center { display: block !important; } .search-bar-mobile { display: none; } }
+
+    /* AUTOCOMPLETE */
+    .search-bar-mobile { position: relative; }
+    .ac-list { position: absolute; top: 100%; left: 14px; right: 14px; background: #1a1a1a; border: 1px solid #222; border-radius: 12px; overflow: hidden; z-index: 9999; display: none; max-height: 280px; overflow-y: auto; box-shadow: 0 8px 32px rgba(0,0,0,0.6); }
+    .ac-item { display: flex; align-items: center; gap: 12px; padding: 11px 16px; cursor: pointer; border-bottom: 1px solid #1e1e1e; transition: background 0.15s; }
+    .ac-item:hover { background: #222; }
+    .ac-icon { font-size: 22px; width: 32px; text-align: center; flex-shrink: 0; }
+    .ac-name { font-size: 13px; font-weight: 600; }
+    .ac-name mark { background: none; color: #00C853; font-weight: 700; }
+    .ac-cat { font-size: 11px; color: #888; }
+    .ac-price { margin-left: auto; font-size: 13px; font-weight: 700; color: #00C853; font-family: 'Syne', sans-serif; flex-shrink: 0; }
+    .ac-empty { padding: 16px; text-align: center; color: #888; font-size: 13px; }
   </style>
 </head>
 <body>
@@ -326,6 +338,7 @@
   <div class="search-inner">
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
     <input type="text" placeholder="Buscar Netflix, Steam, Spotify..." id="searchInput" oninput="filterSearch(this.value)">
+    <div class="ac-list" id="acList"></div>
     <button onclick="clearSearch()" id="clearBtn" style="display:none;background:none;border:none;color:var(--gris);font-size:16px;cursor:pointer;padding:0">✕</button>
   </div>
 </div>
