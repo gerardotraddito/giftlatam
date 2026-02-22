@@ -351,7 +351,7 @@ footer {
   .step-div { width:16px; height:1px; background:var(--borde); flex-shrink:0; }
   .type-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:20px; }
   .type-card { background:var(--card); border:2px solid var(--borde); border-radius:16px; padding:20px 12px; text-align:center; cursor:pointer; transition:all 0.2s; }
-  .type-card.selected { border-color:var(--verde); background:rgba(0,200,83,0.05); }
+  .type-card.selected { border-color:var(--verde); background:rgba(0,200,83,0.03); }
   .type-icon { font-size:32px; margin-bottom:10px; display:block; }
   .type-name { font-size:14px; font-weight:700; margin-bottom:4px; }
   .type-desc { font-size:11px; color:var(--gris); line-height:1.4; }
@@ -415,4 +415,150 @@ footer {
   <div class="nav-item" onclick="window.location='detalle.html'"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 12V22H4V12"/><path d="M22 7H2v5h20V7z"/><path d="M12 22V7"/></svg>Ofertas</div>
   <div class="nav-item" onclick="window.location='panel.html'"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Perfil</div>
 </div>
+
+<!-- STEP 2: Detalles -->
+<div class="pub-card" id="step2" style="display:none">
+  <div style="font-family:'Syne',sans-serif;font-size:16px;font-weight:700;margin-bottom:16px">📝 Detalles del producto</div>
+  <div class="form-group">
+    <label class="form-label">Marca / Servicio</label>
+    <input class="form-input" type="text" placeholder="Ej: Netflix, Steam, Spotify...">
+  </div>
+  <div class="form-group">
+    <label class="form-label">Título del listing</label>
+    <input class="form-input" type="text" placeholder="Ej: Netflix 1 mes Premium Argentina">
+  </div>
+  <div class="form-group">
+    <label class="form-label">Descripción (opcional)</label>
+    <textarea class="form-input" rows="3" placeholder="Describí tu producto..." style="resize:vertical"></textarea>
+  </div>
+  <div class="form-group">
+    <label class="form-label">Región</label>
+    <select class="form-input">
+      <option>Global</option>
+      <option>Argentina</option>
+      <option>México</option>
+      <option>Brasil</option>
+      <option>Colombia</option>
+      <option>Chile</option>
+      <option>Otro</option>
+    </select>
+  </div>
+  <button class="btn-anterior" onclick="goStep(1)">← Anterior</button>
+  <button class="btn-siguiente" onclick="goStep(3)">Siguiente →</button>
+</div>
+
+<!-- STEP 3: Entrega -->
+<div class="pub-card" id="step3" style="display:none">
+  <div style="font-family:'Syne',sans-serif;font-size:16px;font-weight:700;margin-bottom:16px">📦 Método de entrega</div>
+  <div style="display:grid;gap:10px;margin-bottom:20px">
+    <label style="display:flex;align-items:flex-start;gap:12px;background:#111;border:2px solid var(--verde);border-radius:12px;padding:16px;cursor:pointer">
+      <input type="radio" name="entrega" value="auto" checked style="margin-top:3px;accent-color:var(--verde)">
+      <div>
+        <div style="font-weight:700;margin-bottom:4px">⚡ Entrega automática</div>
+        <div style="font-size:12px;color:#888">Cargás el código ahora y se entrega solo cuando el comprador pague. Recomendado.</div>
+      </div>
+    </label>
+    <label style="display:flex;align-items:flex-start;gap:12px;background:#111;border:1px solid var(--borde);border-radius:12px;padding:16px;cursor:pointer">
+      <input type="radio" name="entrega" value="manual" style="margin-top:3px;accent-color:var(--verde)">
+      <div>
+        <div style="font-weight:700;margin-bottom:4px">✋ Entrega manual</div>
+        <div style="font-size:12px;color:#888">Vos enviás el código manualmente cuando alguien compre. Tenés 30 minutos.</div>
+      </div>
+    </label>
+  </div>
+  <div class="form-group" id="codigoGroup">
+    <label class="form-label">Código de la gift card</label>
+    <input class="form-input" type="text" placeholder="XXXX-XXXX-XXXX-XXXX" style="font-family:monospace;letter-spacing:2px">
+    <div style="font-size:11px;color:#888;margin-top:4px">El código se guarda encriptado y solo se revela al comprador tras el pago.</div>
+  </div>
+  <button class="btn-anterior" onclick="goStep(2)">← Anterior</button>
+  <button class="btn-siguiente" onclick="goStep(4)">Siguiente →</button>
+</div>
+
+<!-- STEP 4: Precio -->
+<div class="pub-card" id="step4" style="display:none">
+  <div style="font-family:'Syne',sans-serif;font-size:16px;font-weight:700;margin-bottom:16px">💰 Precio</div>
+  <div class="form-group">
+    <label class="form-label">Valor nominal (precio original)</label>
+    <div style="position:relative">
+      <span style="position:absolute;left:14px;top:50%;transform:translateY(-50%);color:#888">$</span>
+      <input class="form-input" type="number" id="valorNominal" placeholder="20.00" style="padding-left:28px" oninput="calcPrecio()">
+    </div>
+  </div>
+  <div class="form-group">
+    <label class="form-label">Tu precio de venta (USD)</label>
+    <div style="position:relative">
+      <span style="position:absolute;left:14px;top:50%;transform:translateY(-50%);color:#888">$</span>
+      <input class="form-input" type="number" id="precioVenta" placeholder="18.00" style="padding-left:28px" oninput="calcPrecio()">
+    </div>
+  </div>
+  <div style="background:#111;border:1px solid var(--borde);border-radius:12px;padding:16px;margin-bottom:20px" id="resumen">
+    <div style="font-size:13px;color:#888;margin-bottom:8px">Resumen</div>
+    <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px"><span>Precio de venta</span><span id="r-venta">$0.00</span></div>
+    <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px;color:#888"><span>Comisión GiftLatam (3%)</span><span id="r-comision">-$0.00</span></div>
+    <div style="display:flex;justify-content:space-between;font-size:14px;font-weight:700;color:var(--verde);border-top:1px solid var(--borde);padding-top:8px"><span>Recibís</span><span id="r-total">$0.00 USDT</span></div>
+  </div>
+  <button class="btn-anterior" onclick="goStep(3)">← Anterior</button>
+  <button class="btn-siguiente" id="btnPublicar" onclick="publicar()" style="background:var(--verde)">🚀 Publicar ahora</button>
+</div>
+
+<!-- SUCCESS -->
+<div class="pub-card" id="stepSuccess" style="display:none;text-align:center;padding:40px 24px">
+  <div style="font-size:48px;margin-bottom:16px">🎉</div>
+  <div style="font-family:'Syne',sans-serif;font-size:22px;font-weight:800;margin-bottom:8px">¡Publicado con éxito!</div>
+  <div style="font-size:14px;color:#888;margin-bottom:24px">Tu gift card ya está visible en el catálogo.</div>
+  <a href="index.html" style="background:var(--verde);color:#000;border:none;border-radius:12px;padding:13px 24px;font-family:'Syne',sans-serif;font-weight:700;font-size:15px;cursor:pointer;text-decoration:none;display:inline-block">Ver catálogo →</a>
+</div>
+
+<style>
+  .btn-anterior { background:transparent; color:#888; border:1px solid var(--borde); border-radius:14px; padding:11px 20px; font-family:'Inter',sans-serif; font-weight:600; font-size:14px; cursor:pointer; margin-top:8px; margin-right:8px; }
+  .btn-anterior:hover { border-color:#fff; color:#fff; }
+</style>
+
+<script>
+  let currentStep = 1;
+
+  function goStep(n) {
+    // Hide current
+    document.getElementById('step' + currentStep).style.display = 'none';
+    // Update steps bar
+    document.querySelectorAll('.step').forEach((el, i) => {
+      el.classList.remove('active');
+      if (i + 1 <= n) el.classList.add('active');
+    });
+    // Show new
+    currentStep = n;
+    const el = document.getElementById('step' + n);
+    if (el) { el.style.display = 'block'; el.scrollIntoView({behavior:'smooth', block:'start'}); }
+  }
+
+  // Wrap step 1 button
+  document.querySelector('.btn-siguiente').setAttribute('onclick', 'goStep(2)');
+
+  // Toggle codigo group on radio change
+  document.querySelectorAll('input[name=entrega]').forEach(r => {
+    r.addEventListener('change', function() {
+      document.getElementById('codigoGroup').style.display = this.value === 'auto' ? 'block' : 'none';
+    });
+  });
+
+  function calcPrecio() {
+    const venta = parseFloat(document.getElementById('precioVenta').value) || 0;
+    const comision = venta * 0.03;
+    const total = venta - comision;
+    document.getElementById('r-venta').textContent = '$' + venta.toFixed(2);
+    document.getElementById('r-comision').textContent = '-$' + comision.toFixed(2);
+    document.getElementById('r-total').textContent = '$' + total.toFixed(2) + ' USDT';
+  }
+
+  function publicar() {
+    const btn = document.getElementById('btnPublicar');
+    btn.disabled = true; btn.textContent = 'Publicando...';
+    setTimeout(() => {
+      document.getElementById('step4').style.display = 'none';
+      document.getElementById('stepSuccess').style.display = 'block';
+    }, 1500);
+  }
+</script>
+
 </body></html>
