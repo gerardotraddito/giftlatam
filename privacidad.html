@@ -38,6 +38,10 @@
     .nav-item svg { width: 21px; height: 21px; }
     @media (min-width: 1024px) { .bottom-nav { display: none; } }
   </style>
+  <!-- GiftLatam core -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.js"></script>
+  <script src="js/supabase.js"></script>
+  <script src="js/auth.js"></script>
 </head>
 <body>
 <nav>
@@ -45,7 +49,7 @@
     <div class="logo-icon">💎</div>
     <span class="logo-text">Gift<span>Latam</span></span>
   </a>
-  <div class="nav-actions">
+  <div class="nav-actions" id="navActions">
     <button class="btn-login" onclick="window.location='login.html'">Iniciar sesión</button>
     <button class="btn-vender" onclick="window.location='publicar.html'">+ Vender</button>
   </div>
@@ -60,7 +64,7 @@
       <div class="card"><h2>Cómo usamos tus datos</h2><ul><li>Para procesar transacciones de forma segura</li><li>Para verificar tu identidad y prevenir fraudes</li><li>Para enviarte notificaciones sobre tus compras/ventas</li><li>Para mejorar la experiencia en la plataforma</li></ul></div>
       <div class="card"><h2>Seguridad</h2><p>Usamos encriptación de extremo a extremo para proteger tus datos. Nunca vendemos tu información a terceros. Todos los datos se almacenan en servidores seguros con acceso restringido.</p></div>
       <div class="card"><h2>Tus derechos</h2><ul><li>Podés solicitar ver todos tus datos en cualquier momento</li><li>Podés solicitar la eliminación de tu cuenta y datos</li><li>Podés actualizar tu información desde el panel de usuario</li></ul></div>
-      <div class="card"><h2>Contacto</h2><p>Para consultas sobre privacidad escribinos a <strong style="color:var(--verde)"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="7404061d0215171d10151034131d120018150015195a171b19">[email&#160;protected]</a></strong></p></div>
+      <div class="card"><h2>Contacto</h2><p>Para consultas sobre privacidad escribinos a <strong style="color:var(--verde)"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="2252504b5443414b46434662454b44564e4356434f0c414d4f">[email&#160;protected]</a></strong></p></div>
     
 </div>
 <div class="bottom-nav">
