@@ -124,7 +124,14 @@
   // ── SUPABASE CONFIG ──
   const SUPABASE_URL = 'https://goibtxrhabumlrqeykwx.supabase.co';
   const SUPABASE_KEY = 'sb_publishable_4003pT5xt2QBDYnj1G9vgA_IQoC77At';
-  const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
+    auth: {
+      autoRefreshToken: true,
+      persistSession: true,
+      detectSessionInUrl: true
+    }
+  });
+  console.log('Supabase client creado:', SUPABASE_URL);
 
   function togglePw(id, btn) {
     const input = document.getElementById(id);
@@ -198,32 +205,56 @@
     const usuario = document.getElementById('usuario').value.trim();
 
     try {
+      console.log('Intentando registrar:', email);
+      
       const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
+        email: email,
+        password: password,
         options: {
           data: {
-            nombre,
-            apellido,
-            usuario,
+            nombre: nombre,
+            apellido: apellido,
+            usuario: usuario,
             full_name: nombre + ' ' + apellido,
-          }
+          },
+          emailRedirectTo: window.location.origin + '/panel.html'
         }
       });
 
+      console.log('Resultado:', data, error);
+
       if (error) throw error;
 
-      document.getElementById('alertSuccess').classList.add('show');
-      document.getElementById('registerForm').style.display = 'none';
-
-      // Si no requiere confirmación de email, redirigir directo
-      if (data.user && data.session) {
-        setTimeout(() => window.location.href = 'panel.html', 2000);
+      if (data.user) {
+        // Verificar si necesita confirmar email
+        if (data.user.identities && data.user.identities.length === 0) {
+          throw new Error('Este email ya está registrado. Iniciá sesión.');
+        }
+        
+        const alertOk = document.getElementById('alertSuccess');
+        
+        if (data.session) {
+          // Sin confirmación de email - entra directo
+          alertOk.textContent = '✅ ¡Cuenta creada! Entrando...';
+          alertOk.classList.add('show');
+          document.getElementById('registerForm').style.display = 'none';
+          setTimeout(() => window.location.href = 'panel.html', 1500);
+        } else {
+          // Con confirmación de email
+          alertOk.textContent = '✅ ¡Cuenta creada! Revisá tu email ' + email + ' para confirmar.';
+          alertOk.classList.add('show');
+          document.getElementById('registerForm').style.display = 'none';
+        }
       }
 
     } catch (err) {
+      console.error('Error registro:', err);
+      let msg = err.message || 'Error al crear la cuenta';
+      if (msg.includes('already registered') || msg.includes('already been registered')) msg = 'Este email ya está registrado. <a href="login.html">Iniciá sesión</a>';
+      if (msg.includes('Password should be')) msg = 'La contraseña debe tener al menos 6 caracteres';
+      if (msg.includes('Unable to validate')) msg = 'Email inválido';
       const alertErr = document.getElementById('alertError');
-      alertErr.textContent = '❌ ' + (err.message || 'Error al crear la cuenta');
+      alertErr.innerHTML = '❌ ' + msg;
       alertErr.classList.add('show');
       btn.disabled = false; btn.textContent = 'Crear cuenta gratis';
     }

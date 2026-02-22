@@ -92,7 +92,9 @@
   // ── SUPABASE CONFIG ──
   const SUPABASE_URL = 'https://goibtxrhabumlrqeykwx.supabase.co';
   const SUPABASE_KEY = 'sb_publishable_4003pT5xt2QBDYnj1G9vgA_IQoC77At';
-  const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
+    auth: { autoRefreshToken: true, persistSession: true, detectSessionInUrl: true }
+  });
 
   // Si ya está logueado, redirigir
   supabase.auth.getSession().then(({ data }) => {
@@ -128,7 +130,7 @@
 
     } catch (err) {
       let msg = err.message || 'Error al iniciar sesión';
-      if (msg.includes('Invalid login')) msg = 'Email o contraseña incorrectos';
+      if (msg.includes('Invalid login') || msg.includes('invalid_credentials')) msg = 'Email o contraseña incorrectos';
       if (msg.includes('Email not confirmed')) msg = 'Confirmá tu email antes de ingresar';
       showError(msg);
       btn.disabled = false; btn.textContent = 'Iniciar sesión';

@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>GiftLatam - Panel</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Syne:wght@700;800&display=swap" rel="stylesheet">
   <style>/* === SHARED CSS - GIFTLATAM === */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -422,9 +423,41 @@ footer {
 </div></div>
 <div class="bottom-nav">
   <div class="nav-item" onclick="window.location='index.html'"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>Inicio</div>
-  <div class="nav-item" onclick="window.location='detalle.html'"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>Explorar</div>
+  <div class="nav-item" onclick="window.location='explorar.html'"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>Explorar</div>
   <div class="nav-item" onclick="window.location='publicar.html'"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>Vender</div>
   <div class="nav-item" onclick="window.location='detalle.html'"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 12V22H4V12"/><path d="M22 7H2v5h20V7z"/><path d="M12 22V7"/></svg>Ofertas</div>
   <div class="nav-item active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Perfil</div>
 </div>
+
+<script>
+  const _sb = window.supabase.createClient(
+    'https://goibtxrhabumlrqeykwx.supabase.co',
+    'sb_publishable_4003pT5xt2QBDYnj1G9vgA_IQoC77At'
+  );
+
+  // Check session
+  _sb.auth.getSession().then(({ data }) => {
+    if (!data.session) {
+      window.location.href = 'login.html';
+      return;
+    }
+    const user = data.session.user;
+    const nombre = user.user_metadata?.usuario || user.user_metadata?.nombre || user.email.split('@')[0];
+    const email = user.email;
+    
+    // Update username displays
+    document.querySelectorAll('.username, [data-username]').forEach(el => {
+      el.textContent = nombre;
+    });
+    document.querySelectorAll('.user-email, [data-email]').forEach(el => {
+      el.textContent = email;
+    });
+  });
+
+  async function logout() {
+    await _sb.auth.signOut();
+    window.location.href = 'index.html';
+  }
+</script>
+
 </body></html>

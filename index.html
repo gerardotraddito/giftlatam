@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>GiftLatam - Compra y Vende Gift Cards</title>
   <!-- Syne solo para títulos grandes | Inter para cuerpo y números (métricas uniformes) -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     /* ===== RESET ===== */
@@ -101,7 +102,7 @@
     /* ===== CATEGORÍAS ===== */
     .cat-bar { display: flex; gap: 8px; padding: 8px 12px; overflow-x: auto; border-bottom: 1px solid var(--gris-borde); scrollbar-width: none; background: var(--gris-oscuro); }
     .cat-bar::-webkit-scrollbar { display: none; }
-    .cat-pill { border: 1px solid var(--gris-borde); color: var(--gris); border-radius: 20px; padding: 6px 12px; font-size: 12px; white-space: nowrap; cursor: pointer; background: transparent; font-family: inherit; flex-shrink: 0; line-height: 1.4; }
+    .cat-pill { border: 1px solid var(--gris-borde); color: var(--gris); border-radius: 20px; padding: 6px 12px; font-size: 12px; white-space: nowrap; cursor: pointer; background: transparent; font-family: inherit; flex-shrink: 0; line-height: 1.4; text-decoration: none; display: inline-flex; align-items: center; }
     .cat-pill.active { border-color: var(--verde); color: var(--verde); background: rgba(0,200,83,0.08); }
 
     /* ===== LAYOUT ===== */
@@ -313,7 +314,7 @@
     <a href="detalle.html">Categorías</a>
     <a href="como-funciona.html">Cómo funciona</a>
   </div>
-  <div class="nav-actions">
+  <div class="nav-actions" id="navActions">
     <button class="btn-login" onclick="window.location='login.html'">Iniciar sesión</button>
     <button class="btn-vender" onclick="window.location='publicar.html'">+ Vender</button>
   </div>
@@ -330,14 +331,13 @@
 </div>
 
 <div class="cat-bar">
-  <div class="cat-pill active">🎮 Gaming</div>
-  <div class="cat-pill">🎬 Streaming</div>
-  <div class="cat-pill">🛒 Retail</div>
-  <div class="cat-pill">🍔 Comida</div>
-  <div class="cat-pill">✈️ Viajes</div>
-  <div class="cat-pill">📱 Telecom</div>
-  <div class="cat-pill">💳 Finanzas</div>
-  <div class="cat-pill">🎵 Música</div>
+  <a class="cat-pill active" href="explorar.html?cat=gaming">🎮 Gaming</a>
+  <a class="cat-pill" href="explorar.html?cat=streaming">🎬 Streaming</a>
+  <a class="cat-pill" href="explorar.html?cat=retail">🛒 Retail</a>
+  <a class="cat-pill" href="explorar.html?cat=comida">🍔 Comida</a>
+  <a class="cat-pill" href="explorar.html?cat=musica">🎵 Música</a>
+  <a class="cat-pill" href="explorar.html?cat=viajes">✈️ Viajes</a>
+  <a class="cat-pill" href="explorar.html">🔥 Todos</a>
 </div>
 
 <div class="container">
@@ -522,6 +522,27 @@
     Perfil
   </div>
 </div>
+
+
+<script>
+  const _sb = window.supabase.createClient(
+    'https://goibtxrhabumlrqeykwx.supabase.co',
+    'sb_publishable_4003pT5xt2QBDYnj1G9vgA_IQoC77At'
+  );
+
+  _sb.auth.getSession().then(({ data }) => {
+    const actions = document.getElementById('navActions');
+    if (data.session) {
+      const user = data.session.user;
+      const nombre = user.user_metadata?.usuario || user.user_metadata?.nombre || user.email.split('@')[0];
+      actions.innerHTML = `
+        <span style="font-size:13px;color:#888">Hola, <strong style="color:#fff">${nombre}</strong></span>
+        <button class="btn-vender" onclick="window.location='publicar.html'">+ Vender</button>
+        <button class="btn-login" onclick="window.location='panel.html'">Mi panel</button>
+      `;
+    }
+  });
+</script>
 
 </body>
 </html>
