@@ -382,11 +382,11 @@ footer {
 <div class="container"><div class="main">
   <div class="panel-header">
     <div class="panel-user">
-      <div class="panel-avatar">😊</div>
+      <div class="panel-avatar" id="userAvatar">😊</div>
       <div>
-        <div class="panel-name">tradito1982</div>
+        <div class="panel-name" id="userName">Cargando...</div>
         <div class="panel-rep">⭐ 4.9 reputación <span class="verified">✓ Verificado</span></div>
-        <div style="font-size:12px;color:var(--gris);margin-top:4px">📅 Miembro desde 2023 <span class="online-dot"></span>En línea</div>
+        <div style="font-size:12px;color:var(--gris);margin-top:4px"><span id="userSince">📅 Cargando...</span> <span class="online-dot"></span>En línea</div>
       </div>
     </div>
   </div>
@@ -429,33 +429,56 @@ footer {
   <div class="nav-item active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Perfil</div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.js"></script>
 <script>
-  const _sb = window.supabase.createClient(
+  const { createClient } = supabase;
+  const sb = createClient(
     'https://goibtxrhabumlrqeykwx.supabase.co',
     'sb_publishable_4003pT5xt2QBDYnj1G9vgA_IQoC77At'
   );
 
-  // Check session
-  _sb.auth.getSession().then(({ data }) => {
+  sb.auth.getSession().then(({ data }) => {
     if (!data.session) {
       window.location.href = 'login.html';
       return;
     }
+
     const user = data.session.user;
-    const nombre = user.user_metadata?.usuario || user.user_metadata?.nombre || user.email.split('@')[0];
+    const meta = user.user_metadata || {};
+    const usuario = meta.usuario || meta.nombre || user.email.split('@')[0];
+    const nombreCompleto = meta.full_name || usuario;
     const email = user.email;
-    
-    // Update username displays
-    document.querySelectorAll('.username, [data-username]').forEach(el => {
-      el.textContent = nombre;
-    });
-    document.querySelectorAll('.user-email, [data-email]').forEach(el => {
-      el.textContent = email;
-    });
+    const createdAt = new Date(user.created_at);
+    const meses = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+    const fechaIngreso = meses[createdAt.getMonth()] + ' ' + createdAt.getFullYear();
+
+    // Avatar: iniciales
+    const iniciales = (meta.nombre ? meta.nombre[0] : usuario[0]).toUpperCase();
+    const avatar = document.getElementById('userAvatar');
+    if (avatar) {
+      avatar.textContent = '';
+      avatar.style.background = 'rgba(0,200,83,0.2)';
+      avatar.style.color = '#00C853';
+      avatar.style.fontFamily = 'Syne, sans-serif';
+      avatar.style.fontWeight = '800';
+      avatar.style.fontSize = '22px';
+      avatar.textContent = iniciales;
+    }
+
+    // Nombre
+    const nameEl = document.getElementById('userName');
+    if (nameEl) nameEl.textContent = usuario;
+
+    // Fecha ingreso
+    const sinceEl = document.getElementById('userSince');
+    if (sinceEl) sinceEl.textContent = '📅 Miembro desde ' + fechaIngreso;
+
+    // Email en cualquier lugar
+    document.querySelectorAll('[data-email]').forEach(el => el.textContent = email);
   });
 
   async function logout() {
-    await _sb.auth.signOut();
+    await sb.auth.signOut();
     window.location.href = 'index.html';
   }
 </script>
