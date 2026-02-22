@@ -5,28 +5,21 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Publicar Gift Card - GiftLatam</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    :root { --negro: #080808; --gris-oscuro: #111; --gris-card: #161616; --gris-borde: #222; --blanco: #F0F0F0; --gris: #888; --verde: #00C853; --naranja: #FF6B35; }
+    :root { --negro: #080808; --gris-oscuro: #111; --gris-card: #161616; --gris-borde: #222; --blanco: #F0F0F0; --gris: #888; --verde: #00C853; --naranja: #FF6B35; --rojo: #FF4444; }
     html, body { max-width: 100%; overflow-x: hidden; }
     body { font-family: 'Inter', sans-serif; background: var(--negro); color: var(--blanco); padding-bottom: 100px; }
-
-    /* NAV */
-    nav { display: flex; align-items: center; justify-content: space-between; padding: 0 16px; height: 52px; border-bottom: 1px solid var(--gris-borde); position: sticky; top: 0; z-index: 1000; background: rgba(8,8,8,0.97); backdrop-filter: blur(20px); }
+    nav { display: flex; align-items: center; justify-content: space-between; padding: 0 14px; height: 52px; border-bottom: 1px solid var(--gris-borde); position: sticky; top: 0; z-index: 1000; background: rgba(8,8,8,0.97); backdrop-filter: blur(20px); gap: 8px; }
     .logo { display: flex; align-items: center; gap: 7px; text-decoration: none; flex-shrink: 0; }
     .logo-icon { width: 32px; height: 32px; background: var(--verde); border-radius: 9px; display: flex; align-items: center; justify-content: center; font-size: 16px; }
-    .logo-text { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 18px; color: #F0F0F0; white-space: nowrap; }
+    .logo-text { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 18px; color: #F0F0F0; }
     .logo-text span { color: var(--verde); }
     .back-link { color: var(--gris); font-size: 13px; text-decoration: none; }
-
-    /* CONTAINER */
     .container { max-width: 600px; margin: 0 auto; padding: 24px 16px; }
-
-    /* PAGE TITLE */
     .page-title { font-family: 'Syne', sans-serif; font-size: 22px; font-weight: 800; margin-bottom: 4px; }
     .page-sub { font-size: 13px; color: var(--gris); margin-bottom: 24px; }
-
-    /* STEPS BAR */
     .steps-bar { display: flex; align-items: center; margin-bottom: 28px; }
     .step { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--gris); transition: color 0.2s; }
     .step.active { color: var(--verde); font-weight: 600; }
@@ -34,12 +27,8 @@
     .step-num { width: 24px; height: 24px; border-radius: 50%; border: 1.5px solid currentColor; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; flex-shrink: 0; }
     .step.done .step-num { background: var(--verde); border-color: var(--verde); color: #000; }
     .step-line { flex: 1; height: 1px; background: var(--gris-borde); margin: 0 6px; }
-
-    /* CARD */
     .card { background: var(--gris-card); border: 1px solid var(--gris-borde); border-radius: 18px; padding: 24px; margin-bottom: 16px; }
     .card-title { font-family: 'Syne', sans-serif; font-size: 16px; font-weight: 700; margin-bottom: 18px; }
-
-    /* TYPE GRID */
     .type-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
     .type-card { background: var(--negro); border: 2px solid var(--gris-borde); border-radius: 14px; padding: 18px 12px; text-align: center; cursor: pointer; transition: all 0.2s; }
     .type-card:hover { border-color: rgba(0,200,83,0.4); }
@@ -47,48 +36,40 @@
     .type-icon { font-size: 30px; margin-bottom: 8px; display: block; }
     .type-name { font-size: 13px; font-weight: 700; margin-bottom: 3px; }
     .type-desc { font-size: 11px; color: var(--gris); line-height: 1.4; }
-
-    /* FORM */
     .form-group { margin-bottom: 16px; }
     label { display: block; font-size: 12px; font-weight: 600; color: var(--gris); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
     input, select, textarea { width: 100%; background: var(--negro); border: 1px solid var(--gris-borde); border-radius: 10px; padding: 11px 14px; color: var(--blanco); font-size: 14px; font-family: inherit; outline: none; transition: border-color 0.2s; }
     input:focus, select:focus, textarea:focus { border-color: var(--verde); }
     textarea { resize: vertical; min-height: 80px; }
     .input-prefix { position: relative; }
-    .input-prefix span { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--gris); font-size: 14px; }
+    .input-prefix span { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--gris); }
     .input-prefix input { padding-left: 26px; }
-
-    /* DELIVERY OPTIONS */
     .delivery-option { display: flex; align-items: flex-start; gap: 12px; background: var(--negro); border: 2px solid var(--gris-borde); border-radius: 12px; padding: 16px; cursor: pointer; margin-bottom: 10px; transition: border-color 0.2s; }
     .delivery-option.selected { border-color: var(--verde); }
     .delivery-option input[type=radio] { margin-top: 2px; accent-color: var(--verde); flex-shrink: 0; }
     .delivery-option-title { font-size: 14px; font-weight: 700; margin-bottom: 3px; }
     .delivery-option-desc { font-size: 12px; color: var(--gris); line-height: 1.4; }
-
-    /* PRICE SUMMARY */
     .price-summary { background: var(--negro); border: 1px solid var(--gris-borde); border-radius: 12px; padding: 16px; margin-bottom: 20px; }
     .price-row { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 8px; }
     .price-row.total { font-size: 15px; font-weight: 700; color: var(--verde); border-top: 1px solid var(--gris-borde); padding-top: 10px; margin-top: 4px; }
-
-    /* BUTTONS */
     .btn-row { display: flex; gap: 10px; margin-top: 8px; }
     .btn-next { flex: 1; background: var(--verde); color: #000; border: none; border-radius: 12px; padding: 13px; font-family: 'Syne', sans-serif; font-weight: 700; font-size: 15px; cursor: pointer; }
+    .btn-next:disabled { opacity: 0.5; cursor: not-allowed; }
     .btn-back { background: transparent; color: var(--gris); border: 1px solid var(--gris-borde); border-radius: 12px; padding: 13px 20px; font-family: inherit; font-size: 14px; cursor: pointer; }
     .btn-back:hover { border-color: var(--blanco); color: var(--blanco); }
-
-    /* SUCCESS */
+    .alert { border-radius: 10px; padding: 12px 16px; font-size: 13px; margin-bottom: 16px; display: none; }
+    .alert.show { display: block; }
+    .alert.danger { background: rgba(255,68,68,0.1); border: 1px solid rgba(255,68,68,0.3); color: var(--rojo); }
     .success-card { text-align: center; padding: 40px 24px; }
     .success-emoji { font-size: 56px; margin-bottom: 16px; display: block; }
     .success-title { font-family: 'Syne', sans-serif; font-size: 24px; font-weight: 800; margin-bottom: 8px; }
     .success-sub { font-size: 14px; color: var(--gris); margin-bottom: 28px; line-height: 1.6; }
-    .btn-success { background: var(--verde); color: #000; border: none; border-radius: 12px; padding: 13px 28px; font-family: 'Syne', sans-serif; font-weight: 700; font-size: 15px; cursor: pointer; text-decoration: none; display: inline-block; }
-
-    /* BOTTOM NAV */
+    .btn-success { background: var(--verde); color: #000; border: none; border-radius: 12px; padding: 13px 28px; font-family: 'Syne', sans-serif; font-weight: 700; font-size: 15px; cursor: pointer; text-decoration: none; display: inline-block; margin: 4px; }
+    .btn-success.secondary { background: transparent; color: var(--verde); border: 1px solid var(--verde); }
     .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(14,14,14,0.97); border-top: 1px solid var(--gris-borde); display: flex; justify-content: space-around; align-items: center; padding: 8px 0 14px; z-index: 9999; backdrop-filter: blur(20px); }
     .nav-item { display: flex; flex-direction: column; align-items: center; gap: 3px; cursor: pointer; color: var(--gris); font-size: 10px; padding: 2px 8px; }
     .nav-item.active { color: var(--verde); }
     .nav-item svg { width: 21px; height: 21px; }
-
     @media (min-width: 1024px) { .bottom-nav { display: none; } }
   </style>
 </head>
@@ -99,15 +80,13 @@
     <div class="logo-icon">💎</div>
     <span class="logo-text">Gift<span>Latam</span></span>
   </a>
-  <a href="panel.html" class="back-link">← Volver al panel</a>
+  <a href="panel.html" class="back-link">← Mi panel</a>
 </nav>
 
 <div class="container">
-
   <div class="page-title">📦 Publicar gift card</div>
   <div class="page-sub">Completá los pasos para publicar tu listing</div>
 
-  <!-- STEPS BAR -->
   <div class="steps-bar">
     <div class="step active" id="sbar1"><div class="step-num">1</div><span>Tipo</span></div>
     <div class="step-line"></div>
@@ -118,30 +97,32 @@
     <div class="step" id="sbar4"><div class="step-num">4</div><span>Precio</span></div>
   </div>
 
-  <!-- STEP 1: TIPO -->
+  <div class="alert danger" id="alertErr"></div>
+
+  <!-- STEP 1 -->
   <div id="step1">
     <div class="card">
       <div class="card-title">🎯 ¿Qué querés vender?</div>
       <div class="type-grid">
-        <div class="type-card selected" onclick="selectType(this)">
+        <div class="type-card selected" data-tipo="gift_card" onclick="selectType(this)">
           <span class="type-icon">🎁</span>
           <div class="type-name">Gift Card</div>
-          <div class="type-desc">Código digital de una tarjeta de regalo</div>
+          <div class="type-desc">Código digital de tarjeta de regalo</div>
         </div>
-        <div class="type-card" onclick="selectType(this)">
+        <div class="type-card" data-tipo="cuenta" onclick="selectType(this)">
           <span class="type-icon">👤</span>
           <div class="type-name">Cuenta</div>
-          <div class="type-desc">Usuario y contraseña de una cuenta de servicio</div>
+          <div class="type-desc">Usuario y contraseña de servicio</div>
         </div>
-        <div class="type-card" onclick="selectType(this)">
+        <div class="type-card" data-tipo="licencia" onclick="selectType(this)">
           <span class="type-icon">🔑</span>
           <div class="type-name">Licencia</div>
-          <div class="type-desc">Clave de activación de software o juego</div>
+          <div class="type-desc">Clave de activación de software</div>
         </div>
-        <div class="type-card" onclick="selectType(this)">
+        <div class="type-card" data-tipo="otro" onclick="selectType(this)">
           <span class="type-icon">📄</span>
           <div class="type-name">Otro</div>
-          <div class="type-desc">Voucher, cupón o cualquier producto digital</div>
+          <div class="type-desc">Voucher, cupón o producto digital</div>
         </div>
       </div>
       <div class="btn-row">
@@ -150,16 +131,16 @@
     </div>
   </div>
 
-  <!-- STEP 2: DETALLES -->
+  <!-- STEP 2 -->
   <div id="step2" style="display:none">
     <div class="card">
       <div class="card-title">📝 Detalles del producto</div>
       <div class="form-group">
-        <label>Marca / Servicio</label>
+        <label>Marca / Servicio *</label>
         <input type="text" id="marca" placeholder="Ej: Netflix, Steam, Spotify...">
       </div>
       <div class="form-group">
-        <label>Título del listing</label>
+        <label>Título del listing *</label>
         <input type="text" id="titulo" placeholder="Ej: Netflix 1 mes Premium Argentina">
       </div>
       <div class="form-group">
@@ -169,51 +150,41 @@
       <div class="form-group">
         <label>Región</label>
         <select id="region">
-          <option>Global</option>
-          <option>Argentina</option>
-          <option>México</option>
-          <option>Brasil</option>
-          <option>Colombia</option>
-          <option>Chile</option>
-          <option>Perú</option>
-          <option>Venezuela</option>
-          <option>Otro</option>
+          <option>Global</option><option>Argentina</option><option>México</option>
+          <option>Brasil</option><option>Colombia</option><option>Chile</option>
+          <option>Perú</option><option>Venezuela</option><option>Otro</option>
         </select>
       </div>
       <div class="btn-row">
         <button class="btn-back" onclick="goStep(1)">← Atrás</button>
-        <button class="btn-next" onclick="goStep(3)">Siguiente →</button>
+        <button class="btn-next" onclick="validateStep2()">Siguiente →</button>
       </div>
     </div>
   </div>
 
-  <!-- STEP 3: ENTREGA -->
+  <!-- STEP 3 -->
   <div id="step3" style="display:none">
     <div class="card">
       <div class="card-title">📦 Método de entrega</div>
-
       <div class="delivery-option selected" id="opt-auto" onclick="selectDelivery('auto')">
         <input type="radio" name="entrega" value="auto" checked>
         <div>
           <div class="delivery-option-title">⚡ Entrega automática</div>
-          <div class="delivery-option-desc">Cargás el código ahora y se entrega solo cuando el comprador pague. Recomendado.</div>
+          <div class="delivery-option-desc">Cargás el código ahora y se entrega solo cuando el comprador pague.</div>
         </div>
       </div>
-
       <div class="delivery-option" id="opt-manual" onclick="selectDelivery('manual')">
         <input type="radio" name="entrega" value="manual">
         <div>
           <div class="delivery-option-title">✋ Entrega manual</div>
-          <div class="delivery-option-desc">Vos enviás el código manualmente. Tenés 30 minutos después de la compra.</div>
+          <div class="delivery-option-desc">Vos enviás el código manualmente en 30 minutos.</div>
         </div>
       </div>
-
       <div class="form-group" id="codigoGroup" style="margin-top:16px">
-        <label>Código de la gift card</label>
+        <label>Código de la gift card *</label>
         <input type="text" id="codigo" placeholder="XXXX-XXXX-XXXX-XXXX" style="font-family:monospace;letter-spacing:2px">
-        <div style="font-size:11px;color:var(--gris);margin-top:5px">🔒 El código se guarda encriptado y solo se revela al comprador tras el pago.</div>
+        <div style="font-size:11px;color:var(--gris);margin-top:5px">🔒 El código solo se revela al comprador tras el pago confirmado.</div>
       </div>
-
       <div class="btn-row">
         <button class="btn-back" onclick="goStep(2)">← Atrás</button>
         <button class="btn-next" onclick="goStep(4)">Siguiente →</button>
@@ -221,33 +192,23 @@
     </div>
   </div>
 
-  <!-- STEP 4: PRECIO -->
+  <!-- STEP 4 -->
   <div id="step4" style="display:none">
     <div class="card">
       <div class="card-title">💰 Fijá tu precio</div>
-
       <div class="form-group">
-        <label>Valor nominal (precio original en USD)</label>
-        <div class="input-prefix">
-          <span>$</span>
-          <input type="number" id="valorNominal" placeholder="20.00" step="0.01" min="0" oninput="calcPrecio()">
-        </div>
+        <label>Valor nominal (precio original USD)</label>
+        <div class="input-prefix"><span>$</span><input type="number" id="valorNominal" placeholder="20.00" step="0.01" min="0" oninput="calcPrecio()"></div>
       </div>
-
       <div class="form-group">
-        <label>Tu precio de venta (USD)</label>
-        <div class="input-prefix">
-          <span>$</span>
-          <input type="number" id="precioVenta" placeholder="18.00" step="0.01" min="0" oninput="calcPrecio()">
-        </div>
+        <label>Tu precio de venta (USD) *</label>
+        <div class="input-prefix"><span>$</span><input type="number" id="precioVenta" placeholder="18.00" step="0.01" min="0.01" oninput="calcPrecio()"></div>
       </div>
-
-      <div class="price-summary" id="resumen">
+      <div class="price-summary">
         <div class="price-row"><span style="color:var(--gris)">Precio de venta</span><span id="r-venta">$0.00</span></div>
         <div class="price-row"><span style="color:var(--gris)">Comisión GiftLatam (3%)</span><span id="r-comision" style="color:var(--gris)">-$0.00</span></div>
         <div class="price-row total"><span>Recibís</span><span id="r-total">$0.00 USDT</span></div>
       </div>
-
       <div class="btn-row">
         <button class="btn-back" onclick="goStep(3)">← Atrás</button>
         <button class="btn-next" id="btnPublicar" onclick="publicar()">🚀 Publicar ahora</button>
@@ -261,78 +222,129 @@
       <span class="success-emoji">🎉</span>
       <div class="success-title">¡Publicado con éxito!</div>
       <div class="success-sub">Tu gift card ya está visible en el catálogo.<br>Te avisamos cuando alguien la compre.</div>
-      <a href="index.html" class="btn-success">Ver catálogo →</a>
+      <a href="explorar.html" class="btn-success">Ver catálogo →</a>
+      <a href="publicar.html" class="btn-success secondary">Publicar otra</a>
     </div>
   </div>
+</div>
 
-</div><!-- /container -->
-
-<!-- BOTTOM NAV -->
 <div class="bottom-nav">
-  <div class="nav-item" onclick="window.location='index.html'">
-    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>Inicio</div>
-  <div class="nav-item" onclick="window.location='detalle.html'">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>Explorar</div>
-  <div class="nav-item active">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>Vender</div>
-  <div class="nav-item" onclick="window.location='detalle.html'">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 12V22H4V12"/><path d="M22 7H2v5h20V7z"/><path d="M12 22V7"/></svg>Ofertas</div>
-  <div class="nav-item" onclick="window.location='panel.html'">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Perfil</div>
+  <div class="nav-item" onclick="window.location='index.html'"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>Inicio</div>
+  <div class="nav-item" onclick="window.location='explorar.html'"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>Explorar</div>
+  <div class="nav-item active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>Vender</div>
+  <div class="nav-item" onclick="window.location='explorar.html'"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 12V22H4V12"/><path d="M22 7H2v5h20V7z"/><path d="M12 22V7"/></svg>Ofertas</div>
+  <div class="nav-item" onclick="window.location='panel.html'"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Perfil</div>
 </div>
 
 <script>
-  let currentStep = 1;
+const { createClient } = supabase;
+const sb = createClient(
+  'https://goibtxrhabumlrqeykwx.supabase.co',
+  'sb_publishable_4003pT5xt2QBDYnj1G9vgA_IQoC77At'
+);
 
-  function goStep(n) {
-    // Hide current step
-    document.getElementById('step' + currentStep).style.display = 'none';
-    // Update steps bar
-    for (let i = 1; i <= 4; i++) {
-      const bar = document.getElementById('sbar' + i);
-      bar.classList.remove('active', 'done');
-      if (i < n) bar.classList.add('done');
-      if (i === n) bar.classList.add('active');
-    }
-    // Show new step
-    currentStep = n;
-    document.getElementById('step' + n).style.display = 'block';
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+let currentStep = 1;
+let tipoSeleccionado = 'gift_card';
+let currentUser = null;
+
+// Verificar sesión
+sb.auth.getSession().then(({ data }) => {
+  if (!data.session) { window.location.href = 'login.html'; return; }
+  currentUser = data.session.user;
+});
+
+function goStep(n) {
+  document.getElementById('step' + currentStep).style.display = 'none';
+  for (let i = 1; i <= 4; i++) {
+    const bar = document.getElementById('sbar' + i);
+    bar.classList.remove('active','done');
+    if (i < n) bar.classList.add('done');
+    if (i === n) bar.classList.add('active');
+  }
+  currentStep = n;
+  document.getElementById('step' + n).style.display = 'block';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function selectType(el) {
+  document.querySelectorAll('.type-card').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  tipoSeleccionado = el.dataset.tipo;
+}
+
+function validateStep2() {
+  const marca = document.getElementById('marca').value.trim();
+  const titulo = document.getElementById('titulo').value.trim();
+  if (!marca) { showErr('Ingresá la marca del producto'); return; }
+  if (!titulo) { showErr('Ingresá el título del listing'); return; }
+  hideErr();
+  goStep(3);
+}
+
+function selectDelivery(type) {
+  document.getElementById('opt-auto').classList.remove('selected');
+  document.getElementById('opt-manual').classList.remove('selected');
+  document.getElementById('opt-' + type).classList.add('selected');
+  document.querySelector('input[value="' + type + '"]').checked = true;
+  document.getElementById('codigoGroup').style.display = type === 'auto' ? 'block' : 'none';
+}
+
+function calcPrecio() {
+  const venta = parseFloat(document.getElementById('precioVenta').value) || 0;
+  const comision = venta * 0.03;
+  document.getElementById('r-venta').textContent = '$' + venta.toFixed(2);
+  document.getElementById('r-comision').textContent = '-$' + comision.toFixed(2);
+  document.getElementById('r-total').textContent = '$' + (venta - comision).toFixed(2) + ' USDT';
+}
+
+async function publicar() {
+  const precio = parseFloat(document.getElementById('precioVenta').value);
+  if (!precio || precio <= 0) { showErr('Ingresá un precio de venta válido'); return; }
+
+  const entrega = document.querySelector('input[name=entrega]:checked').value;
+  const codigo = document.getElementById('codigo').value.trim();
+  if (entrega === 'auto' && !codigo) { showErr('Ingresá el código de la gift card'); return; }
+
+  const btn = document.getElementById('btnPublicar');
+  btn.disabled = true; btn.textContent = 'Publicando...';
+  hideErr();
+
+  const payload = {
+    seller_id: currentUser.id,
+    tipo: tipoSeleccionado,
+    marca: document.getElementById('marca').value.trim(),
+    titulo: document.getElementById('titulo').value.trim(),
+    descripcion: document.getElementById('descripcion').value.trim() || null,
+    region: document.getElementById('region').value,
+    entrega: entrega,
+    codigo: codigo || null,
+    valor_nominal: parseFloat(document.getElementById('valorNominal').value) || null,
+    precio_venta: precio,
+    estado: 'activo'
+  };
+
+  const { data, error } = await sb.from('gift_cards').insert(payload).select().single();
+
+  if (error) {
+    showErr('Error al publicar: ' + error.message);
+    btn.disabled = false; btn.textContent = '🚀 Publicar ahora';
+    return;
   }
 
-  function selectType(el) {
-    document.querySelectorAll('.type-card').forEach(c => c.classList.remove('selected'));
-    el.classList.add('selected');
-  }
+  // Éxito
+  document.getElementById('step4').style.display = 'none';
+  document.getElementById('stepSuccess').style.display = 'block';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
 
-  function selectDelivery(type) {
-    document.getElementById('opt-auto').classList.remove('selected');
-    document.getElementById('opt-manual').classList.remove('selected');
-    document.getElementById('opt-' + type).classList.add('selected');
-    document.querySelector('input[value="' + type + '"]').checked = true;
-    document.getElementById('codigoGroup').style.display = type === 'auto' ? 'block' : 'none';
-  }
-
-  function calcPrecio() {
-    const venta = parseFloat(document.getElementById('precioVenta').value) || 0;
-    const comision = venta * 0.03;
-    const total = venta - comision;
-    document.getElementById('r-venta').textContent = '$' + venta.toFixed(2);
-    document.getElementById('r-comision').textContent = '-$' + comision.toFixed(2);
-    document.getElementById('r-total').textContent = '$' + total.toFixed(2) + ' USDT';
-  }
-
-  function publicar() {
-    const btn = document.getElementById('btnPublicar');
-    btn.disabled = true;
-    btn.textContent = 'Publicando...';
-    setTimeout(() => {
-      document.getElementById('step4').style.display = 'none';
-      document.getElementById('stepSuccess').style.display = 'block';
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }, 1500);
-  }
+function showErr(msg) {
+  const el = document.getElementById('alertErr');
+  el.textContent = '❌ ' + msg;
+  el.classList.add('show');
+}
+function hideErr() {
+  document.getElementById('alertErr').classList.remove('show');
+}
 </script>
-
 </body>
 </html>
