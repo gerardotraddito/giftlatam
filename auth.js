@@ -1,11 +1,14 @@
 // ============================================
-// GIFTLATAM — Auth global v2
-// Fixes: onAuthStateChange, nav dinámico real,
-//        protección de rutas, sesión persistente
+// GIFTLATAM — Auth global v3
+// Fix: logout loop, signOut correcto, 
+//      flag para evitar doble redirección
 // ============================================
 
 const PROTECTED_PAGES = ['publicar.html', 'panel.html', 'pago.html', 'disputas.html'];
 const currentPage = window.location.pathname.split('/').pop() || 'index.html';
+
+// Flag para evitar que onAuthStateChange dispare redirect durante logout
+let isLoggingOut = false;
 
 // ── Actualizar nav según sesión ──
 function updateNav(session) {
@@ -29,11 +32,12 @@ function updateNav(session) {
 
 // ── Proteger rutas ──
 function checkProtection(session) {
+  // Página protegida sin sesión → login
   if (PROTECTED_PAGES.includes(currentPage) && !session) {
     window.location.href = 'login.html?from=' + currentPage;
     return false;
   }
-  // Si ya está logueado y va a login/registro, redirigir a panel
+  // Ya logueado en login/registro → panel
   if (session && (currentPage === 'login.html' || currentPage === 'registro.html')) {
     window.location.href = 'panel.html';
     return false;
@@ -41,29 +45,27 @@ function checkProtection(session) {
   return true;
 }
 
-// ── Init: sesión actual + escuchar cambios ──
+// ── Init ──
 document.addEventListener('DOMContentLoaded', async () => {
-  // 1. Sesión actual
   const { data: { session } } = await sb.auth.getSession();
 
-  // 2. Proteger si corresponde
   if (!checkProtection(session)) return;
 
-  // 3. Actualizar nav inmediatamente
   updateNav(session);
 
-  // 4. Escuchar cambios en tiempo real (login, logout, refresh)
+  // Escuchar cambios — pero ignorar si estamos haciendo logout
   sb.auth.onAuthStateChange((_event, newSession) => {
+    if (isLoggingOut) return;
     updateNav(newSession);
-    // Si expira sesión en página protegida, redirigir
     if (!newSession && PROTECTED_PAGES.includes(currentPage)) {
-      window.location.href = 'login.html?from=' + currentPage;
+      window.location.href = 'login.html';
     }
   });
 });
 
 // ── Logout global ──
 async function logout() {
-  await sb.auth.signOut();
-  window.location.href = 'index.html';
+  isLoggingOut = true;           // Bloquear onAuthStateChange
+  await sb.auth.signOut();       // Destruir sesión en Supabase
+  window.location.href = 'index.html'; // Redirigir SIN pasar por login
 }
