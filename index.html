@@ -77,7 +77,7 @@
     }
     .logo-text { font-weight: 800; font-size: 18px; color: #F0F0F0; white-space: nowrap; }
     .logo-text span { color: var(--verde); }
-    .nav-center { flex: 1; max-width: 400px; display: none; }
+    .nav-center { flex: 1; max-width: 400px; display: none; } /* hidden mobile - use search-bar-mobile */
     .nav-search {
       display: flex; align-items: center; gap: 8px;
       background: var(--gris-card);
@@ -284,6 +284,15 @@
       .bottom-nav { display: none; }
       footer { padding-bottom: 40px; }
     }
+
+    /* SEARCH BAR MOBILE */
+    .search-bar-mobile { background: var(--gris-oscuro); padding: 10px 14px; border-bottom: 1px solid var(--gris-borde); }
+    .search-inner { display: flex; align-items: center; gap: 10px; background: #1a1a1a; border: 1px solid var(--gris-borde); border-radius: 12px; padding: 10px 14px; transition: border-color 0.2s; }
+    .search-inner:focus-within { border-color: var(--verde); }
+    .search-inner svg { color: var(--gris); flex-shrink: 0; }
+    .search-inner input { background: none; border: none; outline: none; color: var(--blanco); font-size: 14px; width: 100%; font-family: inherit; }
+    .search-inner input::placeholder { color: var(--gris); }
+    @media (min-width: 600px) { .nav-center { display: block !important; } .search-bar-mobile { display: none; } }
   </style>
 </head>
 <body>
@@ -309,6 +318,16 @@
     <button class="btn-vender" onclick="window.location='publicar.html'">+ Vender</button>
   </div>
 </nav>
+
+
+<!-- BARRA DE BÚSQUEDA MOBILE -->
+<div class="search-bar-mobile">
+  <div class="search-inner">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+    <input type="text" placeholder="Buscar Netflix, Steam, Spotify..." id="searchInput" oninput="filterSearch(this.value)">
+    <button onclick="clearSearch()" id="clearBtn" style="display:none;background:none;border:none;color:var(--gris);font-size:16px;cursor:pointer;padding:0">✕</button>
+  </div>
+</div>
 
 <div class="cat-bar">
   <div class="cat-pill active">🎮 Gaming</div>
