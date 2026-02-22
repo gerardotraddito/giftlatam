@@ -95,7 +95,7 @@
   // sb client loaded from js/supabase.js
 
   // Si ya está logueado, redirigir
-  supabase.auth.getSession().then(({ data }) => {
+  sb.auth.getSession().then(({ data }) => {
     if (data.session) window.location.href = 'panel.html';
   });
 
@@ -120,7 +120,7 @@
     btn.disabled = true; btn.textContent = 'Ingresando...';
 
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+      const { data, error } = await sb.auth.signInWithPassword({ email, password });
       if (error) throw error;
 
       document.getElementById('alertSuccess').classList.add('show');
@@ -136,7 +136,7 @@
   });
 
   async function loginGoogle() {
-    const { error } = await supabase.auth.signInWithOAuth({
+    const { error } = await sb.auth.signInWithOAuth({
       provider: 'google',
       options: { redirectTo: window.location.origin + '/panel.html' }
     });
@@ -147,8 +147,8 @@
     e.preventDefault();
     const email = document.getElementById('email').value.trim();
     if (!email) { showError('Ingresá tu email primero'); return; }
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: window.location.origin + '/reset-password.html'
+    const { error } = await sb.auth.resetPasswordForEmail(email, {
+      redirectTo: 'https://giftlatam12.vercel.app/reset-password.html'
     });
     if (error) showError(error.message);
     else {

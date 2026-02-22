@@ -432,10 +432,11 @@ footer {
   <div class="nav-item active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Perfil</div>
 </div><script>
 
-sb.auth.getSession().then(async ({ data }) => {
-  if (!data.session) { window.location.href = 'login.html'; return; }
+// Panel profile + stats — usa sesión cargada por auth.js
+async function loadPanelData(session) {
+  if (!session) return;
 
-  const user = data.session.user;
+  const user = session.user;
   const meta = user.user_metadata || {};
   const usuario = meta.usuario || meta.nombre || user.email.split('@')[0];
   const meses = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
@@ -453,47 +454,35 @@ sb.auth.getSession().then(async ({ data }) => {
   const sinceEl = document.getElementById('userSince');
   if (sinceEl) sinceEl.textContent = '📅 Miembro desde ' + fechaIngreso;
 
-  // ── STATS REALES ──
   const uid = user.id;
 
-  // Mis listings activos
-  const { count: listings } = await sb
-    .from('gift_cards')
-    .select('*', { count: 'exact', head: true })
-    .eq('seller_id', uid)
-    .eq('estado', 'activo');
-
-  // Mis ventas completadas
-  const { count: ventas } = await sb
-    .from('gift_cards')
-    .select('*', { count: 'exact', head: true })
-    .eq('seller_id', uid)
-    .eq('estado', 'vendido');
-
-  // Mis compras
-  const { count: compras } = await sb
-    .from('transactions')
-    .select('*', { count: 'exact', head: true })
-    .eq('buyer_id', uid);
-
-  // Volumen total
-  const { data: volData } = await sb
-    .from('transactions')
-    .select('monto')
-    .eq('seller_id', uid)
-    .eq('estado', 'completado');
+  // Listings activos
+  const { count: listings } = await sb.from('gift_cards').select('*', { count: 'exact', head: true }).eq('seller_id', uid).eq('estado', 'activo');
+  // Ventas completadas
+  const { count: ventas } = await sb.from('gift_cards').select('*', { count: 'exact', head: true }).eq('seller_id', uid).eq('estado', 'vendido');
+  // Compras
+  const { count: compras } = await sb.from('transactions').select('*', { count: 'exact', head: true }).eq('buyer_id', uid);
+  // Volumen
+  const { data: volData } = await sb.from('transactions').select('monto').eq('seller_id', uid).eq('estado', 'completado');
   const volumen = (volData || []).reduce((sum, t) => sum + parseFloat(t.monto || 0), 0);
 
-  // Actualizar UI
   const el = (id) => document.getElementById(id);
   if (el('statCompras')) el('statCompras').textContent = compras || 0;
   if (el('statVentas')) el('statVentas').textContent = ventas || 0;
   if (el('statListings')) el('statListings').textContent = (listings || 0) + ' activos ahora';
   if (el('statComprasSub')) el('statComprasSub').textContent = 'historial total';
-
-  // Mostrar volumen si existe el elemento
   const volEl = document.querySelector('[data-volumen]');
   if (volEl) volEl.textContent = '$' + volumen.toFixed(2) + ' USDT';
+}
+
+// Esperar a que auth.js cargue la sesión
+document.addEventListener('DOMContentLoaded', async () => {
+  const { data: { session } } = await sb.auth.getSession();
+  loadPanelData(session);
+  // Refrescar datos si la sesión cambia
+  sb.auth.onAuthStateChange((_event, newSession) => {
+    if (newSession) loadPanelData(newSession);
+  });
 });
 
 async function logout() {
