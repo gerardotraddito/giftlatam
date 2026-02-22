@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Crear cuenta - GiftLatam</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root { --negro: #080808; --gris-card: #161616; --gris-borde: #222; --blanco: #F0F0F0; --gris: #888; --verde: #00C853; --rojo: #FF4444; }
@@ -14,37 +15,36 @@
     .logo-icon { width: 32px; height: 32px; background: var(--verde); border-radius: 9px; display: flex; align-items: center; justify-content: center; font-size: 16px; }
     .logo-text { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 18px; color: #F0F0F0; }
     .logo-text span { color: var(--verde); }
+    .nav-link { color: var(--gris); font-size: 13px; text-decoration: none; }
     .page { flex: 1; display: flex; align-items: center; justify-content: center; padding: 24px 16px; }
     .card { background: var(--gris-card); border: 1px solid var(--gris-borde); border-radius: 20px; padding: 32px 28px; width: 100%; max-width: 420px; }
     .card-title { font-family: 'Syne', sans-serif; font-size: 24px; font-weight: 800; margin-bottom: 6px; }
     .card-sub { font-size: 13px; color: var(--gris); margin-bottom: 28px; }
     .card-sub a { color: var(--verde); text-decoration: none; }
-    .form-group { margin-bottom: 16px; }
     .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .form-group { margin-bottom: 16px; }
     label { display: block; font-size: 12px; font-weight: 600; color: var(--gris); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
     input { width: 100%; background: #111; border: 1px solid var(--gris-borde); border-radius: 10px; padding: 11px 14px; color: var(--blanco); font-size: 14px; font-family: inherit; outline: none; transition: border-color 0.2s; }
     input:focus { border-color: var(--verde); }
     input.error { border-color: var(--rojo); }
     .input-wrap { position: relative; }
-    .input-wrap input { padding-right: 40px; }
-    .toggle-pw { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--gris); cursor: pointer; font-size: 16px; }
-    .error-msg { font-size: 11px; color: var(--rojo); margin-top: 4px; display: none; }
-    .error-msg.show { display: block; }
+    .input-wrap input { padding-right: 42px; }
+    .toggle-pw { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--gris); cursor: pointer; font-size: 16px; padding: 0; }
+    .err-msg { font-size: 11px; color: var(--rojo); margin-top: 4px; display: none; }
+    .err-msg.show { display: block; }
+    .strength-bar { height: 4px; border-radius: 2px; background: var(--gris-borde); margin-top: 6px; }
+    .strength-fill { height: 100%; border-radius: 2px; transition: all 0.3s; width: 0; }
+    .strength-text { font-size: 11px; margin-top: 3px; }
     .terms { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 20px; }
-    .terms input[type=checkbox] { width: 16px; height: 16px; min-width: 16px; margin-top: 2px; accent-color: var(--verde); cursor: pointer; }
-    .terms label { font-size: 12px; color: var(--gris); text-transform: none; letter-spacing: 0; cursor: pointer; line-height: 1.5; }
+    .terms input[type=checkbox] { width: 16px; height: 16px; min-width: 16px; margin-top: 2px; accent-color: var(--verde); }
+    .terms label { font-size: 12px; color: var(--gris); text-transform: none; letter-spacing: 0; line-height: 1.5; }
     .terms label a { color: var(--verde); text-decoration: none; }
     .btn-submit { width: 100%; background: var(--verde); color: #000; border: none; border-radius: 12px; padding: 13px; font-family: 'Syne', sans-serif; font-weight: 700; font-size: 15px; cursor: pointer; transition: opacity 0.2s; }
-    .btn-submit:hover { opacity: 0.9; }
     .btn-submit:disabled { opacity: 0.5; cursor: not-allowed; }
-    .divider { display: flex; align-items: center; gap: 12px; margin: 20px 0; }
-    .divider span { font-size: 12px; color: var(--gris); white-space: nowrap; }
-    .divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: var(--gris-borde); }
-    .strength-bar { height: 4px; border-radius: 2px; background: var(--gris-borde); margin-top: 6px; overflow: hidden; }
-    .strength-fill { height: 100%; border-radius: 2px; transition: all 0.3s; width: 0%; }
-    .strength-text { font-size: 11px; margin-top: 3px; }
-    .alert { background: rgba(0,200,83,0.1); border: 1px solid rgba(0,200,83,0.3); border-radius: 10px; padding: 12px 16px; font-size: 13px; color: var(--verde); margin-bottom: 20px; display: none; }
+    .alert { border-radius: 10px; padding: 12px 16px; font-size: 13px; margin-bottom: 16px; display: none; }
     .alert.show { display: block; }
+    .alert.success { background: rgba(0,200,83,0.1); border: 1px solid rgba(0,200,83,0.3); color: var(--verde); }
+    .alert.danger { background: rgba(255,68,68,0.1); border: 1px solid rgba(255,68,68,0.3); color: var(--rojo); }
   </style>
 </head>
 <body>
@@ -53,7 +53,7 @@
     <div class="logo-icon">💎</div>
     <span class="logo-text">Gift<span>Latam</span></span>
   </a>
-  <a href="login.html" style="color:var(--gris);font-size:13px;text-decoration:none">¿Ya tenés cuenta? Iniciá sesión →</a>
+  <a href="login.html" class="nav-link">¿Ya tenés cuenta? Iniciá sesión →</a>
 </nav>
 
 <div class="page">
@@ -61,57 +61,58 @@
     <div class="card-title">Crear cuenta</div>
     <div class="card-sub">¿Ya tenés cuenta? <a href="login.html">Iniciá sesión</a></div>
 
-    <div class="alert" id="successAlert">¡Cuenta creada! Redirigiendo...</div>
+    <div class="alert success" id="alertSuccess">✅ ¡Cuenta creada! Revisá tu email para confirmar.</div>
+    <div class="alert danger" id="alertError"></div>
 
     <form id="registerForm" novalidate>
       <div class="form-row">
         <div class="form-group">
           <label>Nombre</label>
           <input type="text" id="nombre" placeholder="Juan" autocomplete="given-name">
-          <div class="error-msg" id="nombreErr">Ingresá tu nombre</div>
+          <div class="err-msg" id="nombreErr">Requerido</div>
         </div>
         <div class="form-group">
           <label>Apellido</label>
           <input type="text" id="apellido" placeholder="García" autocomplete="family-name">
-          <div class="error-msg" id="apellidoErr">Ingresá tu apellido</div>
+          <div class="err-msg" id="apellidoErr">Requerido</div>
         </div>
       </div>
 
       <div class="form-group">
         <label>Usuario</label>
         <input type="text" id="usuario" placeholder="juangarcia99" autocomplete="username">
-        <div class="error-msg" id="usuarioErr">Mínimo 3 caracteres, sin espacios</div>
+        <div class="err-msg" id="usuarioErr">Mínimo 3 caracteres, sin espacios</div>
       </div>
 
       <div class="form-group">
         <label>Email</label>
         <input type="email" id="email" placeholder="juan@email.com" autocomplete="email">
-        <div class="error-msg" id="emailErr">Email inválido</div>
+        <div class="err-msg" id="emailErr">Email inválido</div>
       </div>
 
       <div class="form-group">
         <label>Contraseña</label>
         <div class="input-wrap">
           <input type="password" id="password" placeholder="Mínimo 8 caracteres" autocomplete="new-password">
-          <button type="button" class="toggle-pw" onclick="togglePw('password', this)">👁</button>
+          <button type="button" class="toggle-pw" onclick="togglePw('password',this)">👁</button>
         </div>
         <div class="strength-bar"><div class="strength-fill" id="strengthFill"></div></div>
         <div class="strength-text" id="strengthText"></div>
-        <div class="error-msg" id="passwordErr">Mínimo 8 caracteres</div>
+        <div class="err-msg" id="passwordErr">Mínimo 8 caracteres</div>
       </div>
 
       <div class="form-group">
         <label>Confirmar contraseña</label>
         <div class="input-wrap">
           <input type="password" id="password2" placeholder="Repetí tu contraseña" autocomplete="new-password">
-          <button type="button" class="toggle-pw" onclick="togglePw('password2', this)">👁</button>
+          <button type="button" class="toggle-pw" onclick="togglePw('password2',this)">👁</button>
         </div>
-        <div class="error-msg" id="password2Err">Las contraseñas no coinciden</div>
+        <div class="err-msg" id="password2Err">Las contraseñas no coinciden</div>
       </div>
 
       <div class="terms">
         <input type="checkbox" id="terminos">
-        <label for="terminos">Acepto los <a href="terminos.html" target="_blank">Términos y condiciones</a> y la <a href="privacidad.html" target="_blank">Política de privacidad</a> de GiftLatam</label>
+        <label for="terminos">Acepto los <a href="terminos.html" target="_blank">Términos y condiciones</a> y la <a href="privacidad.html" target="_blank">Política de privacidad</a></label>
       </div>
 
       <button type="submit" class="btn-submit" id="submitBtn">Crear cuenta gratis</button>
@@ -120,17 +121,19 @@
 </div>
 
 <script>
+  // ── SUPABASE CONFIG ──
+  const SUPABASE_URL = 'https://goibtxrhabumlrqeykwx.supabase.co';
+  const SUPABASE_KEY = 'sb_publishable_4003pT5xt2QBDYnj1G9vgA_IQoC77At';
+  const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
   function togglePw(id, btn) {
     const input = document.getElementById(id);
-    if (input.type === 'password') { input.type = 'text'; btn.textContent = '🙈'; }
-    else { input.type = 'password'; btn.textContent = '👁'; }
+    input.type = input.type === 'password' ? 'text' : 'password';
+    btn.textContent = input.type === 'password' ? '👁' : '🙈';
   }
 
-  // Password strength
   document.getElementById('password').addEventListener('input', function() {
     const pw = this.value;
-    const fill = document.getElementById('strengthFill');
-    const text = document.getElementById('strengthText');
     let score = 0;
     if (pw.length >= 8) score++;
     if (/[A-Z]/.test(pw)) score++;
@@ -138,39 +141,44 @@
     if (/[^A-Za-z0-9]/.test(pw)) score++;
     const levels = [
       { pct: '0%', color: '', label: '' },
-      { pct: '23%', color: '#FF4444', label: 'Muy débil' },
+      { pct: '25%', color: '#FF4444', label: 'Muy débil' },
       { pct: '50%', color: '#FF9800', label: 'Débil' },
-      { pct: '73%', color: '#FFC107', label: 'Buena' },
+      { pct: '75%', color: '#FFC107', label: 'Buena' },
       { pct: '100%', color: '#00C853', label: '🔒 Muy segura' },
     ];
     const l = levels[score];
-    fill.style.width = l.pct;
-    fill.style.background = l.color;
-    text.textContent = l.label;
-    text.style.color = l.color;
+    const fill = document.getElementById('strengthFill');
+    fill.style.width = l.pct; fill.style.background = l.color;
+    const txt = document.getElementById('strengthText');
+    txt.textContent = l.label; txt.style.color = l.color;
   });
 
-  // Form validation
-  document.getElementById('registerForm').addEventListener('submit', function(e) {
+  document.querySelectorAll('input').forEach(input => {
+    input.addEventListener('input', function() {
+      this.classList.remove('error');
+      const err = document.getElementById(this.id + 'Err');
+      if (err) err.classList.remove('show');
+    });
+  });
+
+  document.getElementById('registerForm').addEventListener('submit', async function(e) {
     e.preventDefault();
     let valid = true;
 
     const fields = [
-      { id: 'nombre', errId: 'nombreErr', check: v => v.trim().length >= 1 },
-      { id: 'apellido', errId: 'apellidoErr', check: v => v.trim().length >= 1 },
-      { id: 'usuario', errId: 'usuarioErr', check: v => /^[a-zA-Z0-9_]{3,}$/.test(v) },
-      { id: 'email', errId: 'emailErr', check: v => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v) },
-      { id: 'password', errId: 'passwordErr', check: v => v.length >= 8 },
-      { id: 'password2', errId: 'password2Err', check: v => v === document.getElementById('password').value },
+      { id: 'nombre', check: v => v.trim().length >= 1 },
+      { id: 'apellido', check: v => v.trim().length >= 1 },
+      { id: 'usuario', check: v => /^[a-zA-Z0-9_]{3,}$/.test(v) },
+      { id: 'email', check: v => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v) },
+      { id: 'password', check: v => v.length >= 8 },
+      { id: 'password2', check: v => v === document.getElementById('password').value },
     ];
 
     fields.forEach(f => {
       const input = document.getElementById(f.id);
-      const err = document.getElementById(f.errId);
+      const err = document.getElementById(f.id + 'Err');
       if (!f.check(input.value)) {
-        input.classList.add('error'); err.classList.add('show'); valid = false;
-      } else {
-        input.classList.remove('error'); err.classList.remove('show');
+        input.classList.add('error'); if (err) err.classList.add('show'); valid = false;
       }
     });
 
@@ -178,22 +186,47 @@
       alert('Debés aceptar los términos y condiciones'); valid = false;
     }
 
-    if (valid) {
-      const btn = document.getElementById('submitBtn');
-      btn.disabled = true; btn.textContent = 'Creando cuenta...';
-      document.getElementById('successAlert').classList.add('show');
-      setTimeout(() => window.location.href = 'panel.html', 2000);
-    }
-  });
+    if (!valid) return;
 
-  // Clear error on input
-  document.querySelectorAll('input').forEach(input => {
-    input.addEventListener('input', function() {
-      this.classList.remove('error');
-      const errId = this.id + 'Err';
-      const err = document.getElementById(errId);
-      if (err) err.classList.remove('show');
-    });
+    const btn = document.getElementById('submitBtn');
+    btn.disabled = true; btn.textContent = 'Creando cuenta...';
+
+    const email = document.getElementById('email').value.trim();
+    const password = document.getElementById('password').value;
+    const nombre = document.getElementById('nombre').value.trim();
+    const apellido = document.getElementById('apellido').value.trim();
+    const usuario = document.getElementById('usuario').value.trim();
+
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            nombre,
+            apellido,
+            usuario,
+            full_name: nombre + ' ' + apellido,
+          }
+        }
+      });
+
+      if (error) throw error;
+
+      document.getElementById('alertSuccess').classList.add('show');
+      document.getElementById('registerForm').style.display = 'none';
+
+      // Si no requiere confirmación de email, redirigir directo
+      if (data.user && data.session) {
+        setTimeout(() => window.location.href = 'panel.html', 2000);
+      }
+
+    } catch (err) {
+      const alertErr = document.getElementById('alertError');
+      alertErr.textContent = '❌ ' + (err.message || 'Error al crear la cuenta');
+      alertErr.classList.add('show');
+      btn.disabled = false; btn.textContent = 'Crear cuenta gratis';
+    }
   });
 </script>
 </body>
