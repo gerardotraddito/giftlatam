@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Crear cuenta - GiftLatam</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Syne:wght@700;800&display=swap" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root { --negro: #080808; --gris-card: #161616; --gris-borde: #222; --blanco: #F0F0F0; --gris: #888; --verde: #00C853; --rojo: #FF4444; }
@@ -23,25 +23,25 @@
     .card-sub a { color: var(--verde); text-decoration: none; }
     .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
     .form-group { margin-bottom: 16px; }
-    label { display: block; font-size: 12px; font-weight: 600; color: var(--gris); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .form-label { display: block; font-size: 12px; font-weight: 600; color: var(--gris); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
     input { width: 100%; background: #111; border: 1px solid var(--gris-borde); border-radius: 10px; padding: 11px 14px; color: var(--blanco); font-size: 14px; font-family: inherit; outline: none; transition: border-color 0.2s; }
     input:focus { border-color: var(--verde); }
     input.error { border-color: var(--rojo); }
     .input-wrap { position: relative; }
-    .input-wrap input { padding-right: 42px; }
-    .toggle-pw { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--gris); cursor: pointer; font-size: 16px; padding: 0; }
+    .input-wrap input { padding-right: 44px; }
+    .eye-btn { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--gris); cursor: pointer; font-size: 18px; padding: 4px; line-height: 1; }
     .err-msg { font-size: 11px; color: var(--rojo); margin-top: 4px; display: none; }
     .err-msg.show { display: block; }
     .strength-bar { height: 4px; border-radius: 2px; background: var(--gris-borde); margin-top: 6px; }
     .strength-fill { height: 100%; border-radius: 2px; transition: all 0.3s; width: 0; }
-    .strength-text { font-size: 11px; margin-top: 3px; }
+    .strength-text { font-size: 11px; margin-top: 3px; height: 14px; }
     .terms { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 20px; }
     .terms input[type=checkbox] { width: 16px; height: 16px; min-width: 16px; margin-top: 2px; accent-color: var(--verde); }
-    .terms label { font-size: 12px; color: var(--gris); text-transform: none; letter-spacing: 0; line-height: 1.5; }
-    .terms label a { color: var(--verde); text-decoration: none; }
-    .btn-submit { width: 100%; background: var(--verde); color: #000; border: none; border-radius: 12px; padding: 13px; font-family: 'Syne', sans-serif; font-weight: 700; font-size: 15px; cursor: pointer; transition: opacity 0.2s; }
+    .terms .form-label { font-size: 12px; color: var(--gris); text-transform: none; letter-spacing: 0; line-height: 1.5; }
+    .terms .form-label a { color: var(--verde); text-decoration: none; }
+    .btn-submit { width: 100%; background: var(--verde); color: #000; border: none; border-radius: 12px; padding: 13px; font-family: 'Syne', sans-serif; font-weight: 700; font-size: 15px; cursor: pointer; }
     .btn-submit:disabled { opacity: 0.5; cursor: not-allowed; }
-    .alert { border-radius: 10px; padding: 12px 16px; font-size: 13px; margin-bottom: 16px; display: none; }
+    .alert { border-radius: 10px; padding: 12px 16px; font-size: 13px; margin-bottom: 16px; display: none; line-height: 1.5; }
     .alert.show { display: block; }
     .alert.success { background: rgba(0,200,83,0.1); border: 1px solid rgba(0,200,83,0.3); color: var(--verde); }
     .alert.danger { background: rgba(255,68,68,0.1); border: 1px solid rgba(255,68,68,0.3); color: var(--rojo); }
@@ -53,7 +53,7 @@
     <div class="logo-icon">💎</div>
     <span class="logo-text">Gift<span>Latam</span></span>
   </a>
-  <a href="login.html" class="nav-link">¿Ya tenés cuenta? Iniciá sesión →</a>
+  <a href="login.html" class="nav-link">¿Ya tenés cuenta? →</a>
 </nav>
 
 <div class="page">
@@ -61,204 +61,184 @@
     <div class="card-title">Crear cuenta</div>
     <div class="card-sub">¿Ya tenés cuenta? <a href="login.html">Iniciá sesión</a></div>
 
-    <div class="alert success" id="alertSuccess">✅ ¡Cuenta creada! Revisá tu email para confirmar.</div>
-    <div class="alert danger" id="alertError"></div>
+    <div class="alert success" id="alertOk"></div>
+    <div class="alert danger" id="alertErr"></div>
 
-    <form id="registerForm" novalidate>
+    <form id="form">
       <div class="form-row">
         <div class="form-group">
-          <label>Nombre</label>
-          <input type="text" id="nombre" placeholder="Juan" autocomplete="given-name">
-          <div class="err-msg" id="nombreErr">Requerido</div>
+          <label class="form-label">Nombre</label>
+          <input type="text" id="nombre" placeholder="Juan">
+          <div class="err-msg" id="eNombre">Requerido</div>
         </div>
         <div class="form-group">
-          <label>Apellido</label>
-          <input type="text" id="apellido" placeholder="García" autocomplete="family-name">
-          <div class="err-msg" id="apellidoErr">Requerido</div>
+          <label class="form-label">Apellido</label>
+          <input type="text" id="apellido" placeholder="García">
+          <div class="err-msg" id="eApellido">Requerido</div>
         </div>
       </div>
 
       <div class="form-group">
-        <label>Usuario</label>
-        <input type="text" id="usuario" placeholder="juangarcia99" autocomplete="username">
-        <div class="err-msg" id="usuarioErr">Mínimo 3 caracteres, sin espacios</div>
+        <label class="form-label">Usuario</label>
+        <input type="text" id="usuario" placeholder="juangarcia99">
+        <div class="err-msg" id="eUsuario">Mín. 3 caracteres, sin espacios</div>
       </div>
 
       <div class="form-group">
-        <label>Email</label>
-        <input type="email" id="email" placeholder="juan@email.com" autocomplete="email">
-        <div class="err-msg" id="emailErr">Email inválido</div>
+        <label class="form-label">Email</label>
+        <input type="email" id="email" placeholder="juan@email.com">
+        <div class="err-msg" id="eEmail">Email inválido</div>
       </div>
 
       <div class="form-group">
-        <label>Contraseña</label>
+        <label class="form-label">Contraseña</label>
         <div class="input-wrap">
-          <input type="password" id="password" placeholder="Mínimo 8 caracteres" autocomplete="new-password">
-          <button type="button" class="toggle-pw" onclick="togglePw('password',this)">👁</button>
+          <input type="password" id="pw1" placeholder="Mínimo 8 caracteres">
+          <button type="button" class="eye-btn" id="eye1">👁️</button>
         </div>
         <div class="strength-bar"><div class="strength-fill" id="strengthFill"></div></div>
         <div class="strength-text" id="strengthText"></div>
-        <div class="err-msg" id="passwordErr">Mínimo 8 caracteres</div>
+        <div class="err-msg" id="ePw1">Mínimo 8 caracteres</div>
       </div>
 
       <div class="form-group">
-        <label>Confirmar contraseña</label>
+        <label class="form-label">Confirmar contraseña</label>
         <div class="input-wrap">
-          <input type="password" id="password2" placeholder="Repetí tu contraseña" autocomplete="new-password">
-          <button type="button" class="toggle-pw" onclick="togglePw('password2',this)">👁</button>
+          <input type="password" id="pw2" placeholder="Repetí tu contraseña">
+          <button type="button" class="eye-btn" id="eye2">👁️</button>
         </div>
-        <div class="err-msg" id="password2Err">Las contraseñas no coinciden</div>
+        <div class="err-msg" id="ePw2">Las contraseñas no coinciden</div>
       </div>
 
       <div class="terms">
-        <input type="checkbox" id="terminos">
-        <label for="terminos">Acepto los <a href="terminos.html" target="_blank">Términos y condiciones</a> y la <a href="privacidad.html" target="_blank">Política de privacidad</a></label>
+        <input type="checkbox" id="tos">
+        <label class="form-label" for="tos">Acepto los <a href="terminos.html" target="_blank">Términos</a> y la <a href="privacidad.html" target="_blank">Política de privacidad</a></label>
       </div>
 
-      <button type="submit" class="btn-submit" id="submitBtn">Crear cuenta gratis</button>
+      <button type="submit" class="btn-submit" id="btnSubmit">Crear cuenta gratis</button>
     </form>
   </div>
 </div>
 
 <script>
-  // ── SUPABASE CONFIG ──
-  const SUPABASE_URL = 'https://goibtxrhabumlrqeykwx.supabase.co';
-  const SUPABASE_KEY = 'sb_publishable_4003pT5xt2QBDYnj1G9vgA_IQoC77At';
-  const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
-    auth: {
-      autoRefreshToken: true,
-      persistSession: true,
-      detectSessionInUrl: true
-    }
-  });
-  console.log('Supabase client creado:', SUPABASE_URL);
+// ── Supabase ──
+const { createClient } = supabase;
+const sb = createClient(
+  'https://goibtxrhabumlrqeykwx.supabase.co',
+  'sb_publishable_4003pT5xt2QBDYnj1G9vgA_IQoC77At'
+);
 
-  function togglePw(id, btn) {
-    const input = document.getElementById(id);
-    input.type = input.type === 'password' ? 'text' : 'password';
-    btn.textContent = input.type === 'password' ? '👁' : '🙈';
+// ── Ojo contraseña ──
+document.getElementById('eye1').addEventListener('click', function() {
+  const inp = document.getElementById('pw1');
+  inp.type = inp.type === 'password' ? 'text' : 'password';
+  this.textContent = inp.type === 'password' ? '👁️' : '🙈';
+});
+document.getElementById('eye2').addEventListener('click', function() {
+  const inp = document.getElementById('pw2');
+  inp.type = inp.type === 'password' ? 'text' : 'password';
+  this.textContent = inp.type === 'password' ? '👁️' : '🙈';
+});
+
+// ── Fuerza contraseña ──
+document.getElementById('pw1').addEventListener('input', function() {
+  const v = this.value;
+  let score = 0;
+  if (v.length >= 8) score++;
+  if (/[A-Z]/.test(v)) score++;
+  if (/[0-9]/.test(v)) score++;
+  if (/[^A-Za-z0-9]/.test(v)) score++;
+  const lvl = [
+    { w: '0%', c: '', t: '' },
+    { w: '25%', c: '#FF4444', t: 'Muy débil' },
+    { w: '50%', c: '#FF9800', t: 'Débil' },
+    { w: '75%', c: '#FFC107', t: 'Buena' },
+    { w: '100%', c: '#00C853', t: '🔒 Muy segura' },
+  ][score];
+  const f = document.getElementById('strengthFill');
+  f.style.width = lvl.w; f.style.background = lvl.c;
+  const t = document.getElementById('strengthText');
+  t.textContent = lvl.t; t.style.color = lvl.c;
+});
+
+// ── Limpiar errores al escribir ──
+document.querySelectorAll('input').forEach(inp => {
+  inp.addEventListener('input', () => {
+    inp.classList.remove('error');
+    const e = document.getElementById('e' + inp.id.charAt(0).toUpperCase() + inp.id.slice(1));
+    if (e) e.classList.remove('show');
+  });
+});
+
+// ── Submit ──
+document.getElementById('form').addEventListener('submit', async function(e) {
+  e.preventDefault();
+
+  const nombre  = document.getElementById('nombre').value.trim();
+  const apellido = document.getElementById('apellido').value.trim();
+  const usuario = document.getElementById('usuario').value.trim();
+  const email   = document.getElementById('email').value.trim();
+  const pw1     = document.getElementById('pw1').value;
+  const pw2     = document.getElementById('pw2').value;
+
+  let ok = true;
+  function err(id, errId) {
+    document.getElementById(id).classList.add('error');
+    document.getElementById(errId).classList.add('show');
+    ok = false;
   }
 
-  document.getElementById('password').addEventListener('input', function() {
-    const pw = this.value;
-    let score = 0;
-    if (pw.length >= 8) score++;
-    if (/[A-Z]/.test(pw)) score++;
-    if (/[0-9]/.test(pw)) score++;
-    if (/[^A-Za-z0-9]/.test(pw)) score++;
-    const levels = [
-      { pct: '0%', color: '', label: '' },
-      { pct: '25%', color: '#FF4444', label: 'Muy débil' },
-      { pct: '50%', color: '#FF9800', label: 'Débil' },
-      { pct: '75%', color: '#FFC107', label: 'Buena' },
-      { pct: '100%', color: '#00C853', label: '🔒 Muy segura' },
-    ];
-    const l = levels[score];
-    const fill = document.getElementById('strengthFill');
-    fill.style.width = l.pct; fill.style.background = l.color;
-    const txt = document.getElementById('strengthText');
-    txt.textContent = l.label; txt.style.color = l.color;
-  });
+  if (!nombre) err('nombre', 'eNombre');
+  if (!apellido) err('apellido', 'eApellido');
+  if (!/^[a-zA-Z0-9_]{3,}$/.test(usuario)) err('usuario', 'eUsuario');
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) err('email', 'eEmail');
+  if (pw1.length < 8) err('pw1', 'ePw1');
+  if (pw1 !== pw2) err('pw2', 'ePw2');
+  if (!document.getElementById('tos').checked) {
+    alert('Debés aceptar los términos'); ok = false;
+  }
 
-  document.querySelectorAll('input').forEach(input => {
-    input.addEventListener('input', function() {
-      this.classList.remove('error');
-      const err = document.getElementById(this.id + 'Err');
-      if (err) err.classList.remove('show');
-    });
-  });
+  if (!ok) return;
 
-  document.getElementById('registerForm').addEventListener('submit', async function(e) {
-    e.preventDefault();
-    let valid = true;
+  const btn = document.getElementById('btnSubmit');
+  btn.disabled = true; btn.textContent = 'Creando cuenta...';
+  document.getElementById('alertErr').classList.remove('show');
 
-    const fields = [
-      { id: 'nombre', check: v => v.trim().length >= 1 },
-      { id: 'apellido', check: v => v.trim().length >= 1 },
-      { id: 'usuario', check: v => /^[a-zA-Z0-9_]{3,}$/.test(v) },
-      { id: 'email', check: v => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v) },
-      { id: 'password', check: v => v.length >= 8 },
-      { id: 'password2', check: v => v === document.getElementById('password').value },
-    ];
-
-    fields.forEach(f => {
-      const input = document.getElementById(f.id);
-      const err = document.getElementById(f.id + 'Err');
-      if (!f.check(input.value)) {
-        input.classList.add('error'); if (err) err.classList.add('show'); valid = false;
+  try {
+    const { data, error } = await sb.auth.signUp({
+      email,
+      password: pw1,
+      options: {
+        data: { nombre, apellido, usuario, full_name: nombre + ' ' + apellido },
+        emailRedirectTo: 'https://giftlatam12.vercel.app/panel.html'
       }
     });
 
-    if (!document.getElementById('terminos').checked) {
-      alert('Debés aceptar los términos y condiciones'); valid = false;
+    if (error) throw error;
+
+    const alertOk = document.getElementById('alertOk');
+    if (data.session) {
+      alertOk.textContent = '✅ ¡Cuenta creada! Entrando...';
+      alertOk.classList.add('show');
+      document.getElementById('form').style.display = 'none';
+      setTimeout(() => window.location.href = 'panel.html', 1500);
+    } else {
+      alertOk.textContent = '✅ ¡Cuenta creada! Revisá tu email ' + email + ' para confirmar tu cuenta.';
+      alertOk.classList.add('show');
+      document.getElementById('form').style.display = 'none';
     }
 
-    if (!valid) return;
-
-    const btn = document.getElementById('submitBtn');
-    btn.disabled = true; btn.textContent = 'Creando cuenta...';
-
-    const email = document.getElementById('email').value.trim();
-    const password = document.getElementById('password').value;
-    const nombre = document.getElementById('nombre').value.trim();
-    const apellido = document.getElementById('apellido').value.trim();
-    const usuario = document.getElementById('usuario').value.trim();
-
-    try {
-      console.log('Intentando registrar:', email);
-      
-      const { data, error } = await supabase.auth.signUp({
-        email: email,
-        password: password,
-        options: {
-          data: {
-            nombre: nombre,
-            apellido: apellido,
-            usuario: usuario,
-            full_name: nombre + ' ' + apellido,
-          },
-          emailRedirectTo: window.location.origin + '/panel.html'
-        }
-      });
-
-      console.log('Resultado:', data, error);
-
-      if (error) throw error;
-
-      if (data.user) {
-        // Verificar si necesita confirmar email
-        if (data.user.identities && data.user.identities.length === 0) {
-          throw new Error('Este email ya está registrado. Iniciá sesión.');
-        }
-        
-        const alertOk = document.getElementById('alertSuccess');
-        
-        if (data.session) {
-          // Sin confirmación de email - entra directo
-          alertOk.textContent = '✅ ¡Cuenta creada! Entrando...';
-          alertOk.classList.add('show');
-          document.getElementById('registerForm').style.display = 'none';
-          setTimeout(() => window.location.href = 'panel.html', 1500);
-        } else {
-          // Con confirmación de email
-          alertOk.textContent = '✅ ¡Cuenta creada! Revisá tu email ' + email + ' para confirmar.';
-          alertOk.classList.add('show');
-          document.getElementById('registerForm').style.display = 'none';
-        }
-      }
-
-    } catch (err) {
-      console.error('Error registro:', err);
-      let msg = err.message || 'Error al crear la cuenta';
-      if (msg.includes('already registered') || msg.includes('already been registered')) msg = 'Este email ya está registrado. <a href="login.html">Iniciá sesión</a>';
-      if (msg.includes('Password should be')) msg = 'La contraseña debe tener al menos 6 caracteres';
-      if (msg.includes('Unable to validate')) msg = 'Email inválido';
-      const alertErr = document.getElementById('alertError');
-      alertErr.innerHTML = '❌ ' + msg;
-      alertErr.classList.add('show');
-      btn.disabled = false; btn.textContent = 'Crear cuenta gratis';
-    }
-  });
+  } catch (error) {
+    let msg = error.message || 'Error desconocido';
+    if (msg.includes('already registered') || msg.includes('already been registered')) msg = 'Este email ya tiene cuenta. <a href="login.html" style="color:var(--verde)">Iniciá sesión</a>';
+    if (msg.includes('Password should')) msg = 'La contraseña debe tener al menos 6 caracteres';
+    if (msg.includes('rate limit')) msg = 'Demasiados intentos. Esperá unos minutos.';
+    const el = document.getElementById('alertErr');
+    el.innerHTML = '❌ ' + msg;
+    el.classList.add('show');
+    btn.disabled = false; btn.textContent = 'Crear cuenta gratis';
+  }
+});
 </script>
 </body>
 </html>
