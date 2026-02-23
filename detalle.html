@@ -389,51 +389,25 @@ footer {
   <div style="margin-bottom:16px"><a href="index.html" style="color:var(--gris);text-decoration:none;font-size:13px">← Volver al catálogo</a></div>
   <div class="detail-grid">
     <div>
-      <div class="detail-card">
-        <div class="detail-img" style="background:rgba(102,192,244,0.1)"><img src="https://cdn.simpleicons.org/steam/66c0f4" width="48" height="48" alt="Steam" style="display:block;object-fit:contain"></div>
-        <div class="detail-title">Steam Gift Card 0 USD</div>
-        <div class="detail-seller">Vendido por <strong>tradito1982</strong> ⭐ 4.9 · 245 vendidos</div>
-        <div class="price-row">
-          <span class="detail-price">8.40</span>
-          <span class="detail-price-old">0.00</span>
-          <span class="badge" style="margin-left:8px">-8%</span>
+      <div class="detail-card" id="detailCard">
+        <div style="text-align:center;padding:40px 20px;color:var(--gris)">
+          <div style="width:28px;height:28px;border:3px solid #333;border-top-color:var(--verde);border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 14px"></div>
+          Cargando producto...
         </div>
-        <div class="detail-info">
-          <p>Gift card oficial de Steam con valor de 0 USD. Compatible con todos los juegos de Steam. Entrega inmediata del código por email.</p>
-          <div class="info-row"><span class="info-label">Tipo</span><span class="info-val">Gift Card Digital</span></div>
-          <div class="info-row"><span class="info-label">Región</span><span class="info-val">Global</span></div>
-          <div class="info-row"><span class="info-label">Entrega</span><span class="info-val">Inmediata (código)</span></div>
-          <div class="info-row"><span class="info-label">Pago</span><span class="info-val">USDT, BTC, ETH</span></div>
-          <div class="info-row"><span class="info-label">Garantía</span><span class="info-val">Escrow protegido</span></div>
-        </div>
-        <button class="btn-comprar" onclick="window.location='pago.html'">🔒 Comprar por 8.40</button>
-        <button class="btn-wishlist">♡ Guardar en favoritos</button>
       </div>
     </div>
     <div>
-      <div class="seller-card" style="margin-bottom:12px">
+      <div class="seller-card" id="sellerCard" style="margin-bottom:12px;display:none">
         <div class="seller-top">
-          <div class="seller-avatar">😊</div>
+          <div class="seller-avatar" id="sellerAvatar">😊</div>
           <div>
-            <div class="seller-name">tradito1982 <span class="verified">✓ Verificado</span></div>
-            <div class="seller-rep">⭐ 4.9 · 36 reseñas · 245 ventas</div>
+            <div class="seller-name" id="sellerName">—</div>
+            <div class="seller-rep" id="sellerRep">—</div>
           </div>
         </div>
-        <div class="info-row"><span class="info-label">Tiempo respuesta</span><span class="info-val">&lt; 5 min</span></div>
-        <div class="info-row"><span class="info-label">Miembro desde</span><span class="info-val">2023</span></div>
+        <div class="info-row"><span class="info-label">Miembro desde</span><span class="info-val" id="sellerSince">—</span></div>
       </div>
-      <div class="vouchers-grid">
-        <a href="detalle.html" class="voucher-card">
-          <div class="voucher-icon" style="background:rgba(30,215,96,0.15)"><img src="https://cdn.simpleicons.org/spotify/1ED760" width="28" height="28" alt="Spotify" style="display:block;object-fit:contain"></div>
-          <div class="voucher-info"><span class="voucher-name">Spotify 3 meses</span><div class="voucher-meta">⭐ 4.9 <span class="badge">-3%</span></div></div>
-          <div class="voucher-price"><span class="price-main">4.25</span><span class="price-old">5.00</span></div>
-        </a>
-        <a href="detalle.html" class="voucher-card">
-          <div class="voucher-icon" style="background:rgba(229,9,20,0.15)"><img src="https://cdn.simpleicons.org/netflix/E50914" width="28" height="28" alt="Netflix" style="display:block;object-fit:contain"></div>
-          <div class="voucher-info"><span class="voucher-name">Netflix 1 mes</span><div class="voucher-meta">⭐ 4.8 <span class="badge">-12%</span></div></div>
-          <div class="voucher-price"><span class="price-main">0.56</span><span class="price-old">2.00</span></div>
-        </a>
-      </div>
+      <div class="vouchers-grid" id="relacionadosGrid" style="display:none"></div>
     </div>
   </div>
 </div></div>
@@ -445,4 +419,169 @@ footer {
   <div class="nav-item" onclick="window.location='detalle.html'"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 12V22H4V12"/><path d="M22 7H2v5h20V7z"/><path d="M12 22V7"/></svg>Ofertas</div>
   <div class="nav-item" onclick="window.location='panel.html'"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Perfil</div>
 </div>
+
+<script>
+// ── Logos de marcas ──
+const brandLogos = {
+  'xbox': 'https://cdn.simpleicons.org/xbox/107C10',
+  'playstation': 'https://cdn.simpleicons.org/playstation/003791',
+  'psn': 'https://cdn.simpleicons.org/playstation/003791',
+  'steam': 'https://cdn.simpleicons.org/steam/66c0f4',
+  'apple': 'https://cdn.simpleicons.org/apple/f5f5f7',
+  'spotify': 'https://cdn.simpleicons.org/spotify/1ED760',
+  'netflix': 'https://cdn.simpleicons.org/netflix/E50914',
+  'nintendo': 'https://cdn.simpleicons.org/nintendo/E60012',
+  'roblox': 'https://cdn.simpleicons.org/roblox/E2231A',
+  'youtube': 'https://cdn.simpleicons.org/youtube/FF0000',
+  'amazon': 'https://cdn.simpleicons.org/amazon/FF9900',
+  'discord': 'https://cdn.simpleicons.org/discord/5865F2',
+  'twitch': 'https://cdn.simpleicons.org/twitch/9146FF',
+};
+
+function getBrandIcon(marca, size = 48) {
+  const url = brandLogos[(marca || '').toLowerCase().trim()];
+  if (url) return `<img src="${url}" width="${size}" height="${size}" alt="${marca}" style="display:block;object-fit:contain">`;
+  return '🎁';
+}
+
+function getBrandBg(marca) {
+  const bgs = {
+    'steam':'rgba(102,192,244,0.1)', 'xbox':'rgba(16,124,16,0.15)',
+    'playstation':'rgba(0,55,145,0.15)', 'psn':'rgba(0,55,145,0.15)',
+    'spotify':'rgba(30,215,96,0.15)', 'netflix':'rgba(229,9,20,0.15)',
+    'apple':'rgba(255,255,255,0.07)', 'nintendo':'rgba(230,0,18,0.15)',
+    'roblox':'rgba(226,35,26,0.15)', 'youtube':'rgba(255,0,0,0.15)',
+    'amazon':'rgba(255,153,0,0.15)',
+  };
+  return bgs[(marca || '').toLowerCase().trim()] || 'rgba(0,200,83,0.1)';
+}
+
+// ── Cargar producto desde DB ──
+document.addEventListener('DOMContentLoaded', async () => {
+  if (typeof sb === 'undefined') return;
+
+  const params = new URLSearchParams(window.location.search);
+  const id = params.get('id');
+
+  if (!id) {
+    showError('No se especificó un producto. <a href="explorar.html" style="color:var(--verde)">← Volver al catálogo</a>');
+    return;
+  }
+
+  // Cargar producto
+  const { data: card, error } = await sb
+    .from('gift_cards')
+    .select('*')
+    .eq('id', id)
+    .single();
+
+  if (error || !card) {
+    showError('Producto no encontrado o ya vendido. <a href="explorar.html" style="color:var(--verde)">← Ver otros productos</a>');
+    return;
+  }
+
+  renderProduct(card);
+  loadSeller(card.seller_id);
+  loadRelacionados(card.id, card.marca);
+});
+
+function showError(msg) {
+  document.getElementById('detailCard').innerHTML = `
+    <div style="text-align:center;padding:40px 20px;color:var(--gris);line-height:1.7">${msg}</div>`;
+}
+
+function renderProduct(card) {
+  const pct = (card.valor_nominal && card.valor_nominal > 0 && card.precio_venta < card.valor_nominal)
+    ? Math.round((1 - card.precio_venta / card.valor_nominal) * 100) : 0;
+
+  const badge = pct > 0 ? `<span class="badge" style="margin-left:8px">-${pct}%</span>` : '';
+  const oldPrice = (card.valor_nominal && card.valor_nominal > 0)
+    ? `<span class="detail-price-old">$${parseFloat(card.valor_nominal).toFixed(2)} USD</span>` : '';
+  const icon = getBrandIcon(card.marca, 48);
+  const bg = getBrandBg(card.marca);
+
+  const entregaMap = { auto: '⚡ Inmediata (código automático)', manual: '✋ Manual (máx. 30 min)' };
+  const tipoMap = { gift_card: 'Gift Card Digital', cuenta: 'Cuenta de usuario', licencia: 'Licencia/Key', otro: 'Otro' };
+
+  document.getElementById('detailCard').innerHTML = `
+    <div class="detail-img" style="background:${bg}">${icon}</div>
+    <div class="detail-title">${card.titulo}</div>
+    <div class="detail-seller">Vendido por <strong id="vendedorNombre">...</strong></div>
+    <div class="price-row">
+      <span class="detail-price">$${parseFloat(card.precio_venta).toFixed(2)} USDT</span>
+      ${oldPrice}${badge}
+    </div>
+    <div class="detail-info">
+      <p>${card.descripcion || 'Gift card digital. Entrega del código tras confirmar el pago.'}</p>
+      <div class="info-row"><span class="info-label">Tipo</span><span class="info-val">${tipoMap[card.tipo] || card.tipo}</span></div>
+      <div class="info-row"><span class="info-label">Marca</span><span class="info-val">${card.marca}</span></div>
+      <div class="info-row"><span class="info-label">Región</span><span class="info-val">${card.region || 'Global'}</span></div>
+      <div class="info-row"><span class="info-label">Entrega</span><span class="info-val">${entregaMap[card.entrega] || card.entrega}</span></div>
+      <div class="info-row"><span class="info-label">Pago</span><span class="info-val">USDT · BTC · ETH</span></div>
+      <div class="info-row"><span class="info-label">Garantía</span><span class="info-val">Escrow protegido</span></div>
+    </div>
+    <button class="btn-comprar" onclick="window.location='pago.html?id=${card.id}&precio=${card.precio_venta}&titulo=${encodeURIComponent(card.titulo)}'">
+      🔒 Comprar por $${parseFloat(card.precio_venta).toFixed(2)} USDT
+    </button>
+    <button class="btn-wishlist" onclick="guardarFavorito('${card.id}')">♡ Guardar en favoritos</button>`;
+}
+
+async function loadSeller(sellerId) {
+  if (!sellerId) return;
+  const { data: profile } = await sb.from('profiles').select('*').eq('id', sellerId).single();
+  const name = profile?.usuario || profile?.nombre || 'Vendedor';
+  document.getElementById('vendedorNombre').textContent = '@' + name;
+
+  const sellerCard = document.getElementById('sellerCard');
+  sellerCard.style.display = 'block';
+  document.getElementById('sellerName').innerHTML = `@${name} <span class="verified">✓ Verificado</span>`;
+  document.getElementById('sellerRep').textContent = `⭐ ${profile?.reputacion || '5.0'} · ${profile?.ventas_totales || 0} ventas`;
+  const since = profile?.created_at ? new Date(profile.created_at).getFullYear() : '2025';
+  document.getElementById('sellerSince').textContent = since;
+}
+
+async function loadRelacionados(currentId, marca) {
+  const { data } = await sb
+    .from('gift_cards')
+    .select('id, titulo, marca, precio_venta, valor_nominal, tipo')
+    .eq('estado', 'activo')
+    .neq('id', currentId)
+    .limit(3);
+
+  if (!data || data.length === 0) return;
+
+  const grid = document.getElementById('relacionadosGrid');
+  grid.style.display = 'grid';
+  grid.innerHTML = data.map(card => {
+    const icon = getBrandIcon(card.marca, 28);
+    const bg = getBrandBg(card.marca);
+    const pct = (card.valor_nominal > 0 && card.precio_venta < card.valor_nominal)
+      ? Math.round((1 - card.precio_venta / card.valor_nominal) * 100) : 0;
+    return `
+      <a href="detalle.html?id=${card.id}" class="voucher-card">
+        <div class="voucher-icon" style="background:${bg}">${icon}</div>
+        <div class="voucher-info">
+          <span class="voucher-name">${card.titulo}</span>
+          <div class="voucher-meta">${card.marca}${pct > 0 ? ` <span class="badge">-${pct}%</span>` : ''}</div>
+        </div>
+        <div class="voucher-price">
+          <span class="price-main">$${parseFloat(card.precio_venta).toFixed(2)} USDT</span>
+          ${card.valor_nominal > 0 ? `<span class="price-old">$${parseFloat(card.valor_nominal).toFixed(2)}</span>` : ''}
+        </div>
+      </a>`;
+  }).join('');
+}
+
+function guardarFavorito(id) {
+  if (typeof sb === 'undefined') return;
+  sb.auth.getSession().then(({ data }) => {
+    if (!data.session) {
+      document.querySelector('.btn-wishlist').textContent = '→ Iniciá sesión para guardar favoritos';
+      setTimeout(() => window.location.href = 'login.html?from=detalle.html?id=' + id, 1500);
+    } else {
+      document.querySelector('.btn-wishlist').textContent = '♥ Guardado en favoritos';
+    }
+  });
+}
+</script>
 </body></html>

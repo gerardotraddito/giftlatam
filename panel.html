@@ -378,7 +378,7 @@ footer {
   <a href="index.html" class="logo"><div class="logo-icon"><svg viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="44" height="44" rx="11" fill="#00C853"/><polygon points="22,10 32,22 22,34 12,22" fill="#003D1A" opacity="0.6"/><polygon points="22,10 32,22 22,34 12,22" fill="#00FF6E" opacity="0.85" transform="scale(0.6) translate(14.7,14.7)"/></svg></div><span class="logo-text">Gift<span class="g">Latam</span></span></a>
   <div class="nav-spacer"></div>
   <div class="nav-actions" id="navActions" style="gap:10px">
-    <span style="font-size:22px;cursor:pointer">🔔<sup style="font-size:10px;background:var(--naranja);color:#fff;border-radius:50%;padding:1px 4px">3</sup></span>
+    <span style="font-size:22px;cursor:pointer;position:relative" onclick="toggleNotifs()" id="notifBtn">🔔<sup id="notifBadge" style="font-size:10px;background:var(--naranja);color:#fff;border-radius:50%;padding:1px 4px">0</sup></span>
     <div style="background:rgba(0,200,83,0.1);border:1px solid rgba(0,200,83,0.25);border-radius:20px;padding:5px 11px;font-size:13px;font-weight:600;color:var(--verde)">😊 tradito1982</div>
   </div>
 </nav>
@@ -406,11 +406,11 @@ footer {
       <span class="wallet-label">💎 Mi wallet</span>
       <span style="font-size:11px;color:var(--gris)">USDT · TRC20</span>
     </div>
-    <div class="wallet-amount">$248.50</div>
-    <div class="wallet-usd">≈ 248.50 USD disponibles</div>
+    <div class="wallet-amount" id="walletAmount">$0.00</div>
+    <div class="wallet-usd" id="walletUsd">0.00 USDT disponibles</div>
     <div class="wallet-btns">
-      <button class="btn-wallet btn-depositar">⬇️ Depositar</button>
-      <button class="btn-wallet btn-retirar" style="border:1px solid var(--borde)">⬆️ Retirar</button>
+      <button class="btn-wallet btn-depositar" onclick="showWalletModal('depositar')">⬇️ Depositar</button>
+      <button class="btn-wallet btn-retirar" style="border:1px solid var(--borde)" onclick="showWalletModal('retirar')">⬆️ Retirar</button>
     </div>
   </div>
 
@@ -491,4 +491,92 @@ async function logout() {
 }
 </script>
 
+
+<script>
+// ── Modal wallet ──
+function showWalletModal(tipo) {
+  const titulo = tipo === 'depositar' ? '⬇️ Depositar USDT' : '⬆️ Retirar USDT';
+  const desc = tipo === 'depositar'
+    ? 'Para depositar, enviá USDT (TRC20) a tu dirección de wallet. Esta función estará disponible próximamente.'
+    : 'Los retiros estarán disponibles próximamente. Podrás retirar a cualquier wallet USDT.';
+  
+  const modal = document.createElement('div');
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px';
+  modal.innerHTML = `
+    <div style="background:#161616;border:1px solid #333;border-radius:20px;padding:28px;max-width:340px;width:100%">
+      <div style="font-family:Syne,sans-serif;font-size:18px;font-weight:800;margin-bottom:10px">${titulo}</div>
+      <div style="font-size:13px;color:#888;line-height:1.6;margin-bottom:24px">${desc}</div>
+      <button onclick="this.closest('div[style*=fixed]').remove()" 
+        style="width:100%;background:var(--verde);color:#000;border:none;border-radius:12px;padding:12px;font-weight:700;font-size:15px;cursor:pointer;font-family:Syne,sans-serif">
+        Entendido
+      </button>
+    </div>`;
+  document.body.appendChild(modal);
+  modal.addEventListener('click', e => { if(e.target === modal) modal.remove(); });
+}
+
+// ── Notificaciones ──
+function toggleNotifs() {
+  let panel = document.getElementById('notifPanel');
+  if (panel) { panel.remove(); return; }
+  panel = document.createElement('div');
+  panel.id = 'notifPanel';
+  panel.style.cssText = 'position:absolute;top:52px;right:10px;background:#161616;border:1px solid #333;border-radius:14px;padding:16px;width:280px;z-index:999;box-shadow:0 8px 32px rgba(0,0,0,0.5)';
+  panel.innerHTML = `
+    <div style="font-size:13px;font-weight:700;margin-bottom:12px">Notificaciones</div>
+    <div style="font-size:12px;color:#888;text-align:center;padding:20px 0">
+      No tenés notificaciones nuevas
+    </div>`;
+  document.querySelector('nav').style.position = 'relative';
+  document.querySelector('nav').appendChild(panel);
+  setTimeout(() => document.addEventListener('click', function h(e) {
+    if (!panel.contains(e.target) && e.target.id !== 'notifBtn') { panel.remove(); document.removeEventListener('click', h); }
+  }), 100);
+}
+
+// ── Cargar wallet y stats reales ──
+async function loadPanelExtras(userId) {
+  // Wallet desde profiles
+  const { data: profile } = await sb.from('profiles').select('volumen_usdt').eq('id', userId).single();
+  const vol = parseFloat(profile?.volumen_usdt || 0).toFixed(2);
+  const walletEl = document.getElementById('walletAmount');
+  const walletUsd = document.getElementById('walletUsd');
+  if (walletEl) walletEl.textContent = '$' + vol;
+  if (walletUsd) walletUsd.textContent = vol + ' USDT disponibles';
+
+  // Mis publicaciones
+  const { data: listings } = await sb
+    .from('gift_cards')
+    .select('id, titulo, marca, precio_venta, estado')
+    .eq('seller_id', userId)
+    .order('created_at', { ascending: false })
+    .limit(10);
+
+  const container = document.getElementById('misPublicaciones');
+  if (!container) return;
+
+  if (!listings || listings.length === 0) {
+    container.innerHTML = `<div style="text-align:center;padding:16px;color:#888;font-size:13px">
+      Todavía no publicaste nada.<br>
+      <a href="publicar.html" style="color:var(--verde)">Publicá tu primera gift card →</a>
+    </div>`;
+    return;
+  }
+
+  const estadoColors = { activo:'#00C853', vendido:'#888', pausado:'#FF9800' };
+  container.innerHTML = listings.map(l => `
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid #222;font-size:13px">
+      <div>
+        <div style="font-weight:600">${l.titulo}</div>
+        <div style="color:#888;font-size:11px">${l.marca} · $${parseFloat(l.precio_venta).toFixed(2)} USDT</div>
+      </div>
+      <span style="font-size:11px;font-weight:700;color:${estadoColors[l.estado]||'#888'}">${l.estado.toUpperCase()}</span>
+    </div>`).join('');
+}
+
+// Escuchar sesión para cargar extras
+sb.auth.onAuthStateChange((_e, session) => {
+  if (session?.user) loadPanelExtras(session.user.id);
+});
+</script>
 </body></html>

@@ -142,7 +142,8 @@
       <div class="card-title">📝 Detalles del producto</div>
       <div class="form-group">
         <label>Marca / Servicio *</label>
-        <input type="text" id="marca" placeholder="Ej: Netflix, Steam, Spotify...">
+        <input type=<input type="text" id="marca" placeholder="Ej: Steam, Netflix, Xbox..." list="marcasList" autocomplete="off">
+        <datalist id="marcasList"><option value="Steam"><option value="PlayStation"><option value="Xbox"><option value="Apple"><option value="Nintendo"><option value="Roblox"><option value="PUBG"><option value="Spotify"><option value="Netflix"><option value="Amazon"><option value="YouTube"><option value="Discord"><option value="Twitch"><option value="Minecraft"><option value="Fortnite"><option value="Google Play"><option value="Disney+"><option value="Rappi"></datalist>
       </div>
       <div class="form-group">
         <label>Título del listing *</label>
@@ -196,7 +197,7 @@
 
       <div class="btn-row">
         <button class="btn-back" onclick="goStep(2)">← Atrás</button>
-        <button class="btn-next" onclick="goStep(4)">Siguiente →</button>
+        <button class="btn-next" onclick="validateStep3()">Siguiente →</button>
       </div>
     </div>
   </div>
@@ -216,7 +217,7 @@
       </div>
       <div class="price-summary">
         <div class="price-row"><span style="color:var(--gris)">Precio de venta</span><span id="r-venta">$0.00</span></div>
-        <div class="price-row"><span style="color:var(--gris)">Comisión GiftLatam (3%)</span><span id="r-comision" style="color:var(--gris)">-$0.00</span></div>
+        <div class="price-row"><span style="color:var(--gris)">Comisión GiftLatam (3%) <span onclick="alert('El 3% se descuenta del precio de venta. Incluye protección por escrow y soporte ante disputas.')" style="cursor:pointer;background:rgba(255,255,255,0.1);border-radius:50%;width:16px;height:16px;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:700" title="¿Qué incluye?">?</span></span><span id="r-comision" style="color:var(--gris)">-$0.00</span></div>
         <div class="price-row total"><span>Recibís</span><span id="r-total">$0.00 USDT</span></div>
       </div>
       <div class="btn-row">
@@ -349,6 +350,21 @@ function showErr(msg) {
 }
 function hideErr() {
   document.getElementById('alertErr').classList.remove('show');
+}
+
+function validateStep3() {
+  const entrega = document.querySelector('input[name="entrega"]:checked')?.value;
+  const codigo = document.getElementById('codigo')?.value?.trim();
+  if (entrega === 'auto' && !codigo) {
+    const inp = document.getElementById('codigo');
+    inp.style.borderColor = 'var(--rojo, #FF4444)';
+    inp.focus();
+    const hint = inp.nextElementSibling;
+    if (hint) { hint.textContent = '❌ Ingresá el código de la gift card antes de continuar.'; hint.style.color = '#FF4444'; }
+    setTimeout(() => { inp.style.borderColor = ''; if(hint) { hint.textContent = '🔒 El código solo se revela al comprador tras el pago confirmado.'; hint.style.color = ''; }}, 3000);
+    return;
+  }
+  goStep(4);
 }
 </script>
 </body>

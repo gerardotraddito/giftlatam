@@ -144,24 +144,52 @@ sb.auth.getSession().then(({ data }) => {
 
 // Cargar desde DB
 async function loadCards() {
-  const { data, error } = await sb
-    .from('gift_cards')
-    .select('*')
-    .eq('estado', 'activo')
-    .order('created_at', { ascending: false });
+  const list = document.getElementById('vouchersList');
 
-  if (error) {
-    document.getElementById('vouchersList').innerHTML = `
+  // Timeout de 10 segundos
+  const timeout = setTimeout(() => {
+    list.innerHTML = `
+      <div class="empty-state">
+        <span class="empty-state-emoji">⏱️</span>
+        <div class="empty-state-title">La conexión está tardando</div>
+        <div class="empty-state-sub">Verificá tu conexión a internet e intentá de nuevo.</div>
+        <button onclick="location.reload()" style="margin-top:16px;padding:10px 24px;background:var(--verde);color:#000;border:none;border-radius:10px;font-weight:700;cursor:pointer;font-size:14px">↻ Reintentar</button>
+      </div>`;
+  }, 10000);
+
+  try {
+    const { data, error } = await sb
+      .from('gift_cards')
+      .select('*')
+      .eq('estado', 'activo')
+      .order('created_at', { ascending: false });
+
+    clearTimeout(timeout);
+
+    if (error) {
+      list.innerHTML = `
+        <div class="empty-state">
+          <span class="empty-state-emoji">⚠️</span>
+          <div class="empty-state-title">No pudimos cargar el catálogo</div>
+          <div class="empty-state-sub">${error.message}</div>
+          <button onclick="loadCards()" style="margin-top:16px;padding:10px 24px;background:var(--verde);color:#000;border:none;border-radius:10px;font-weight:700;cursor:pointer;font-size:14px">↻ Reintentar</button>
+        </div>`;
+      return;
+    }
+
+    allCards = data || [];
+    renderCards();
+
+  } catch(e) {
+    clearTimeout(timeout);
+    list.innerHTML = `
       <div class="empty-state">
         <span class="empty-state-emoji">⚠️</span>
-        <div class="empty-state-title">Error al cargar</div>
-        <div class="empty-state-sub">${error.message}</div>
+        <div class="empty-state-title">Error de conexión</div>
+        <div class="empty-state-sub">No se pudo conectar con el servidor.</div>
+        <button onclick="loadCards()" style="margin-top:16px;padding:10px 24px;background:var(--verde);color:#000;border:none;border-radius:10px;font-weight:700;cursor:pointer;font-size:14px">↻ Reintentar</button>
       </div>`;
-    return;
   }
-
-  allCards = data || [];
-  renderCards();
 }
 
 function renderCards() {
@@ -203,9 +231,24 @@ function renderCards() {
     document.getElementById('vouchersList').innerHTML = `
       <div class="empty-state">
         <span class="empty-state-emoji">${searchQuery ? '🔍' : '📭'}</span>
-        <div class="empty-state-title">${searchQuery ? 'Sin resultados para "' + searchQuery + '"' : 'No hay gift cards todavía'}</div>
-        <div class="empty-state-sub">${searchQuery ? 'Probá con otro nombre' : 'Sé el primero en publicar una gift card'}</div>
-        ${!searchQuery ? '<a href="publicar.html" class="btn-publicar">+ Publicar ahora</a>' : ''}
+        <div class="empty-state-title">${searchQuery
+          ? 'Sin resultados para "' + searchQuery + '"'
+          : activeCat !== 'all'
+            ? 'No hay productos en esta categoría todavía'
+            : 'El catálogo está creciendo'
+        }</div>
+        <div class="empty-state-sub">${
+          searchQuery
+          ? 'Revisá la ortografía o buscá otra marca'
+          : activeCat !== 'all'
+            ? 'Sé el primero en publicar aquí'
+            : '¡Publicá la primera gift card y llegá primero a los compradores!'
+        }</div>
+        <a href="${searchQuery ? '#' : 'publicar.html'}" 
+           onclick="${searchQuery ? 'clearSearch();return false' : ''}"
+           style="margin-top:14px;display:inline-block;padding:8px 20px;background:var(--verde);color:#000;border-radius:10px;font-weight:700;text-decoration:none;font-size:13px">
+          ${searchQuery ? '← Ver todos los productos' : '+ Publicar gift card'}
+        </a>
       </div>`;
     return;
   }
