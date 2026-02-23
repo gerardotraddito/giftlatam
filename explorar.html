@@ -46,10 +46,15 @@
     .voucher-info { flex: 1; min-width: 0; }
     .voucher-name { font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 700; color: var(--blanco); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; padding-bottom: 4px; }
     .voucher-meta { font-size: 11px; color: var(--gris); display: flex; align-items: center; gap: 5px; flex-wrap: wrap; }
+    .seller-line { display: flex; align-items: center; gap: 5px; margin-top: 3px; font-size: 11px; color: var(--gris); }
+    .seller-name { color: #ccc; font-weight: 500; }
+    .rep-stars { color: #F5A623; font-size: 10px; }
     .badge { background: rgba(0,200,83,0.12); color: var(--verde); border: 1px solid rgba(0,200,83,0.25); border-radius: 5px; padding: 1px 6px; font-size: 10px; font-weight: 700; }
     .voucher-price { flex-shrink: 0; width: 80px; display: flex; flex-direction: column; align-items: flex-end; gap: 2px; }
     .price-main { font-family: 'Syne', sans-serif; font-size: 14px; font-weight: 800; color: var(--verde); display: block; text-align: right; line-height: 1.3; }
     .price-old { font-size: 11px; color: var(--gris); text-decoration: line-through; display: block; text-align: right; }
+    .voucher-seller { font-size: 11px; color: var(--gris); margin-top: 3px; display: flex; align-items: center; gap: 5px; flex-wrap: wrap; }
+    .seller-rep { color: #aaa; font-size: 10px; }
     .loading { text-align: center; padding: 60px 20px; color: var(--gris); font-size: 14px; }
     .loading-spinner { width: 32px; height: 32px; border: 3px solid var(--gris-borde); border-top-color: var(--verde); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 14px; }
     @keyframes spin { to { transform: rotate(360deg); } }
@@ -249,7 +254,7 @@ async function loadCards() {
   try {
     var result = await sb
       .from('gift_cards')
-      .select('id, titulo, marca, tipo, region, precio_venta, valor_nominal, estado')
+      .select('id, titulo, marca, tipo, region, precio_venta, valor_nominal, estado, seller_id')
       .eq('estado', 'activo')
       .order('created_at', { ascending: false });
 
@@ -273,6 +278,33 @@ async function loadCards() {
 
   allCards = data || [];
   console.log('[loadCards] ' + allCards.length + ' productos cargados');
+
+  // Batch fetch perfiles de vendedores (una sola query)
+  var sellerIds = [...new Set(allCards.map(function(c){ return c.seller_id; }).filter(Boolean))];
+  if (sellerIds.length > 0) {
+    var profRes = await sb.from('profiles').select('id, usuario, nombre, reputacion, ventas_totales').in('id', sellerIds);
+    if (!profRes.error && profRes.data) {
+      var profileMap = {};
+      profRes.data.forEach(function(p){ profileMap[p.id] = p; });
+      allCards.forEach(function(card){ card._seller = profileMap[card.seller_id] || null; });
+    }
+  }
+
+  // Cargar perfiles de vendedores para mostrar nombre + reputación
+  var sellerIds = [];
+  allCards.forEach(function(c) { if (c.seller_id && sellerIds.indexOf(c.seller_id) === -1) sellerIds.push(c.seller_id); });
+  if (sellerIds.length > 0) {
+    var profRes = await sb.from('profiles').select('id, usuario, reputacion').in('id', sellerIds);
+    if (!profRes.error && profRes.data) {
+      var profMap = {};
+      profRes.data.forEach(function(p) { profMap[p.id] = p; });
+      allCards = allCards.map(function(card) {
+        var prof = profMap[card.seller_id];
+        if (prof) { card._sellerUsuario = prof.usuario; card._sellerRep = prof.reputacion; }
+        return card;
+      });
+    }
+  }
 
   // renderCards va FUERA del try — sus errores son bugs, no errores de red
   renderCards();
@@ -332,6 +364,10 @@ function renderCards() {
         '<div class="voucher-info">' +
           '<span class="voucher-name">' + (card.titulo || '') + '</span>' +
           '<div class="voucher-meta">' + (card.marca || '') + region + ' ' + badge + '</div>' +
+          '<div class="seller-line">' +
+            '<span class="seller-name">@' + (card._sellerUsuario || 'vendedor') + '</span>' +
+            (card._sellerRep ? '<span class="rep-stars">★</span><span>' + parseFloat(card._sellerRep).toFixed(1) + '</span>' : '') +
+          '</div>' +
         '</div>' +
         '<div class="voucher-price">' +
           '<span class="price-main">$' + precio.toFixed(2) + ' USDT</span>' +

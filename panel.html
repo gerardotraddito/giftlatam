@@ -379,7 +379,7 @@ footer {
   <div class="nav-spacer"></div>
   <div class="nav-actions" id="navActions" style="gap:10px">
     <span style="font-size:22px;cursor:pointer;position:relative" onclick="toggleNotifs()" id="notifBtn">🔔<sup id="notifBadge" style="font-size:10px;background:var(--naranja);color:#fff;border-radius:50%;padding:1px 4px">0</sup></span>
-    <div style="background:rgba(0,200,83,0.1);border:1px solid rgba(0,200,83,0.25);border-radius:20px;padding:5px 11px;font-size:13px;font-weight:600;color:var(--verde)">😊 tradito1982</div>
+    <div id="navUserPill" style="background:rgba(0,200,83,0.1);border:1px solid rgba(0,200,83,0.25);border-radius:20px;padding:5px 11px;font-size:13px;font-weight:600;color:var(--verde);display:none">😊 <span id="navUserName">...</span></div>
   </div>
 </nav>
 <div class="container"><div class="main">
@@ -388,7 +388,7 @@ footer {
       <div class="panel-avatar" id="userAvatar">😊</div>
       <div>
         <div class="panel-name" id="userName">Cargando...</div>
-        <div class="panel-rep">⭐ 4.9 reputación <span class="verified">✓ Verificado</span></div>
+        <div class="panel-rep" id="panelRep">⭐ — <span class="verified" id="verifiedBadge" style="display:none">✓ Verificado</span></div>
         <div style="font-size:12px;color:var(--gris);margin-top:4px"><span id="userSince">📅 Cargando...</span> <span class="online-dot"></span>En línea</div>
       </div>
     </div>
@@ -397,8 +397,8 @@ footer {
   <div class="panel-stats">
     <div class="panel-stat"><span class="panel-stat-icon">🛒</span><span class="panel-stat-num" id="statCompras">-</span><span class="panel-stat-label">Compras totales</span><span class="panel-stat-sub" id="statComprasSub"></span></div>
     <div class="panel-stat"><span class="panel-stat-icon">💰</span><span class="panel-stat-num" id="statVentas">-</span><span class="panel-stat-label">Ventas totales</span><span class="panel-stat-sub" id="statListings"></span></div>
-    <div class="panel-stat"><span class="panel-stat-icon">⭐</span><span class="panel-stat-num">4.9</span><span class="panel-stat-label">Reputación</span><span class="panel-stat-sub">36 reseñas positivas</span></div>
-    <div class="panel-stat"><span class="panel-stat-icon">🏷️</span><span class="panel-stat-num">5</span><span class="panel-stat-label">Listings activos</span><span class="panel-stat-sub">↑ 1 nuevo hoy</span></div>
+    <div class="panel-stat"><span class="panel-stat-icon">⭐</span><span class="panel-stat-num" id="statRep">—</span><span class="panel-stat-label">Reputación</span><span class="panel-stat-sub" id="statRepSub">cargando...</span></div>
+    <div class="panel-stat"><span class="panel-stat-icon">🏷️</span><span class="panel-stat-num" id="statListingsNum">—</span><span class="panel-stat-label">Listings activos</span><span class="panel-stat-sub" id="statListingsSub">cargando...</span></div>
   </div>
 
   <div class="wallet-card">
@@ -406,8 +406,8 @@ footer {
       <span class="wallet-label">💎 Mi wallet</span>
       <span style="font-size:11px;color:var(--gris)">USDT · TRC20</span>
     </div>
-    <div class="wallet-amount" id="walletAmount">$0.00</div>
-    <div class="wallet-usd" id="walletUsd">0.00 USDT disponibles</div>
+    <div class="wallet-amount" id="walletAmount" style="font-size:24px;color:#555">Cargando...</div>
+    <div class="wallet-usd" id="walletUsd"> </div>
     <div class="wallet-btns">
       <button class="btn-wallet btn-depositar" onclick="showWalletModal('depositar')">⬇️ Depositar</button>
       <button class="btn-wallet btn-retirar" style="border:1px solid var(--borde)" onclick="showWalletModal('retirar')">⬆️ Retirar</button>
@@ -416,12 +416,26 @@ footer {
 
   <div class="panel-menu">
     <a href="publicar.html" class="menu-item"><span class="menu-icon">➕</span>Publicar gift card<span class="menu-arrow">›</span></a>
-    <a href="#" class="menu-item"><span class="menu-icon">📋</span>Mis listings<span class="menu-arrow">›</span></a>
-    <a href="#" class="menu-item"><span class="menu-icon">📦</span>Mis compras<span class="menu-arrow">›</span></a>
-    <a href="#" class="menu-item"><span class="menu-icon">💸</span>Mis ventas<span class="menu-arrow">›</span></a>
+    <a href="mis-listings.html" class="menu-item"><span class="menu-icon">📋</span>Mis publicaciones<span class="menu-arrow">›</span></a>
+    <a href="mis-compras.html" class="menu-item"><span class="menu-icon">📦</span>Mis compras<span class="menu-arrow">›</span></a>
+    <a href="mis-ventas.html" class="menu-item"><span class="menu-icon">💸</span>Mis ventas<span class="menu-arrow">›</span></a>
     <a href="disputas.html" class="menu-item"><span class="menu-icon">⚖️</span>Centro de disputas<span class="menu-arrow">›</span></a>
-    <a href="#" class="menu-item"><span class="menu-icon">⚙️</span>Configuración<span class="menu-arrow">›</span></a>
+    <a href="configuracion.html" class="menu-item"><span class="menu-icon">⚙️</span>Configuración<span class="menu-arrow">›</span></a>
     <a href="#" onclick="logout(); return false;" class="menu-item"><span class="menu-icon">🚪</span>Cerrar sesión<span class="menu-arrow">›</span></a>
+  </div>
+
+  <!-- Preview mis publicaciones -->
+  <div style="margin-top:20px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+      <span style="font-size:15px;font-weight:700">Mis publicaciones</span>
+      <a href="mis-listings.html" style="color:var(--verde);font-size:12px;text-decoration:none">Ver todas →</a>
+    </div>
+    <div id="misPublicacionesPreview">
+      <div style="text-align:center;padding:20px;color:#888;font-size:13px">
+        <div style="width:20px;height:20px;border:2px solid #222;border-top-color:var(--verde);border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 8px"></div>
+        Cargando...
+      </div>
+    </div>
   </div>
 </div></div>
 <div class="bottom-nav">
@@ -442,37 +456,68 @@ async function loadPanelData(session) {
   const meses = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
   const createdAt = new Date(user.created_at);
   const fechaIngreso = meses[createdAt.getMonth()] + ' ' + createdAt.getFullYear();
+  const uid = user.id;
 
-  // Avatar iniciales
+  // ── Nav pill ──
+  const pill = document.getElementById('navUserPill');
+  const pillName = document.getElementById('navUserName');
+  if (pill) { pill.style.display = 'flex'; }
+  if (pillName) pillName.textContent = usuario;
+
+  // ── Avatar ──
   const avatar = document.getElementById('userAvatar');
   if (avatar) {
     avatar.textContent = (meta.nombre ? meta.nombre[0] : usuario[0]).toUpperCase();
     avatar.style.cssText += ';background:rgba(0,200,83,0.2);color:#00C853;font-family:Syne,sans-serif;font-weight:800;font-size:22px';
   }
-  const nameEl = document.getElementById('userName');
-  if (nameEl) nameEl.textContent = usuario;
-  const sinceEl = document.getElementById('userSince');
-  if (sinceEl) sinceEl.textContent = '📅 Miembro desde ' + fechaIngreso;
 
-  const uid = user.id;
-
-  // Listings activos
-  const { count: listings } = await sb.from('gift_cards').select('*', { count: 'exact', head: true }).eq('seller_id', uid).eq('estado', 'activo');
-  // Ventas completadas
-  const { count: ventas } = await sb.from('gift_cards').select('*', { count: 'exact', head: true }).eq('seller_id', uid).eq('estado', 'vendido');
-  // Compras
-  const { count: compras } = await sb.from('transactions').select('*', { count: 'exact', head: true }).eq('buyer_id', uid);
-  // Volumen
-  const { data: volData } = await sb.from('transactions').select('monto').eq('seller_id', uid).eq('estado', 'completado');
-  const volumen = (volData || []).reduce((sum, t) => sum + parseFloat(t.monto || 0), 0);
-
+  // ── Nombre y fecha ──
   const el = (id) => document.getElementById(id);
-  if (el('statCompras')) el('statCompras').textContent = compras || 0;
-  if (el('statVentas')) el('statVentas').textContent = ventas || 0;
-  if (el('statListings')) el('statListings').textContent = (listings || 0) + ' activos ahora';
+  if (el('userName')) el('userName').textContent = '@' + usuario;
+  if (el('userSince')) el('userSince').textContent = '📅 Desde ' + fechaIngreso;
+
+  // ── Queries en paralelo ──
+  const [listingsRes, ventasRes, comprasRes, volRes, profileRes] = await Promise.all([
+    sb.from('gift_cards').select('*', {count:'exact', head:true}).eq('seller_id', uid).eq('estado','activo'),
+    sb.from('gift_cards').select('*', {count:'exact', head:true}).eq('seller_id', uid).eq('estado','vendido'),
+    sb.from('transactions').select('*', {count:'exact', head:true}).eq('buyer_id', uid),
+    sb.from('transactions').select('monto').eq('seller_id', uid).eq('estado','completado'),
+    sb.from('profiles').select('reputacion, reseñas_positivas, volumen_usdt').eq('id', uid).single(),
+  ]);
+
+  const listings = listingsRes.count || 0;
+  const ventas   = ventasRes.count  || 0;
+  const compras  = comprasRes.count || 0;
+  const volumen  = (volRes.data || []).reduce((s,t) => s + parseFloat(t.monto||0), 0);
+  const profile  = profileRes.data || {};
+
+  // ── Stats ──
+  if (el('statCompras'))    el('statCompras').textContent    = compras;
   if (el('statComprasSub')) el('statComprasSub').textContent = 'historial total';
-  const volEl = document.querySelector('[data-volumen]');
-  if (volEl) volEl.textContent = '$' + volumen.toFixed(2) + ' USDT';
+  if (el('statVentas'))     el('statVentas').textContent     = ventas;
+  if (el('statListings'))   el('statListings').textContent   = listings + ' activos';
+  if (el('statListingsNum')) el('statListingsNum').textContent = listings;
+  if (el('statListingsSub')) el('statListingsSub').textContent = listings > 0 ? 'publicaciones activas' : 'ninguna activa aún';
+
+  // ── Reputación ──
+  const rep = profile.reputacion ? parseFloat(profile.reputacion).toFixed(1) : null;
+  const resenas = profile['reseñas_positivas'] || profile.resenas_positivas || 0;
+  if (el('panelRep')) {
+    el('panelRep').innerHTML = rep
+      ? '⭐ ' + rep + ' reputación <span class="verified">✓ Verificado</span>'
+      : '🔘 Sin reseñas aún <span style="font-size:11px;color:#555">— completá tu primera venta</span>';
+  }
+  if (el('statRep'))    el('statRep').textContent    = rep || '—';
+  if (el('statRepSub')) el('statRepSub').textContent = resenas > 0 ? resenas + ' reseñas positivas' : 'sin reseñas aún';
+
+  // ── Wallet ──
+  const walletBal = profile.volumen_usdt || volumen;
+  if (el('walletAmount')) {
+    el('walletAmount').textContent = '$' + parseFloat(walletBal).toFixed(2);
+    el('walletAmount').style.fontSize = '';
+    el('walletAmount').style.color = '';
+  }
+  if (el('walletUsd')) el('walletUsd').textContent = parseFloat(walletBal).toFixed(2) + ' USDT disponibles';
 }
 
 // Esperar a que auth.js cargue la sesión
@@ -552,7 +597,7 @@ async function loadPanelExtras(userId) {
     .order('created_at', { ascending: false })
     .limit(10);
 
-  const container = document.getElementById('misPublicaciones');
+  const container = document.getElementById('misPublicacionesPreview');
   if (!container) return;
 
   if (!listings || listings.length === 0) {
@@ -564,14 +609,16 @@ async function loadPanelExtras(userId) {
   }
 
   const estadoColors = { activo:'#00C853', vendido:'#888', pausado:'#FF9800' };
-  container.innerHTML = listings.map(l => `
-    <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid #222;font-size:13px">
-      <div>
-        <div style="font-weight:600">${l.titulo}</div>
-        <div style="color:#888;font-size:11px">${l.marca} · $${parseFloat(l.precio_venta).toFixed(2)} USDT</div>
+  const estadoLabel  = { activo:'● Activo', vendido:'✓ Vendido', pausado:'⏸ Pausado' };
+  container.innerHTML = listings.slice(0,5).map(l => `
+    <a href="detalle.html?id=${l.id}" style="display:flex;align-items:center;gap:12px;padding:11px 14px;background:#161616;border:1px solid #222;border-radius:12px;text-decoration:none;color:inherit;margin-bottom:8px;transition:border-color 0.15s" onmouseover="this.style.borderColor='rgba(0,200,83,0.3)'" onmouseout="this.style.borderColor='#222'">
+      <div style="flex:1;min-width:0">
+        <div style="font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${l.titulo}</div>
+        <div style="font-size:11px;color:#888;margin-top:2px">${l.marca} · $${parseFloat(l.precio_venta).toFixed(2)} USDT</div>
       </div>
-      <span style="font-size:11px;font-weight:700;color:${estadoColors[l.estado]||'#888'}">${l.estado.toUpperCase()}</span>
-    </div>`).join('');
+      <span style="font-size:11px;font-weight:700;color:${estadoColors[l.estado]||'#888'};flex-shrink:0">${estadoLabel[l.estado]||l.estado}</span>
+    </a>`).join('') +
+    (listings.length > 5 ? `<a href="mis-listings.html" style="display:block;text-align:center;padding:10px;color:var(--verde);font-size:12px;font-weight:600;text-decoration:none">Ver las ${listings.length} publicaciones →</a>` : '');
 }
 
 // Escuchar sesión para cargar extras
