@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Explorar Gift Cards - GiftLatam</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Syne:wght@700;800&display=swap" rel="stylesheet">  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root { --negro: #080808; --gris-oscuro: #111; --gris-card: #161616; --gris-borde: #222; --blanco: #F0F0F0; --gris: #888; --verde: #00C853; --naranja: #FF6B35; }
+    html, body { max-width: 100%; overflow-x: hidden; }
+    body { font-family: 'Inter', sans-serif; background: var(--negro); color: var(--blanco); padding-bottom: 90px; }
+    nav { display: flex; align-items: center; justify-content: space-between; padding: 0 14px; height: 52px; border-bottom: 1px solid var(--gris-borde); position: sticky; top: 0; z-index: 1000; background: rgba(8,8,8,0.97); backdrop-filter: blur(20px); gap: 8px; }
+    .logo { display: flex; align-items: center; gap: 7px; text-decoration: none; flex-shrink: 0; }
+    .logo-icon { width: 32px; height: 32px; background: var(--verde); border-radius: 9px; display: flex; align-items: center; justify-content: center; font-size: 16px; }
+    .logo-text { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 18px; color: #F0F0F0; }
+    .logo-text span { color: var(--verde); }
+    .nav-actions { display: flex; gap: 6px; align-items: center; flex-shrink: 0; }
+    .btn-login { background: transparent; color: var(--blanco); border: 1px solid var(--gris-borde); border-radius: 9px; padding: 7px 12px; font-size: 12px; font-family: inherit; cursor: pointer; white-space: nowrap; }
+    .btn-vender { background: var(--verde); color: #000; border: none; border-radius: 9px; padding: 7px 12px; font-family: 'Syne', sans-serif; font-weight: 700; font-size: 12px; cursor: pointer; white-space: nowrap; }
+    .search-wrap { background: var(--gris-oscuro); padding: 10px 14px; border-bottom: 1px solid var(--gris-borde); position: sticky; top: 52px; z-index: 999; }
+    .search-inner { display: flex; align-items: center; gap: 10px; background: #1a1a1a; border: 1px solid var(--gris-borde); border-radius: 12px; padding: 10px 14px; transition: border-color 0.2s; }
+    .search-inner:focus-within { border-color: var(--verde); }
+    .search-inner svg { color: var(--gris); flex-shrink: 0; }
+    .search-inner input { background: none; border: none; outline: none; color: var(--blanco); font-size: 15px; width: 100%; font-family: inherit; }
+    .search-inner input::placeholder { color: var(--gris); }
+    .clear-btn { background: none; border: none; color: var(--gris); font-size: 18px; cursor: pointer; padding: 0; display: none; flex-shrink: 0; }
+    .cat-bar { display: flex; gap: 8px; padding: 10px 14px; overflow-x: auto; scrollbar-width: none; border-bottom: 1px solid var(--gris-borde); }
+    .cat-bar::-webkit-scrollbar { display: none; }
+    .cat-pill { border: 1px solid var(--gris-borde); color: var(--gris); border-radius: 20px; padding: 6px 14px; font-size: 12px; white-space: nowrap; cursor: pointer; background: transparent; font-family: inherit; flex-shrink: 0; transition: all 0.2s; }
+    .cat-pill.active { border-color: var(--verde); color: var(--verde); background: rgba(0,200,83,0.08); }
+    .filters-row { display: flex; gap: 8px; padding: 10px 14px; overflow-x: auto; scrollbar-width: none; align-items: center; border-bottom: 1px solid var(--gris-borde); background: var(--negro); }
+    .filters-row::-webkit-scrollbar { display: none; }
+    .filter-btn { border: 1px solid var(--gris-borde); color: var(--gris); border-radius: 8px; padding: 5px 12px; font-size: 12px; white-space: nowrap; cursor: pointer; background: transparent; font-family: inherit; flex-shrink: 0; }
+    .filter-btn.active { border-color: var(--verde); color: var(--verde); background: rgba(0,200,83,0.08); }
+    .results-count { font-size: 12px; color: var(--gris); white-space: nowrap; margin-left: auto; flex-shrink: 0; }
+    .container { padding: 14px; max-width: 1280px; margin: 0 auto; }
+    .voucher-card { display: flex; flex-direction: row; align-items: center; gap: 12px; background: var(--gris-card); border: 1px solid var(--gris-borde); border-radius: 14px; padding: 12px 14px; cursor: pointer; text-decoration: none; color: inherit; margin-bottom: 8px; transition: border-color 0.15s; }
+    .voucher-card:hover { border-color: rgba(0,200,83,0.35); }
+    .voucher-icon { width: 46px; height: 46px; min-width: 46px; border-radius: 11px; display: flex; align-items: center; justify-content: center; font-size: 22px; flex-shrink: 0; background: #1a1a1a; }
+    .voucher-info { flex: 1; min-width: 0; }
+    .voucher-name { font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 700; color: var(--blanco); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; padding-bottom: 4px; }
+    .voucher-meta { font-size: 11px; color: var(--gris); display: flex; align-items: center; gap: 5px; flex-wrap: wrap; }
+    .badge { background: rgba(0,200,83,0.12); color: var(--verde); border: 1px solid rgba(0,200,83,0.25); border-radius: 5px; padding: 1px 6px; font-size: 10px; font-weight: 700; }
+    .voucher-price { flex-shrink: 0; width: 70px; display: flex; flex-direction: column; align-items: flex-end; gap: 2px; }
+    .price-main { font-family: 'Syne', sans-serif; font-size: 15px; font-weight: 800; color: var(--verde); display: block; text-align: right; line-height: 1.4; font-variant-numeric: tabular-nums; }
+    .price-old { font-size: 11px; color: var(--gris); text-decoration: line-through; display: block; text-align: right; }
+    .no-results { text-align: center; padding: 60px 20px; }
+    .loading { text-align: center; padding: 40px 20px; color: var(--gris); font-size: 14px; }
+    .loading-spinner { width: 32px; height: 32px; border: 3px solid var(--gris-borde); border-top-color: var(--verde); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 12px; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .empty-state { text-align: center; padding: 60px 20px; }
+    .empty-state-emoji { font-size: 48px; margin-bottom: 14px; display: block; }
+    .empty-state-title { font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 700; margin-bottom: 8px; }
+    .empty-state-sub { font-size: 13px; color: var(--gris); margin-bottom: 20px; }
+    .btn-publicar { background: var(--verde); color: #000; border: none; border-radius: 12px; padding: 12px 24px; font-family: 'Syne', sans-serif; font-weight: 700; font-size: 14px; cursor: pointer; text-decoration: none; display: inline-block; }
+    .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(14,14,14,0.97); border-top: 1px solid var(--gris-borde); display: flex; justify-content: space-around; align-items: center; padding: 8px 0 14px; z-index: 9999; backdrop-filter: blur(20px); }
+    .nav-item { display: flex; flex-direction: column; align-items: center; gap: 3px; cursor: pointer; color: var(--gris); font-size: 10px; padding: 2px 8px; }
+    .nav-item.active { color: var(--verde); }
+    .nav-item svg { width: 21px; height: 21px; }
+    @media (min-width: 768px) { .vouchers-list { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; } .voucher-card { margin-bottom: 0; } }
+    @media (min-width: 1024px) { .bottom-nav { display: none; } .vouchers-list { grid-template-columns: repeat(3, 1fr); } }
+  </style>
+  <!-- GiftLatam core -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.js"></script>
+  <script src="supabase.js"></script>
+  <script src="auth.js"></script>
+  <script src="search.js"></script>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="logo">
+    <div class="logo-icon">💎</div>
+    <span class="logo-text">Gift<span>Latam</span></span>
+  </a>
+  <div class="nav-actions" id="navActions">
+    <button class="btn-login" id="navAuthBtn" onclick="window.location='login.html'">Iniciar sesión</button>
+    <button class="btn-vender" onclick="window.location='publicar.html'">+ Vender</button>
+  </div>
+</nav>
+
+<div class="search-wrap">
+  <div class="search-inner">
+    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+    <input type="text" id="searchInput" placeholder="Buscar Netflix, Steam, Spotify, PSN..." oninput="doSearch(this.value)">
+    <button class="clear-btn" id="clearBtn" onclick="clearSearch()">✕</button>
+  </div>
+</div>
+
+<div class="cat-bar">
+  <div class="cat-pill active" data-cat="all" onclick="filterCat(this)">🔥 Todos</div>
+  <div class="cat-pill" data-cat="gaming" onclick="filterCat(this)">🎮 Gaming</div>
+  <div class="cat-pill" data-cat="streaming" onclick="filterCat(this)">🎬 Streaming</div>
+  <div class="cat-pill" data-cat="retail" onclick="filterCat(this)">🛒 Retail</div>
+  <div class="cat-pill" data-cat="comida" onclick="filterCat(this)">🍔 Comida</div>
+  <div class="cat-pill" data-cat="musica" onclick="filterCat(this)">🎵 Música</div>
+  <div class="cat-pill" data-cat="viajes" onclick="filterCat(this)">✈️ Viajes</div>
+</div>
+
+<div class="filters-row">
+  <button class="filter-btn active" data-sort="created_at" onclick="filterSort(this)">Más nuevos</button>
+  <button class="filter-btn" data-sort="precio_asc" onclick="filterSort(this)">Precio ↑</button>
+  <button class="filter-btn" data-sort="precio_desc" onclick="filterSort(this)">Precio ↓</button>
+  <div class="results-count" id="resultsCount">Cargando...</div>
+</div>
+
+<div class="container">
+  <div id="vouchersList">
+    <div class="loading">
+      <div class="loading-spinner"></div>
+      Cargando gift cards...
+    </div>
+  </div>
+</div>
+
+<div class="bottom-nav">
+  <div class="nav-item" onclick="window.location='index.html'"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>Inicio</div>
+  <div class="nav-item active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>Explorar</div>
+  <div class="nav-item" onclick="window.location='publicar.html'"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>Vender</div>
+  <div class="nav-item" onclick="window.location='explorar.html'"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 12V22H4V12"/><path d="M22 7H2v5h20V7z"/><path d="M12 22V7"/></svg>Ofertas</div>
+  <div class="nav-item" onclick="window.location='panel.html'"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Perfil</div>
+</div>
+
+<script>
+
+let allCards = [];
+let activeCat = 'all';
+let activeSort = 'created_at';
+let searchQuery = '';
+
+// Cat icons map
+const catIcons = {
+  gaming: '🎮', streaming: '🎬', retail: '🛒', comida: '🍔',
+  musica: '🎵', viajes: '✈️', otro: '📄', cuenta: '👤', licencia: '🔑', gift_card: '🎁'
+};
+
+// Auth check
+sb.auth.getSession().then(({ data }) => {
+  if (data.session) {
+    const btn = document.getElementById('navAuthBtn');
+    if (btn) { btn.textContent = 'Mi panel'; btn.onclick = () => window.location.href = 'panel.html'; }
+  }
+});
+
+// Cargar desde DB
+
+  const brandLogos = {
+    'xbox':        'https://cdn.simpleicons.org/xbox/107C10',
+    'playstation': 'https://cdn.simpleicons.org/playstation/003791',
+    'psn':         'https://cdn.simpleicons.org/playstation/003791',
+    'steam':       'https://cdn.simpleicons.org/steam/66c0f4',
+    'apple':       'https://cdn.simpleicons.org/apple/f5f5f7',
+    'nintendo':    'https://cdn.simpleicons.org/nintendo/E60012',
+    'roblox':      'https://cdn.simpleicons.org/roblox/E2231A',
+    'pubg':        'https://cdn.simpleicons.org/pubg/F0B400',
+    'spotify':     'https://cdn.simpleicons.org/spotify/1ED760',
+    'netflix':     'https://cdn.simpleicons.org/netflix/E50914',
+    'amazon':      'https://cdn.simpleicons.org/amazon/FF9900',
+    'youtube':     'https://cdn.simpleicons.org/youtube/FF0000',
+    'discord':     'https://cdn.simpleicons.org/discord/5865F2',
+    'twitch':      'https://cdn.simpleicons.org/twitch/9146FF',
+    'minecraft':   'https://cdn.simpleicons.org/minecraft/62B47A',
+    'epic':        'https://cdn.simpleicons.org/epicgames/ffffff',
+    'google play': 'https://cdn.simpleicons.org/googleplay/414141',
+  };
+  const catIcons = {
+    gaming:'🎮', streaming:'🎬', retail:'🛒', comida:'🍔',
+    musica:'🎵', viajes:'✈️', otro:'📄', cuenta:'👤',
+    licencia:'🔑', gift_card:'🎁'
+  };
+
+  function getBrandIcon(marca, tipo, size=32) {
+    const key = (marca || '').toLowerCase().trim();
+    const url = brandLogos[key];
+    if (url) return '<img src="' + url + '" width="' + size + '" height="' + size + '" alt="' + (marca||'') + '" style="display:block;object-fit:contain" onerror="this.replaceWith(document.createTextNode(\'' + (catIcons[tipo]||'🎁') + '\'))">';
+    return catIcons[tipo] || '🎁';
+  }
+
+async function loadCards() {
+  const list = document.getElementById('vouchersList');
+
+  const timeout = setTimeout(() => {
+    list.innerHTML = errorHTML('⏱️', 'La conexión está tardando', 'Verificá tu conexión e intentá de nuevo.', 'loadCards()');
+  }, 10000);
+
+  let data, error;
+  try {
+    ({ data, error } = await sb
+      .from('gift_cards')
+      .select('id, titulo, marca, tipo, region, precio_venta, valor_nominal, estado')
+      .eq('estado', 'activo')
+      .order('created_at', { ascending: false }));
+  } catch(e) {
+    clearTimeout(timeout);
+    list.innerHTML = errorHTML('⚠️', 'Error de conexión', e.message || 'No se pudo conectar con Supabase.', 'loadCards()');
+    return;
+  }
+
+  clearTimeout(timeout);
+
+  if (error) {
+    list.innerHTML = errorHTML('⚠️', 'Error al cargar', error.message, 'loadCards()');
+    return;
+  }
+
+  allCards = data || [];
+  renderCards(); // fuera del try — errores de render se ven en consola, no tapan datos
+}
+
+function errorHTML(emoji, title, sub, retry) {
+  return `<div class="empty-state">
+    <span class="empty-state-emoji">${emoji}</span>
+    <div class="empty-state-title">${title}</div>
+    <div class="empty-state-sub">${sub}</div>
+    <button onclick="${retry}" style="margin-top:16px;padding:10px 24px;background:var(--verde);color:#000;border:none;border-radius:10px;font-weight:700;cursor:pointer;font-size:14px">↻ Reintentar</button>
+  </div>`;
+}
+
+function renderCards() {
+  const list = document.getElementById('vouchersList');
+  let filtered = [...allCards];
+
+  // Filtro categoría
+  if (activeCat !== 'all') {
+    const catMap = {
+      gaming:    ['steam','psn','xbox','roblox','nintendo','minecraft','valorant','fortnite','freef ire','league','gaming','playstation','epic','pubg'],
+      streaming: ['netflix','disney','hbo','prime','amazon video','streaming','hulu','paramount','apple tv'],
+      retail:    ['amazon','mercado','google play','app store','ebay','shein'],
+      comida:    ['rappi','pedidos','uber eats','ifood','delivery'],
+      musica:    ['spotify','apple music','youtube premium','tidal','música','deezer'],
+      viajes:    ['booking','airbnb','despegar','expedia','viajes'],
+    };
+    const keywords = catMap[activeCat] || [];
+    filtered = filtered.filter(card => {
+      const m = (card.marca || '').toLowerCase();
+      const t = (card.titulo || '').toLowerCase();
+      return keywords.some(k => m.includes(k) || t.includes(k)) || card.tipo === activeCat;
+    });
+  }
+
+  // Filtro búsqueda
+  if (searchQuery) {
+    filtered = filtered.filter(card =>
+      (card.titulo || '').toLowerCase().includes(searchQuery) ||
+      (card.marca  || '').toLowerCase().includes(searchQuery)
+    );
+  }
+
+  // Ordenar
+  if (activeSort === 'precio_asc')  filtered.sort((a,b) => a.precio_venta - b.precio_venta);
+  if (activeSort === 'precio_desc') filtered.sort((a,b) => b.precio_venta - a.precio_venta);
+
+  // Contador
+  const n = filtered.length;
+  document.getElementById('resultsCount').textContent = n + ' resultado' + (n !== 1 ? 's' : '');
+
+  // Estado vacío
+  if (n === 0) {
+    const isSearch = !!searchQuery;
+    const isCat    = activeCat !== 'all';
+    list.innerHTML = `<div class="empty-state">
+      <span class="empty-state-emoji">${isSearch ? '🔍' : isCat ? '📭' : '🌱'}</span>
+      <div class="empty-state-title">${
+        isSearch ? 'Sin resultados para "' + searchQuery + '"'
+        : isCat  ? 'No hay productos en esta categoría todavía'
+        :          'El catálogo está creciendo'
+      }</div>
+      <div class="empty-state-sub">${
+        isSearch ? 'Revisá la ortografía o buscá otra marca'
+        : isCat  ? 'Sé el primero en publicar aquí'
+        :          '¡Publicá la primera gift card y llegá primero a los compradores!'
+      }</div>
+      <a href="${isSearch ? '#' : 'publicar.html'}"
+         onclick="${isSearch ? 'clearSearch();return false' : ''}"
+         style="margin-top:14px;display:inline-block;padding:10px 22px;background:var(--verde);color:#000;border-radius:10px;font-weight:700;text-decoration:none;font-size:13px">
+        ${isSearch ? '← Ver todos' : '+ Publicar gift card'}
+      </a>
+    </div>`;
+    return;
+  }
+
+  // Render cards
+  const html = filtered.map(card => {
+    const marca   = card.marca || '';
+    const precio  = parseFloat(card.precio_venta  || 0).toFixed(2);
+    const nominal = parseFloat(card.valor_nominal || 0);
+    const pct     = (nominal > 0 && card.precio_venta < nominal)
+                    ? Math.round((1 - card.precio_venta / nominal) * 100) : 0;
+    const badge   = pct > 0 ? `<span class="badge">-${pct}%</span>` : '';
+    const oldPx   = (nominal > 0) ? `<span class="price-old">$${nominal.toFixed(2)}</span>` : '';
+    const region  = (card.region && card.region !== 'Global') ? ' · ' + card.region : '';
+    const icon    = getBrandIcon(marca, card.tipo);
+
+    return `<a href="detalle.html?id=${card.id}" class="voucher-card">
+        <div class="voucher-icon">${icon}</div>
+        <div class="voucher-info">
+          <span class="voucher-name">${card.titulo}</span>
+          <div class="voucher-meta">${marca}${region} ${badge}</div>
+        </div>
+        <div class="voucher-price">
+          <span class="price-main">$${precio} USDT</span>
+          ${oldPx}
+        </div>
+      </a>`;
+  }).join('');
+
+  list.innerHTML = `<div class="vouchers-list">${html}</div>`;
+}
+
+
+function doSearch(val) {
+  searchQuery = val.toLowerCase().trim();
+  document.getElementById('clearBtn').style.display = searchQuery ? 'block' : 'none';
+  renderCards();
+}
+
+function clearSearch() {
+  document.getElementById('searchInput').value = '';
+  searchQuery = '';
+  document.getElementById('clearBtn').style.display = 'none';
+  renderCards();
+}
+
+function filterCat(el) {
+  document.querySelectorAll('.cat-pill').forEach(p => p.classList.remove('active'));
+  el.classList.add('active');
+  activeCat = el.dataset.cat;
+  renderCards();
+}
+
+function filterSort(el) {
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  activeSort = el.dataset.sort;
+  renderCards();
+}
+
+// URL params
+window.addEventListener('DOMContentLoaded', () => {
+  const params = new URLSearchParams(window.location.search);
+  const q = params.get('q');
+  const cat = params.get('cat');
+  if (q) { document.getElementById('searchInput').value = q; searchQuery = q.toLowerCase(); }
+  if (cat) {
+    const pill = document.querySelector(`.cat-pill[data-cat="${cat}"]`);
+    if (pill) { document.querySelectorAll('.cat-pill').forEach(p => p.classList.remove('active')); pill.classList.add('active'); activeCat = cat; }
+  }
+  loadCards();
+});
+</script>
+</body>
+</html>
