@@ -42,7 +42,10 @@
     .input-prefix { position: relative; }
     .input-prefix span { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--gris); }
     .input-prefix input { padding-left: 26px; }
-    .delivery-option { display: flex; align-items: flex-start; gap: 12px; background: var(--negro); border: 2px solid var(--gris-borde); border-radius: 12px; padding: 16px; cursor: pointer; margin-bottom: 10px; transition: border-color 0.2s; }
+    .delivery-option { display: flex; align-items: flex-start; gap: 12px; background: var(--negro); border: 2px solid var(--gris-borde); border-radius: 12px; padding: 16px; cursor: pointer; margin-bottom: 10px; transition: border-color 0.2s; overflow: hidden; }
+    .delivery-option > div { flex: 1; min-width: 0; }
+    .delivery-option-title { font-size: 14px; font-weight: 700; margin-bottom: 4px; white-space: nowrap; }
+    .delivery-option-desc { font-size: 12px; color: var(--gris); line-height: 1.5; word-break: break-word; overflow-wrap: break-word; }
     .delivery-option.selected { border-color: var(--verde); }
     .delivery-option input[type=radio] { margin-top: 2px; accent-color: var(--verde); flex-shrink: 0; }
     .delivery-option-title { font-size: 14px; font-weight: 700; margin-bottom: 3px; }
@@ -168,14 +171,14 @@
   <div id="step3" style="display:none">
     <div class="card">
       <div class="card-title">📦 Método de entrega</div>
-      <div class="delivery-option selected" id="opt-auto" onclick="selectDelivery('auto')">
+      <div class="delivery-option selected" id="opt-auto" onclick="selectDelivery('auto')" style="overflow:hidden">
         <input type="radio" name="entrega" value="auto" checked>
         <div>
           <div class="delivery-option-title">⚡ Entrega automática</div>
           <div class="delivery-option-desc">Cargás el código ahora y se entrega solo cuando el comprador pague.</div>
         </div>
       </div>
-      <div class="delivery-option" id="opt-manual" onclick="selectDelivery('manual')">
+      <div class="delivery-option" id="opt-manual" onclick="selectDelivery('manual')" style="overflow:hidden">
         <input type="radio" name="entrega" value="manual">
         <div>
           <div class="delivery-option-title">✋ Entrega manual</div>
