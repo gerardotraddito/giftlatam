@@ -42,14 +42,6 @@
     .input-prefix { position: relative; }
     .input-prefix span { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--gris); }
     .input-prefix input { padding-left: 26px; }
-    .delivery-option { display: flex; align-items: flex-start; gap: 12px; background: var(--negro); border: 2px solid var(--gris-borde); border-radius: 12px; padding: 16px; cursor: pointer; margin-bottom: 10px; transition: border-color 0.2s; overflow: hidden; }
-    .delivery-option > div { flex: 1; min-width: 0; }
-    .delivery-option-title { font-size: 14px; font-weight: 700; margin-bottom: 4px; white-space: nowrap; }
-    .delivery-option-desc { font-size: 12px; color: var(--gris); line-height: 1.5; word-break: break-word; overflow-wrap: break-word; }
-    .delivery-option.selected { border-color: var(--verde); }
-    .delivery-option input[type=radio] { margin-top: 2px; accent-color: var(--verde); flex-shrink: 0; }
-    .delivery-option-title { font-size: 14px; font-weight: 700; margin-bottom: 3px; }
-    .delivery-option-desc { font-size: 12px; color: var(--gris); line-height: 1.4; }
     .price-summary { background: var(--negro); border: 1px solid var(--gris-borde); border-radius: 12px; padding: 16px; margin-bottom: 20px; }
     .price-row { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 8px; }
     .price-row.total { font-size: 15px; font-weight: 700; color: var(--verde); border-top: 1px solid var(--gris-borde); padding-top: 10px; margin-top: 4px; }
@@ -72,6 +64,14 @@
     .nav-item.active { color: var(--verde); }
     .nav-item svg { width: 21px; height: 21px; }
     @media (min-width: 1024px) { .bottom-nav { display: none; } }
+  
+  
+    .d-option { display:flex; flex-direction:row; align-items:flex-start; gap:12px; background:var(--negro); border:2px solid var(--gris-borde); border-radius:12px; padding:14px; cursor:pointer; margin-bottom:10px; transition:border-color 0.2s; box-sizing:border-box; width:100%; overflow:hidden; }
+    .d-option.d-selected { border-color:var(--verde); }
+    .d-option input[type=radio] { flex-shrink:0; margin-top:3px; accent-color:var(--verde); }
+    .d-text { flex:1; overflow:hidden; min-width:0; }
+    .d-title { font-size:14px; font-weight:700; margin-bottom:4px; }
+    .d-desc { font-size:12px; color:var(--gris); line-height:1.5; white-space:normal; word-break:break-word; }
   </style>
   <!-- GiftLatam core -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.js"></script>
@@ -171,30 +171,35 @@
   <div id="step3" style="display:none">
     <div class="card">
       <div class="card-title">📦 Método de entrega</div>
-      <div class="delivery-option selected" id="opt-auto" onclick="selectDelivery('auto')" style="overflow:hidden">
+
+      <div class="d-option d-selected" id="opt-auto" onclick="selectDelivery('auto')">
         <input type="radio" name="entrega" value="auto" checked>
-        <div>
-          <div class="delivery-option-title">⚡ Entrega automática</div>
-          <div class="delivery-option-desc">Cargás el código ahora y se entrega solo cuando el comprador pague.</div>
+        <div class="d-text">
+          <div class="d-title">⚡ Entrega automática</div>
+          <div class="d-desc">Cargás el código ahora y se entrega solo cuando el comprador pague.</div>
         </div>
       </div>
-      <div class="delivery-option" id="opt-manual" onclick="selectDelivery('manual')" style="overflow:hidden">
+
+      <div class="d-option" id="opt-manual" onclick="selectDelivery('manual')">
         <input type="radio" name="entrega" value="manual">
-        <div>
-          <div class="delivery-option-title">✋ Entrega manual</div>
-          <div class="delivery-option-desc">Vos enviás el código manualmente en 30 minutos.</div>
+        <div class="d-text">
+          <div class="d-title">✋ Entrega manual</div>
+          <div class="d-desc">Vos enviás el código manualmente en máximo 30 minutos.</div>
         </div>
       </div>
+
       <div class="form-group" id="codigoGroup" style="margin-top:16px">
         <label>Código de la gift card *</label>
         <input type="text" id="codigo" placeholder="XXXX-XXXX-XXXX-XXXX" style="font-family:monospace;letter-spacing:2px">
         <div style="font-size:11px;color:var(--gris);margin-top:5px">🔒 El código solo se revela al comprador tras el pago confirmado.</div>
       </div>
+
       <div class="btn-row">
         <button class="btn-back" onclick="goStep(2)">← Atrás</button>
         <button class="btn-next" onclick="goStep(4)">Siguiente →</button>
       </div>
     </div>
+  </div>
   </div>
 
   <!-- STEP 4 -->
@@ -248,7 +253,7 @@ let tipoSeleccionado = 'gift_card';
 let currentUser = null;
 
 // Verificar sesión
-sb.auth.getSession().then(({ data }) => {
+if (typeof sb === 'undefined') { console.warn('Supabase no disponible localmente'); } else sb.auth.getSession().then(({ data }) => {
   if (!data.session) { window.location.href = 'login.html'; return; }
   currentUser = data.session.user;
 });
@@ -282,9 +287,9 @@ function validateStep2() {
 }
 
 function selectDelivery(type) {
-  document.getElementById('opt-auto').classList.remove('selected');
-  document.getElementById('opt-manual').classList.remove('selected');
-  document.getElementById('opt-' + type).classList.add('selected');
+  document.getElementById('opt-auto').classList.remove('d-selected');
+  document.getElementById('opt-manual').classList.remove('d-selected');
+  document.getElementById('opt-' + type).classList.add('d-selected');
   document.querySelector('input[value="' + type + '"]').checked = true;
   document.getElementById('codigoGroup').style.display = type === 'auto' ? 'block' : 'none';
 }
