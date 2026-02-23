@@ -211,7 +211,7 @@ function renderCards() {
   }
 
   const html = filtered.map(card => {
-    const icon = catIcons[card.tipo] || '🎁';
+    const icon = getBrandIcon(card.marca, card.tipo);
     const desc = card.region !== 'Global' ? card.region : '';
     const pct = card.valor_nominal ? Math.round((1 - card.precio_venta / card.valor_nominal) * 100) : 0;
     const badge = pct > 0 ? `<span class="badge">-${pct}%</span>` : '';
