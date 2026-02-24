@@ -3,416 +3,332 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>GiftLatam - Disputas</title>
+  <title>Disputas - GiftLatam</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Syne:wght@700;800&display=swap" rel="stylesheet">
-  <style>/* === SHARED CSS - GIFTLATAM === */
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-:root {
-  --negro: #080808; --oscuro: #111111; --card: #161616;
-  --borde: #222222; --blanco: #F0F0F0; --gris: #888888;
-  --verde: #00C853; --naranja: #FF6B35;
-}
-html, body { max-width: 100%; overflow-x: hidden; }
-body {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-  background: var(--negro); color: var(--blanco);
-  padding-bottom: 80px;
-}
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{--negro:#080808;--card:#161616;--borde:#222;--blanco:#F0F0F0;--gris:#888;--verde:#00C853;--naranja:#FF6B35;--rojo:#FF4444;--azul:#3B82F6}
+    body{font-family:'Inter',sans-serif;background:var(--negro);color:var(--blanco);padding-bottom:90px;min-height:100vh}
 
-/* NAV */
-nav {
-  display: flex; align-items: center;
-  padding: 0 12px; height: 54px;
-  border-bottom: 1px solid var(--borde);
-  position: sticky; top: 0; z-index: 1000;
-  background: rgba(8,8,8,0.97); backdrop-filter: blur(16px);
-  gap: 8px;
-}
-.logo {
-  display: flex; align-items: center; gap: 7px;
-  text-decoration: none; flex-shrink: 0;
-}
-.logo-icon {
-  width: 32px; height: 32px; background: var(--verde);
-  border-radius: 9px; display: flex; align-items: center;
-  justify-content: center; flex-shrink: 0;
-}
-.logo-icon svg { width: 18px; height: 18px; }
-.logo-text {
-  font-weight: 800; font-size: 19px; color: var(--blanco);
-  white-space: nowrap;
-}
-.logo-text .g { color: var(--verde); }
+    /* NAV */
+    nav{display:flex;align-items:center;padding:0 12px;height:54px;border-bottom:1px solid var(--borde);position:sticky;top:0;z-index:100;background:rgba(8,8,8,0.97);backdrop-filter:blur(16px);gap:8px}
+    .logo{display:flex;align-items:center;gap:7px;text-decoration:none}
+    .logo-icon{width:32px;height:32px;background:var(--verde);border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+    .logo-text{font-family:'Syne',sans-serif;font-weight:800;font-size:18px;color:var(--blanco)}
+    .logo-text .g{color:var(--verde)}
+    .nav-spacer{flex:1}
+    .btn-vender{background:var(--verde);color:#000;border:none;border-radius:9px;padding:8px 14px;font-family:'Inter',sans-serif;font-weight:700;font-size:13px;cursor:pointer;white-space:nowrap;text-decoration:none}
 
-/* spacer pushes actions to right */
-.nav-spacer { flex: 1; }
+    .container{max-width:600px;margin:0 auto;padding:20px 14px}
 
-.nav-search {
-  flex: 1; max-width: 400px; display: none;
-  align-items: center; gap: 8px;
-  background: var(--card); border: 1px solid var(--borde);
-  border-radius: 10px; padding: 0 12px; height: 36px;
-}
-.nav-search input {
-  background: none; border: none; outline: none;
-  color: var(--blanco); font-size: 13px; width: 100%;
-  font-family: 'Inter', sans-serif;
-}
-.nav-search svg { color: var(--gris); flex-shrink: 0; }
+    /* Tabs */
+    .tabs{display:flex;gap:4px;background:var(--card);border:1px solid var(--borde);border-radius:14px;padding:4px;margin-bottom:20px}
+    .tab{flex:1;text-align:center;padding:9px 6px;border-radius:10px;font-size:13px;cursor:pointer;font-weight:500;transition:all 0.15s;color:var(--gris)}
+    .tab.active{background:var(--verde);color:#000;font-weight:700}
 
-.nav-actions { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+    /* Paneles */
+    .panel{display:none}
+    .panel.active{display:block}
 
-/* MOBILE: hide "Iniciar sesión", show only Vender */
-.btn-login {
-  display: none;
-  background: transparent; color: var(--blanco);
-  border: 1px solid var(--borde); border-radius: 9px;
-  padding: 7px 12px; font-size: 13px;
-  font-family: 'Inter', sans-serif; cursor: pointer; white-space: nowrap;
-}
-.btn-vender {
-  background: var(--verde); color: #000; border: none;
-  border-radius: 9px; padding: 8px 14px;
-  font-family: 'Inter', sans-serif; font-weight: 700;
-  font-size: 13px; cursor: pointer; white-space: nowrap;
-}
-.btn-login:hover { border-color: var(--verde); color: var(--verde); }
+    /* Dispute card */
+    .dispute-card{background:var(--card);border:1px solid var(--borde);border-radius:14px;padding:16px;margin-bottom:10px;cursor:pointer;transition:border-color 0.15s}
+    .dispute-card:hover{border-color:rgba(0,200,83,0.3)}
+    .d-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;gap:10px}
+    .d-product{font-size:14px;font-weight:700}
+    .d-date{font-size:11px;color:var(--gris);margin-top:2px}
+    .d-desc{font-size:12px;color:var(--gris);line-height:1.5;margin-top:4px}
+    .d-status{border-radius:6px;padding:3px 9px;font-size:11px;font-weight:700;flex-shrink:0}
+    .st-abierto{background:rgba(255,107,53,0.1);color:var(--naranja)}
+    .st-revision{background:rgba(59,130,246,0.1);color:var(--azul)}
+    .st-resuelto{background:rgba(0,200,83,0.1);color:var(--verde)}
+    .st-cerrado{background:rgba(136,136,136,0.1);color:var(--gris)}
 
-/* CAT BAR */
-.cat-bar {
-  display: flex; gap: 8px; padding: 8px 12px;
-  overflow-x: auto; border-bottom: 1px solid var(--borde);
-  scrollbar-width: none; background: var(--oscuro);
-}
-.cat-bar::-webkit-scrollbar { display: none; }
-.cat-pill {
-  border: 1px solid var(--borde); color: var(--gris);
-  border-radius: 20px; padding: 5px 12px; font-size: 12px;
-  white-space: nowrap; cursor: pointer; background: transparent;
-  font-family: 'Inter', sans-serif; flex-shrink: 0;
-}
-.cat-pill.active {
-  border-color: var(--verde); color: var(--verde);
-  background: rgba(0,200,83,0.08);
-}
+    /* Empty */
+    .empty{text-align:center;padding:50px 20px;color:var(--gris)}
+    .empty-emoji{font-size:44px;display:block;margin-bottom:14px}
+    .empty-title{font-family:'Syne',sans-serif;font-size:17px;font-weight:700;color:var(--blanco);margin-bottom:8px}
+    .empty-sub{font-size:13px;line-height:1.6}
 
-/* LAYOUT */
-.container { max-width: 1280px; margin: 0 auto; padding: 0 14px; }
-.main { padding: 20px 0; }
+    /* Formulario abrir disputa */
+    .field{background:var(--card);border:1px solid var(--borde);border-radius:14px;overflow:hidden;margin-bottom:10px;transition:border-color 0.2s}
+    .field:focus-within{border-color:rgba(0,200,83,0.5)}
+    .field-label{font-size:11px;font-weight:600;color:var(--gris);padding:10px 14px 0;display:block}
+    .field input,.field textarea,.field select{width:100%;background:transparent;border:none;outline:none;color:var(--blanco);font-family:'Inter',sans-serif;font-size:14px;padding:6px 14px 12px;resize:none}
+    .field textarea{min-height:90px;line-height:1.5}
+    .field select{cursor:pointer;-webkit-appearance:none;appearance:none}
+    .field select option{background:#1a1a1a}
+    .btn-submit{width:100%;background:var(--verde);color:#000;border:none;border-radius:14px;padding:14px;font-family:'Syne',sans-serif;font-weight:800;font-size:15px;cursor:pointer;margin-top:4px}
+    .btn-submit:disabled{opacity:0.4;cursor:not-allowed}
 
-/* HERO */
-.hero-banner {
-  background: linear-gradient(135deg, #003D1A 0%, #001A0D 60%, #002510 100%);
-  border: 1px solid rgba(0,200,83,0.2); border-radius: 20px;
-  padding: 26px 20px; margin-bottom: 16px; overflow: hidden;
-}
-.hero-badge {
-  display: inline-flex; align-items: center; gap: 5px;
-  background: rgba(0,200,83,0.12); border: 1px solid rgba(0,200,83,0.25);
-  border-radius: 20px; padding: 4px 11px; font-size: 11px;
-  color: var(--verde); font-weight: 600; margin-bottom: 14px;
-}
-.hero-title {
-  font-size: clamp(26px, 7vw, 50px); font-weight: 800;
-  line-height: 1.15; margin-bottom: 12px;
-}
-.hero-title .accent { color: var(--verde); }
-.hero-sub { font-size: 14px; color: #aaa; line-height: 1.6; margin-bottom: 20px; }
-.hero-btns { display: flex; gap: 10px; flex-wrap: wrap; }
-.btn-primary {
-  background: var(--verde); color: #000; border: none; border-radius: 12px;
-  padding: 11px 20px; font-family: 'Inter', sans-serif; font-weight: 700;
-  font-size: 14px; cursor: pointer; text-decoration: none;
-  display: inline-flex; align-items: center; gap: 6px;
-}
-.btn-ghost {
-  background: transparent; color: var(--blanco); border: none;
-  padding: 11px 14px; font-size: 14px; font-family: 'Inter', sans-serif;
-  cursor: pointer; text-decoration: none; display: inline-flex; align-items: center;
-}
+    /* FAQ */
+    .faq-item{background:var(--card);border:1px solid var(--borde);border-radius:14px;margin-bottom:8px;overflow:hidden}
+    .faq-q{padding:14px 16px;font-size:14px;font-weight:600;cursor:pointer;display:flex;justify-content:space-between;align-items:center;user-select:none}
+    .faq-q .arrow{transition:transform 0.2s;font-size:16px;color:var(--gris)}
+    .faq-item.open .arrow{transform:rotate(180deg)}
+    .faq-a{padding:0 16px;max-height:0;overflow:hidden;transition:all 0.2s;font-size:13px;color:var(--gris);line-height:1.6}
+    .faq-item.open .faq-a{padding:0 16px 14px;max-height:300px}
 
-/* STATS */
-.stats-row {
-  display: grid; grid-template-columns: repeat(2, 1fr);
-  gap: 8px; margin-bottom: 28px;
-}
-.stat-card {
-  background: var(--card); border: 1px solid var(--borde);
-  border-radius: 14px; padding: 14px; text-align: center;
-}
-.stat-num {
-  font-size: clamp(20px, 5vw, 28px); font-weight: 800;
-  color: var(--verde); display: block; line-height: 1; margin-bottom: 5px;
-  font-variant-numeric: tabular-nums;
-}
-.stat-label { font-size: 11px; color: var(--gris); display: block; line-height: 1.4; }
+    /* Spinner */
+    .spinner{width:26px;height:26px;border:3px solid #222;border-top-color:var(--verde);border-radius:50%;animation:spin 0.8s linear infinite;margin:30px auto}
+    @keyframes spin{to{transform:rotate(360deg)}}
 
-/* SECTION */
-.section { margin-bottom: 28px; }
-.section-header {
-  display: flex; justify-content: space-between;
-  align-items: center; margin-bottom: 12px;
-}
-.section-title { font-size: 16px; font-weight: 700; }
-.ver-todo { color: var(--verde); font-size: 12px; text-decoration: none; }
+    /* Toast */
+    .toast{position:fixed;top:66px;left:50%;transform:translateX(-50%) translateY(-16px);background:#1a1a1a;border:1px solid var(--verde);color:var(--verde);padding:10px 20px;border-radius:10px;font-size:13px;font-weight:600;z-index:9999;opacity:0;transition:all 0.25s;pointer-events:none;white-space:nowrap}
+    .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 
-/* BRANDS */
-.brands-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 7px; }
-.brand-card {
-  background: var(--card); border: 1px solid var(--borde);
-  border-radius: 12px; padding: 10px 6px; text-align: center;
-  cursor: pointer; display: flex; flex-direction: column;
-  align-items: center; gap: 5px; transition: border-color 0.2s;
-}
-.brand-card:hover { border-color: rgba(0,200,83,0.4); }
-.brand-icon {
-  width: 38px; height: 38px; border-radius: 10px;
-  display: flex; align-items: center; justify-content: center; font-size: 20px;
-}
-.brand-name {
-  font-size: 10px; font-weight: 500;
-  overflow: hidden; text-overflow: ellipsis; white-space: nowrap; width: 100%;
-}
-.brand-count { font-size: 9px; color: var(--gris); }
-
-/* VOUCHER CARDS — THE DEFINITIVE FIX */
-.vouchers-grid { display: grid; grid-template-columns: 1fr; gap: 8px; }
-
-.voucher-card {
-  display: flex; flex-direction: row; align-items: center;
-  gap: 11px; background: var(--card);
-  border: 1px solid var(--borde); border-radius: 14px;
-  padding: 11px 13px; cursor: pointer;
-  text-decoration: none; color: inherit;
-  transition: border-color 0.15s; width: 100%;
-}
-.voucher-card:hover { border-color: rgba(0,200,83,0.3); }
-
-.voucher-icon {
-  width: 46px; height: 46px; min-width: 46px;
-  border-radius: 11px; display: flex;
-  align-items: center; justify-content: center;
-  font-size: 22px; flex-shrink: 0;
-}
-
-.voucher-info { flex: 1; min-width: 0; }
-
-/* FIX "g" CORTADA: overflow visible + padding-bottom para descenders */
-.voucher-name {
-  font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 600;
-  color: var(--blanco); white-space: nowrap;
-  overflow: hidden; text-overflow: ellipsis;
-  line-height: 1.6;         /* alto para que g/p/y no se corten */
-  padding-bottom: 2px;      /* espacio extra para descenders */
-  display: block;
-}
-.voucher-meta {
-  font-size: 11px; color: var(--gris);
-  display: flex; align-items: center; gap: 5px; flex-wrap: wrap;
-  line-height: 1.4;
-}
-.badge {
-  background: rgba(0,200,83,0.12); color: var(--verde);
-  border: 1px solid rgba(0,200,83,0.25); border-radius: 5px;
-  padding: 1px 5px; font-size: 10px; font-weight: 700;
-}
-.badge-hot {
-  background: rgba(255,107,53,0.12); color: var(--naranja);
-  border-color: rgba(255,107,53,0.25);
-}
-
-/* FIX PRECIOS: columna fija, MISMA familia y line-height */
-.voucher-price {
-  flex-shrink: 0; width: 70px;
-  display: flex; flex-direction: column;
-  align-items: flex-end; gap: 1px;
-}
-/* CLAVE: misma fuente, mismo line-height → siempre alineados */
-.price-main {
-    font-variant-numeric: tabular-nums; font-feature-settings: "tnum";
-  font-family: 'Inter', sans-serif;
-  font-size: 15px; font-weight: 800; color: var(--verde);
-  display: block; text-align: right;
-  line-height: 1.25; white-space: nowrap;
-  font-variant-numeric: tabular-nums;
-}
-.price-old {
-  font-family: 'Inter', sans-serif;
-  font-size: 11px; font-weight: 400; color: var(--gris);
-  text-decoration: line-through;
-  display: block; text-align: right;
-  line-height: 1.25; white-space: nowrap;
-  font-variant-numeric: tabular-nums;
-}
-
-/* SELL BANNER */
-.sell-banner {
-  background: linear-gradient(135deg, #1A0800, #2D1200);
-  border: 1px solid rgba(255,107,53,0.25); border-radius: 20px;
-  padding: 24px 20px; display: flex; align-items: center;
-  gap: 16px; flex-wrap: wrap; margin-bottom: 28px;
-}
-.sell-content { flex: 1; min-width: 180px; }
-.sell-title { font-size: clamp(16px, 3vw, 20px); font-weight: 700; margin-bottom: 7px; }
-.sell-sub { font-size: 13px; color: #aaa; line-height: 1.5; }
-.btn-sell {
-  background: var(--naranja); color: #fff; border: none; border-radius: 12px;
-  padding: 11px 20px; font-family: 'Inter', sans-serif; font-weight: 700;
-  font-size: 14px; cursor: pointer; white-space: nowrap;
-  flex-shrink: 0; text-decoration: none; display: inline-flex; align-items: center;
-}
-
-/* HOW IT WORKS */
-.how-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
-.how-card {
-  background: var(--card); border: 1px solid var(--borde);
-  border-radius: 16px; padding: 18px 14px;
-}
-.how-num {
-  width: 30px; height: 30px; background: rgba(0,200,83,0.1);
-  border: 1px solid rgba(0,200,83,0.25); border-radius: 8px;
-  display: flex; align-items: center; justify-content: center;
-  font-weight: 800; font-size: 13px; color: var(--verde); margin-bottom: 10px;
-}
-.how-title { font-size: 13px; font-weight: 700; margin-bottom: 5px; }
-.how-desc { font-size: 11px; color: var(--gris); line-height: 1.5; }
-
-/* FOOTER */
-footer {
-  background: var(--oscuro); border-top: 1px solid var(--borde);
-  padding: 28px 0 20px;
-}
-.footer-grid {
-  display: grid; grid-template-columns: repeat(2, 1fr);
-  gap: 20px; margin-bottom: 20px;
-}
-.footer-col-title { font-size: 12px; font-weight: 700; margin-bottom: 10px; }
-.footer-col a {
-  display: block; font-size: 12px; color: var(--gris);
-  text-decoration: none; margin-bottom: 7px;
-}
-.footer-bottom {
-  border-top: 1px solid var(--borde); padding-top: 16px;
-  display: flex; flex-direction: column; gap: 10px;
-  align-items: center; text-align: center;
-}
-.footer-copy { font-size: 11px; color: var(--gris); }
-.crypto-badges { display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; }
-.crypto-badge {
-  background: var(--card); border: 1px solid var(--borde);
-  border-radius: 6px; padding: 3px 8px; font-size: 10px; color: #aaa;
-}
-
-/* BOTTOM NAV */
-.bottom-nav {
-  position: fixed; bottom: 0; left: 0; right: 0;
-  background: rgba(14,14,14,0.97); border-top: 1px solid var(--borde);
-  display: flex; justify-content: space-around; align-items: center;
-  padding: 8px 0 14px; z-index: 9999; backdrop-filter: blur(20px);
-}
-.nav-item {
-  display: flex; flex-direction: column; align-items: center;
-  gap: 3px; cursor: pointer; color: var(--gris);
-  font-size: 10px; padding: 2px 8px;
-}
-.nav-item.active { color: var(--verde); }
-.nav-item svg { width: 21px; height: 21px; }
-
-/* RESPONSIVE */
-@media (min-width: 480px) {
-  .btn-login { display: flex; }
-}
-@media (min-width: 640px) {
-  nav { padding: 0 16px; }
-  .nav-search { display: flex; }
-}
-@media (min-width: 768px) {
-  .stats-row { grid-template-columns: repeat(4, 1fr); }
-  .how-grid { grid-template-columns: repeat(4, 1fr); }
-  .footer-grid { grid-template-columns: repeat(4, 1fr); }
-  .footer-bottom { flex-direction: row; justify-content: space-between; text-align: left; }
-  .brands-grid { grid-template-columns: repeat(4, 1fr); }
-}
-@media (min-width: 1024px) {
-  .brands-grid { grid-template-columns: repeat(8, 1fr); }
-  .vouchers-grid { grid-template-columns: repeat(2, 1fr); }
-  .bottom-nav { display: none; }
-  footer { padding-bottom: 40px; }
-}
-
-  .dispute-card { background:var(--card); border:1px solid var(--borde); border-radius:16px; padding:16px; margin-bottom:10px; cursor:pointer; }
-  .dispute-header { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:8px; }
-  .dispute-product { font-size:14px; font-weight:700; }
-  .dispute-date { font-size:11px; color:var(--gris); }
-  .dispute-status { border-radius:6px; padding:3px 8px; font-size:11px; font-weight:700; }
-  .status-open { background:rgba(255,107,53,0.1); color:var(--naranja); }
-  .status-review { background:rgba(59,130,246,0.1); color:#3B82F6; }
-  .status-resolved { background:rgba(0,200,83,0.1); color:var(--verde); }
-  .dispute-desc { font-size:12px; color:var(--gris); line-height:1.5; }
-  .tabs { display:flex; gap:4px; background:var(--card); border-radius:12px; padding:4px; margin-bottom:20px; }
-  .tab { flex:1; text-align:center; padding:8px; border-radius:8px; font-size:13px; cursor:pointer; }
-  .tab.active { background:var(--verde); color:#000; font-weight:700; }
-  .empty-state { text-align:center; padding:40px 20px; color:var(--gris); }
-  .empty-icon { font-size:48px; margin-bottom:12px; }
-</style>
-  <!-- GiftLatam core -->
+    /* Bottom nav */
+    .bottom-nav{position:fixed;bottom:0;left:0;right:0;background:rgba(14,14,14,0.97);border-top:1px solid var(--borde);display:flex;justify-content:space-around;align-items:center;padding:8px 0 14px;z-index:9999;backdrop-filter:blur(20px)}
+    .nav-item{display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;color:var(--gris);font-size:10px;padding:2px 8px}
+    .nav-item.active{color:var(--verde)}
+    .nav-item svg{width:21px;height:21px}
+  </style>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.js"></script>
-  <script src="js/supabase.js"></script>
-  <script src="js/auth.js"></script>
+  <script src="supabase.js"></script>
+  <script src="auth.js"></script>
 </head>
 <body>
+
+<div class="toast" id="toast"></div>
+
 <nav>
-  <a href="index.html" class="logo"><div class="logo-icon"><svg viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="44" height="44" rx="11" fill="#00C853"/><polygon points="22,10 32,22 22,34 12,22" fill="#003D1A" opacity="0.6"/><polygon points="22,10 32,22 22,34 12,22" fill="#00FF6E" opacity="0.85" transform="scale(0.6) translate(14.7,14.7)"/></svg></div><span class="logo-text">Gift<span class="g">Latam</span></span></a>
+  <a href="index.html" class="logo">
+    <div class="logo-icon"><svg viewBox="0 0 44 44" fill="none"><rect width="44" height="44" rx="11" fill="#00C853"/><polygon points="22,10 32,22 22,34 12,22" fill="#003D1A" opacity="0.6"/><polygon points="22,10 32,22 22,34 12,22" fill="#00FF6E" opacity="0.85" transform="scale(0.6) translate(14.7,14.7)"/></svg></div>
+    <span class="logo-text">Gift<span class="g">Latam</span></span>
+  </a>
   <div class="nav-spacer"></div>
-  <div class="nav-actions" id="navActions">
-    <button class="btn-login" onclick="window.location='login.html'">Iniciar sesión</button>
-    <button class="btn-vender" onclick="window.location='publicar.html'">+ Vender</button>
-  </div>
+  <a href="publicar.html" class="btn-vender">+ Vender</a>
 </nav>
-<div class="container"><div class="main">
+
+<div class="container">
   <div style="font-size:22px;font-weight:800;margin-bottom:4px">⚖️ Centro de disputas</div>
   <div style="font-size:13px;color:var(--gris);margin-bottom:20px">Resolvemos cualquier problema con tu compra</div>
+
   <div class="tabs">
-    <div class="tab active" onclick="this.parentElement.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));this.classList.add('active')">Mis disputas</div>
-    <div class="tab" onclick="this.parentElement.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));this.classList.add('active')">Abrir disputa</div>
-    <div class="tab" onclick="this.parentElement.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));this.classList.add('active')">FAQ</div>
+    <div class="tab active" onclick="setTab('mis')">Mis disputas</div>
+    <div class="tab" onclick="setTab('abrir')">Abrir disputa</div>
+    <div class="tab" onclick="setTab('faq')">FAQ</div>
   </div>
-  <div class="dispute-card">
-    <div class="dispute-header">
-      <div>
-        <div class="dispute-product">Netflix 1 mes Premium</div>
-        <div class="dispute-date">12 Feb 2026 · #DIS-1234</div>
-      </div>
-      <span class="dispute-status status-open">Abierto</span>
+
+  <!-- PANEL: MIS DISPUTAS -->
+  <div class="panel active" id="panel-mis">
+    <div id="disputasList"><div class="spinner"></div></div>
+  </div>
+
+  <!-- PANEL: ABRIR DISPUTA -->
+  <div class="panel" id="panel-abrir">
+    <div class="field">
+      <span class="field-label">TRANSACCIÓN / PEDIDO *</span>
+      <select id="fTx"><option value="">Seleccioná una compra...</option></select>
     </div>
-    <div class="dispute-desc">El código no funciona al intentar canjearlo en Netflix.</div>
-  </div>
-  <div class="dispute-card">
-    <div class="dispute-header">
-      <div>
-        <div class="dispute-product">Steam Gift Card $50</div>
-        <div class="dispute-date">3 Ene 2026 · #DIS-1198</div>
-      </div>
-      <span class="dispute-status status-review">En revisión</span>
+    <div class="field">
+      <span class="field-label">MOTIVO *</span>
+      <select id="fMotivo">
+        <option value="">Seleccioná el motivo...</option>
+        <option value="codigo_invalido">El código no funciona</option>
+        <option value="no_entregado">El vendedor no entregó el código</option>
+        <option value="demora">El vendedor demoró más de lo acordado</option>
+        <option value="producto_incorrecto">El producto no es lo que se anunció</option>
+        <option value="otro">Otro motivo</option>
+      </select>
     </div>
-    <div class="dispute-desc">El vendedor no entregó el código en el tiempo acordado.</div>
-  </div>
-  <div class="dispute-card">
-    <div class="dispute-header">
-      <div>
-        <div class="dispute-product">Spotify Premium 3 meses</div>
-        <div class="dispute-date">15 Dic 2025 · #DIS-1102</div>
-      </div>
-      <span class="dispute-status status-resolved">Resuelto</span>
+    <div class="field">
+      <span class="field-label">DESCRIPCIÓN DEL PROBLEMA *</span>
+      <textarea id="fDesc" placeholder="Describí en detalle qué pasó, cuándo y qué pasos ya intentaste..."></textarea>
     </div>
-    <div class="dispute-desc">Código funcionó correctamente. Disputa cerrada.</div>
+    <button class="btn-submit" id="btnSubmit" onclick="abrirDisputa()">Abrir disputa</button>
+    <div style="font-size:11px;color:var(--gris);text-align:center;margin-top:10px;line-height:1.6">
+      El equipo de GiftLatam revisará tu caso en menos de 24 horas.<br>Te notificaremos por email con las novedades.
+    </div>
   </div>
-</div></div>
-<div class="bottom-nav">
-  <div class="nav-item" onclick="window.location='index.html'"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>Inicio</div>
-  <div class="nav-item" onclick="window.location='explorar.html'"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>Explorar</div>
-  <div class="nav-item" onclick="window.location='publicar.html'"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>Vender</div>
-  <div class="nav-item" onclick="window.location='detalle.html'"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 12V22H4V12"/><path d="M22 7H2v5h20V7z"/><path d="M12 22V7"/></svg>Ofertas</div>
-  <div class="nav-item" onclick="window.location='panel.html'"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Perfil</div>
+
+  <!-- PANEL: FAQ -->
+  <div class="panel" id="panel-faq">
+    <div id="faqList"></div>
+  </div>
 </div>
-</body></html>
+
+<div class="bottom-nav">
+  <div class="nav-item" onclick="location.href='index.html'"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>Inicio</div>
+  <div class="nav-item" onclick="location.href='explorar.html'"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>Explorar</div>
+  <div class="nav-item" onclick="location.href='publicar.html'"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>Vender</div>
+  <div class="nav-item active" onclick="location.href='disputas.html'"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>Ofertas</div>
+  <div class="nav-item" onclick="location.href='panel.html'"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Perfil</div>
+</div>
+
+<script>
+var currentTab = 'mis';
+var currentUser = null;
+var misTransacciones = [];
+
+var ST_LABEL = { abierto:'Abierto', revision:'En revisión', resuelto:'Resuelto', cerrado:'Cerrado' };
+var ST_CLS   = { abierto:'st-abierto', revision:'st-revision', resuelto:'st-resuelto', cerrado:'st-cerrado' };
+
+var FAQ_ITEMS = [
+  { q:'¿Cuánto tarda en resolverse una disputa?', a:'El equipo de GiftLatam revisa cada caso en menos de 24 horas. Las disputas simples (código inválido, no entregado) suelen resolverse en 24-48 hs. Casos más complejos pueden demorar hasta 5 días hábiles.' },
+  { q:'¿Cuándo me devuelven el dinero?', a:'Si la disputa se resuelve a tu favor, el monto se acredita en tu wallet de GiftLatam en el mismo instante. Desde ahí podés retirarlo o usarlo en otra compra.' },
+  { q:'¿Puedo abrir una disputa si ya pasaron varios días?', a:'Podés abrir una disputa hasta 7 días después de la transacción. Pasado ese plazo, la operación se considera completada automáticamente.' },
+  { q:'¿Qué pasa con el vendedor si pierde la disputa?', a:'Si un vendedor acumula disputas perdidas, su cuenta queda suspendida preventivamente y se le notifica. Los fondos en escrow se liberan hacia el comprador.' },
+  { q:'¿Puedo disputar si compré fuera de la plataforma?', a:'No. El sistema de escrow y protección de GiftLatam solo aplica a transacciones realizadas dentro de la plataforma. Nunca acuerdes pagos fuera del sitio.' },
+];
+
+document.addEventListener('DOMContentLoaded', async function() {
+  var res = await sb.auth.getSession();
+  if (!res.data || !res.data.session) { window.location.href = 'login.html'; return; }
+  currentUser = res.data.session.user;
+
+  renderFAQ();
+  loadDisputas();
+  loadTransacciones();
+});
+
+function setTab(tab) {
+  currentTab = tab;
+  document.querySelectorAll('.tab').forEach(function(t,i){
+    t.classList.toggle('active', ['mis','abrir','faq'][i] === tab);
+  });
+  document.querySelectorAll('.panel').forEach(function(p){
+    p.classList.remove('active');
+  });
+  document.getElementById('panel-' + tab).classList.add('active');
+}
+
+async function loadDisputas() {
+  var list = document.getElementById('disputasList');
+
+  // Intentar cargar desde tabla disputes si existe, sino mostrar empty
+  var res = await sb.from('disputes')
+    .select('*, transactions(gift_cards(titulo,marca))')
+    .or('buyer_id.eq.' + currentUser.id + ',seller_id.eq.' + currentUser.id)
+    .order('created_at', { ascending: false });
+
+  if (res.error) {
+    // Tabla no existe aún → empty state orientativo
+    list.innerHTML =
+      '<div class="empty">' +
+        '<span class="empty-emoji">🛡️</span>' +
+        '<div class="empty-title">Sin disputas activas</div>' +
+        '<div class="empty-sub">No tenés disputas abiertas.<br>Si tuviste un problema con una compra,<br>usá la pestaña "Abrir disputa".</div>' +
+      '</div>';
+    return;
+  }
+
+  var data = res.data || [];
+
+  if (data.length === 0) {
+    list.innerHTML =
+      '<div class="empty">' +
+        '<span class="empty-emoji">🛡️</span>' +
+        '<div class="empty-title">Sin disputas activas</div>' +
+        '<div class="empty-sub">No tenés disputas abiertas.<br>Si tuviste un problema con una compra,<br>usá la pestaña "Abrir disputa".</div>' +
+      '</div>';
+    return;
+  }
+
+  list.innerHTML = data.map(function(d) {
+    var gc = (d.transactions && d.transactions.gift_cards) || {};
+    var titulo = gc.titulo || 'Transacción';
+    var fecha  = d.created_at ? new Date(d.created_at).toLocaleDateString('es-AR',{day:'2-digit',month:'short',year:'numeric'}) : '';
+    var estado = d.estado || 'abierto';
+    var id     = d.codigo || ('#DIS-' + String(d.id).slice(-4).toUpperCase());
+
+    return '<div class="dispute-card">' +
+      '<div class="d-header">' +
+        '<div><div class="d-product">' + titulo + '</div><div class="d-date">' + fecha + ' · ' + id + '</div></div>' +
+        '<span class="d-status ' + (ST_CLS[estado]||'st-cerrado') + '">' + (ST_LABEL[estado]||estado) + '</span>' +
+      '</div>' +
+      '<div class="d-desc">' + (d.descripcion || '') + '</div>' +
+    '</div>';
+  }).join('');
+}
+
+async function loadTransacciones() {
+  var sel = document.getElementById('fTx');
+  var res = await sb.from('transactions')
+    .select('id, created_at, gift_cards(titulo, marca)')
+    .eq('buyer_id', currentUser.id)
+    .eq('estado', 'completado')
+    .order('created_at', { ascending: false })
+    .limit(20);
+
+  if (res.error || !res.data || res.data.length === 0) return;
+
+  misTransacciones = res.data;
+  sel.innerHTML = '<option value="">Seleccioná una compra...</option>' +
+    res.data.map(function(t) {
+      var gc    = (t.gift_cards) || {};
+      var titulo= gc.titulo || 'Compra';
+      var fecha = t.created_at ? new Date(t.created_at).toLocaleDateString('es-AR',{day:'2-digit',month:'short'}) : '';
+      return '<option value="' + t.id + '">' + titulo + ' · ' + fecha + '</option>';
+    }).join('');
+}
+
+async function abrirDisputa() {
+  var btn    = document.getElementById('btnSubmit');
+  var txId   = document.getElementById('fTx').value;
+  var motivo = document.getElementById('fMotivo').value;
+  var desc   = document.getElementById('fDesc').value.trim();
+
+  if (!txId)   { showToast('⚠️ Seleccioná la transacción'); return; }
+  if (!motivo) { showToast('⚠️ Seleccioná el motivo'); return; }
+  if (!desc)   { showToast('⚠️ Describí el problema'); return; }
+
+  btn.disabled = true;
+  btn.textContent = 'Enviando...';
+
+  // Obtener seller_id de la transacción
+  var txRes = await sb.from('transactions').select('seller_id').eq('id', txId).single();
+  var sellerId = txRes.data ? txRes.data.seller_id : null;
+
+  var insert = {
+    transaction_id: txId,
+    buyer_id:       currentUser.id,
+    seller_id:      sellerId,
+    motivo:         motivo,
+    descripcion:    desc,
+    estado:         'abierto',
+    created_at:     new Date().toISOString(),
+  };
+
+  var res = await sb.from('disputes').insert(insert);
+
+  if (res.error) {
+    showToast('❌ ' + res.error.message);
+  } else {
+    showToast('✅ Disputa abierta — te contactamos en 24 hs');
+    document.getElementById('fTx').value = '';
+    document.getElementById('fMotivo').value = '';
+    document.getElementById('fDesc').value = '';
+    setTimeout(function(){
+      setTab('mis');
+      loadDisputas();
+    }, 1500);
+  }
+
+  btn.disabled = false;
+  btn.textContent = 'Abrir disputa';
+}
+
+function renderFAQ() {
+  document.getElementById('faqList').innerHTML = FAQ_ITEMS.map(function(item, i) {
+    return '<div class="faq-item" id="faq-' + i + '">' +
+      '<div class="faq-q" onclick="toggleFAQ(' + i + ')">' +
+        item.q + '<span class="arrow">▾</span>' +
+      '</div>' +
+      '<div class="faq-a">' + item.a + '</div>' +
+    '</div>';
+  }).join('');
+}
+
+function toggleFAQ(i) {
+  document.getElementById('faq-' + i).classList.toggle('open');
+}
+
+function showToast(msg) {
+  var t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(function(){ t.classList.remove('show'); }, 2800);
+}
+</script>
+</body>
+</html>

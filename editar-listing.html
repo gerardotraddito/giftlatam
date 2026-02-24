@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Editar publicación - GiftLatam</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{--negro:#080808;--card:#161616;--borde:#222;--blanco:#F0F0F0;--gris:#888;--verde:#00C853;--rojo:#FF4444;--naranja:#FF6B35}
+    body{font-family:'Inter',sans-serif;background:var(--negro);color:var(--blanco);min-height:100vh;padding-bottom:100px}
+    nav{display:flex;align-items:center;padding:0 14px;height:52px;border-bottom:1px solid var(--borde);position:sticky;top:0;z-index:100;background:rgba(8,8,8,0.97);backdrop-filter:blur(16px);gap:12px}
+    .back-btn{display:flex;align-items:center;gap:6px;color:var(--gris);font-size:13px;cursor:pointer;text-decoration:none;flex-shrink:0}
+    .back-btn:hover{color:var(--blanco)}
+    .nav-title{font-family:'Syne',sans-serif;font-weight:800;font-size:16px;flex:1;text-align:center}
+    .container{padding:16px 14px;max-width:540px;margin:0 auto}
+
+    /* Card producto arriba */
+    .product-preview{background:var(--card);border:1px solid var(--borde);border-radius:16px;padding:14px 16px;margin-bottom:20px;display:flex;align-items:center;gap:12px}
+    .preview-icon{width:46px;height:46px;background:#1a1a1a;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
+    .preview-info{flex:1;min-width:0}
+    .preview-title{font-size:14px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--blanco)}
+    .preview-meta{font-size:11px;color:var(--gris);margin-top:2px}
+    .preview-badge{font-size:11px;font-weight:700;color:var(--verde);background:rgba(0,200,83,0.1);border:1px solid rgba(0,200,83,0.2);border-radius:6px;padding:2px 8px;flex-shrink:0}
+
+    /* Sección */
+    .section-label{font-size:11px;font-weight:700;color:var(--gris);text-transform:uppercase;letter-spacing:0.08em;padding:0 4px;margin:20px 0 10px}
+    .section-label:first-of-type{margin-top:0}
+
+    /* Input genérico */
+    .field{background:var(--card);border:1px solid var(--borde);border-radius:14px;overflow:hidden;margin-bottom:8px;transition:border-color 0.2s}
+    .field:focus-within{border-color:rgba(0,200,83,0.5)}
+    .field-label{font-size:11px;font-weight:600;color:var(--gris);padding:10px 14px 0;display:block}
+    .field input,.field textarea,.field select{width:100%;background:transparent;border:none;outline:none;color:var(--blanco);font-family:'Inter',sans-serif;font-size:14px;padding:6px 14px 12px;resize:none}
+    .field textarea{min-height:80px;line-height:1.5}
+    .field select{cursor:pointer;-webkit-appearance:none;appearance:none}
+    .field select option{background:#1a1a1a}
+
+    /* Campo precio con símbolo */
+    .price-field{background:var(--card);border:1px solid var(--borde);border-radius:14px;overflow:hidden;margin-bottom:8px;transition:border-color 0.2s}
+    .price-field:focus-within{border-color:rgba(0,200,83,0.5)}
+    .price-field-label{font-size:11px;font-weight:600;color:var(--gris);padding:10px 14px 0;display:block}
+    .price-input-row{display:flex;align-items:center;padding:6px 14px 12px;gap:6px}
+    .price-symbol{font-size:16px;font-weight:700;color:var(--gris)}
+    .price-input-row input{flex:1;background:transparent;border:none;outline:none;color:var(--verde);font-family:'Inter',sans-serif;font-size:18px;font-weight:800;font-variant-numeric:tabular-nums;font-feature-settings:'tnum';width:100%}
+
+    /* Resumen de comisión */
+    .comision-box{background:#0d0d0d;border:1px solid var(--borde);border-radius:14px;padding:14px 16px;margin-bottom:8px}
+    .comision-row{display:flex;justify-content:space-between;align-items:center;font-size:13px;padding:4px 0}
+    .comision-row.total{border-top:1px solid var(--borde);margin-top:8px;padding-top:10px;font-weight:700;font-size:15px}
+    .comision-row.total .val{color:var(--verde);font-size:17px;font-variant-numeric:tabular-nums;font-feature-settings:'tnum'}
+    .comision-label{color:var(--gris)}
+
+    /* Región grid */
+    .region-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:8px}
+    .region-pill{background:var(--card);border:1px solid var(--borde);border-radius:10px;padding:9px 6px;text-align:center;font-size:12px;cursor:pointer;transition:all 0.15s;user-select:none}
+    .region-pill.active{background:rgba(0,200,83,0.1);border-color:var(--verde);color:var(--verde);font-weight:600}
+
+    /* Tipo badge selector */
+    .tipo-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:8px}
+    .tipo-opt{background:var(--card);border:2px solid var(--borde);border-radius:12px;padding:12px;cursor:pointer;transition:border-color 0.15s}
+    .tipo-opt.active{border-color:var(--verde);background:rgba(0,200,83,0.05)}
+    .tipo-opt-icon{font-size:20px;margin-bottom:5px}
+    .tipo-opt-label{font-size:12px;font-weight:600}
+    .tipo-opt-sub{font-size:11px;color:var(--gris);margin-top:2px}
+
+    /* Save bar */
+    .save-bar{position:fixed;bottom:0;left:0;right:0;background:rgba(8,8,8,0.97);border-top:1px solid var(--borde);padding:12px 14px;z-index:200;backdrop-filter:blur(16px)}
+    .save-bar-inner{max-width:540px;margin:0 auto;display:flex;gap:10px}
+    .btn-cancel{flex:0 0 auto;background:#1a1a1a;border:1px solid var(--borde);color:var(--gris);border-radius:12px;padding:13px 18px;font-family:'Inter',sans-serif;font-size:14px;cursor:pointer}
+    .btn-save{flex:1;background:var(--verde);color:#000;border:none;border-radius:12px;padding:13px;font-family:'Syne',sans-serif;font-weight:800;font-size:15px;cursor:pointer;transition:opacity 0.15s}
+    .btn-save:disabled{opacity:0.4;cursor:not-allowed}
+
+    /* Toast */
+    .toast{position:fixed;top:66px;left:50%;transform:translateX(-50%) translateY(-16px);background:#1a1a1a;border:1px solid var(--verde);color:var(--verde);padding:10px 20px;border-radius:10px;font-size:13px;font-weight:600;z-index:9999;opacity:0;transition:all 0.25s;pointer-events:none;white-space:nowrap}
+    .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+    .spinner{width:28px;height:28px;border:3px solid #222;border-top-color:var(--verde);border-radius:50%;animation:spin 0.8s linear infinite;margin:40px auto}
+    @keyframes spin{to{transform:rotate(360deg)}}
+
+    .error-screen{text-align:center;padding:50px 20px;color:var(--gris)}
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.js"></script>
+  <script src="supabase.js"></script>
+  <script src="auth.js"></script>
+</head>
+<body>
+
+<div class="toast" id="toast"></div>
+
+<nav>
+  <a href="mis-listings.html" class="back-btn">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+    Mis publicaciones
+  </a>
+  <div class="nav-title">Editar</div>
+  <div style="width:100px"></div>
+</nav>
+
+<div class="container" id="mainContent">
+  <div class="spinner"></div>
+</div>
+
+<div class="save-bar" id="saveBar" style="display:none">
+  <div class="save-bar-inner">
+    <button class="btn-cancel" onclick="history.back()">Cancelar</button>
+    <button class="btn-save" id="btnSave" onclick="guardar()">Guardar cambios</button>
+  </div>
+</div>
+
+<script>
+var listingId = null;
+var listing = null;
+var currentUser = null;
+var regionActiva = 'Global';
+var tipoActivo = 'gift_card';
+
+var BRAND_ICONS = {
+  steam:'🎮',xbox:'🎮',playstation:'🎮',psn:'🎮',nintendo:'🎮',roblox:'🎮',
+  netflix:'🎬',spotify:'🎵',amazon:'🛒',youtube:'📺',discord:'💬',apple:'🍎',
+  google:'🎁',default:'🎁'
+};
+function getIcon(m){ return BRAND_ICONS[(m||'').toLowerCase()] || '🎁'; }
+
+var TIPOS = [
+  {id:'gift_card', icon:'🎁', label:'Gift Card', sub:'Código digital'},
+  {id:'cuenta',   icon:'👤', label:'Cuenta',    sub:'Usuario y contraseña'},
+  {id:'licencia', icon:'🔑', label:'Licencia',  sub:'Clave de activación'},
+  {id:'otro',     icon:'📄', label:'Otro',      sub:'Voucher o cupón'},
+];
+
+var REGIONES = ['Global','Argentina','México','Brasil','Colombia','Chile','Perú','Venezuela','Otro'];
+
+document.addEventListener('DOMContentLoaded', async function() {
+  var res = await sb.auth.getSession();
+  if (!res.data || !res.data.session) { window.location.href = 'login.html'; return; }
+  currentUser = res.data.session.user;
+
+  listingId = new URLSearchParams(window.location.search).get('id');
+  if (!listingId) { showError('No se especificó qué publicación editar.'); return; }
+
+  var q = await sb.from('gift_cards').select('*').eq('id', listingId).eq('seller_id', currentUser.id).single();
+  if (q.error || !q.data) { showError('No encontramos esa publicación o no es tuya.'); return; }
+
+  listing = q.data;
+  regionActiva = listing.region || 'Global';
+  tipoActivo   = listing.tipo   || 'gift_card';
+
+  renderForm();
+  document.getElementById('saveBar').style.display = 'block';
+});
+
+function renderForm() {
+  var l = listing;
+  var icon = getIcon(l.marca);
+
+  document.getElementById('mainContent').innerHTML =
+
+    // Preview del producto
+    '<div class="product-preview">' +
+      '<div class="preview-icon">' + icon + '</div>' +
+      '<div class="preview-info">' +
+        '<div class="preview-title" id="previewTitle">' + esc(l.titulo) + '</div>' +
+        '<div class="preview-meta" id="previewMeta">' + esc(l.marca||'') + ' · ' + (l.region||'Global') + '</div>' +
+      '</div>' +
+      '<span class="preview-badge">✏️ Editando</span>' +
+    '</div>' +
+
+    // Tipo
+    '<div class="section-label">Tipo de producto</div>' +
+    '<div class="tipo-grid">' +
+      TIPOS.map(function(t) {
+        return '<div class="tipo-opt' + (t.id === tipoActivo ? ' active' : '') + '" id="tipo-' + t.id + '" onclick="setTipo(\'' + t.id + '\')">' +
+          '<div class="tipo-opt-icon">' + t.icon + '</div>' +
+          '<div class="tipo-opt-label">' + t.label + '</div>' +
+          '<div class="tipo-opt-sub">' + t.sub + '</div>' +
+        '</div>';
+      }).join('') +
+    '</div>' +
+
+    // Marca
+    '<div class="section-label">Información</div>' +
+    '<div class="field">' +
+      '<span class="field-label">MARCA / SERVICIO</span>' +
+      '<input id="fMarca" value="' + esc(l.marca||'') + '" placeholder="Steam, Netflix, Xbox..." oninput="updatePreview()">' +
+    '</div>' +
+
+    // Título
+    '<div class="field">' +
+      '<span class="field-label">TÍTULO DEL LISTING</span>' +
+      '<input id="fTitulo" value="' + esc(l.titulo||'') + '" placeholder="Ej: Xbox Gift Card $50 Global" oninput="updatePreview()">' +
+    '</div>' +
+
+    // Descripción
+    '<div class="field">' +
+      '<span class="field-label">DESCRIPCIÓN (opcional)</span>' +
+      '<textarea id="fDesc" placeholder="Detallá el producto, instrucciones de canje, etc.">' + esc(l.descripcion||'') + '</textarea>' +
+    '</div>' +
+
+    // Región
+    '<div class="section-label">Región</div>' +
+    '<div class="region-grid">' +
+      REGIONES.map(function(r) {
+        return '<div class="region-pill' + (r === regionActiva ? ' active' : '') + '" id="reg-' + r + '" onclick="setRegion(\'' + r + '\')">' + r + '</div>';
+      }).join('') +
+    '</div>' +
+
+    // Precios
+    '<div class="section-label">Precios</div>' +
+    '<div class="price-field">' +
+      '<span class="price-field-label">VALOR NOMINAL (precio original USD)</span>' +
+      '<div class="price-input-row">' +
+        '<span class="price-symbol" style="color:var(--gris)">$</span>' +
+        '<input id="fValorNominal" type="number" step="0.01" min="0" value="' + (l.valor_nominal||'') + '" placeholder="0.00" style="color:var(--blanco)" oninput="calcComision()">' +
+      '</div>' +
+    '</div>' +
+    '<div class="price-field">' +
+      '<span class="price-field-label">TU PRECIO DE VENTA (USDT) *</span>' +
+      '<div class="price-input-row">' +
+        '<span class="price-symbol">$</span>' +
+        '<input id="fPrecio" type="number" step="0.01" min="0.01" value="' + (l.precio_venta||'') + '" placeholder="0.00" oninput="calcComision()">' +
+      '</div>' +
+    '</div>' +
+    '<div class="comision-box">' +
+      '<div class="comision-row"><span class="comision-label">Precio de venta</span><span id="cPrecio">$0.00</span></div>' +
+      '<div class="comision-row"><span class="comision-label">Comisión GiftLatam (3%)</span><span id="cComision" style="color:var(--naranja)">-$0.00</span></div>' +
+      '<div class="comision-row total"><span>Recibís</span><span class="val" id="cTotal">$0.00 USDT</span></div>' +
+    '</div>' +
+
+    // Peligro: eliminar
+    '<div class="section-label">Zona peligrosa</div>' +
+    '<button onclick="confirmarEliminar()" style="width:100%;background:rgba(255,68,68,0.08);border:1px solid rgba(255,68,68,0.2);color:var(--rojo);border-radius:14px;padding:13px;font-size:14px;font-weight:600;cursor:pointer;font-family:Inter,sans-serif;display:flex;align-items:center;justify-content:center;gap:8px">' +
+      '🗑️ Eliminar esta publicación' +
+    '</button>';
+
+  calcComision();
+}
+
+function setTipo(id) {
+  tipoActivo = id;
+  TIPOS.forEach(function(t) {
+    var el = document.getElementById('tipo-' + t.id);
+    if (el) el.className = 'tipo-opt' + (t.id === id ? ' active' : '');
+  });
+}
+
+function setRegion(r) {
+  regionActiva = r;
+  REGIONES.forEach(function(reg) {
+    var el = document.getElementById('reg-' + reg);
+    if (el) el.className = 'region-pill' + (reg === r ? ' active' : '');
+  });
+  updatePreview();
+}
+
+function updatePreview() {
+  var titulo = document.getElementById('fTitulo');
+  var marca  = document.getElementById('fMarca');
+  if (titulo) document.getElementById('previewTitle').textContent = titulo.value || 'Sin título';
+  if (marca)  document.getElementById('previewMeta').textContent  = (marca.value || '') + ' · ' + regionActiva;
+}
+
+function calcComision() {
+  var precioEl = document.getElementById('fPrecio');
+  if (!precioEl) return;
+  var precio = parseFloat(precioEl.value) || 0;
+  var com    = precio * 0.03;
+  var total  = precio - com;
+  document.getElementById('cPrecio').textContent  = '$' + precio.toFixed(2);
+  document.getElementById('cComision').textContent = '-$' + com.toFixed(2);
+  document.getElementById('cTotal').textContent   = '$' + total.toFixed(2) + ' USDT';
+}
+
+async function guardar() {
+  var btn = document.getElementById('btnSave');
+  var titulo = document.getElementById('fTitulo').value.trim();
+  var marca  = document.getElementById('fMarca').value.trim();
+  var desc   = document.getElementById('fDesc').value.trim();
+  var precio = parseFloat(document.getElementById('fPrecio').value);
+  var nominal= parseFloat(document.getElementById('fValorNominal').value) || null;
+
+  if (!titulo) { showToast('⚠️ El título es obligatorio'); return; }
+  if (!marca)  { showToast('⚠️ La marca es obligatoria');  return; }
+  if (!precio || precio <= 0) { showToast('⚠️ Ingresá un precio de venta válido'); return; }
+
+  btn.textContent = 'Guardando...';
+  btn.disabled = true;
+
+  var update = {
+    titulo:       titulo,
+    marca:        marca,
+    descripcion:  desc || null,
+    precio_venta: precio,
+    valor_nominal:nominal,
+    region:       regionActiva,
+    tipo:         tipoActivo,
+    updated_at:   new Date().toISOString(),
+  };
+
+  var res = await sb.from('gift_cards').update(update).eq('id', listingId).eq('seller_id', currentUser.id);
+
+  if (res.error) {
+    showToast('❌ Error: ' + res.error.message);
+  } else {
+    showToast('✅ Cambios guardados');
+    listing = Object.assign({}, listing, update);
+    setTimeout(function(){ window.location.href = 'mis-listings.html'; }, 1200);
+  }
+
+  btn.textContent = 'Guardar cambios';
+  btn.disabled = false;
+}
+
+function confirmarEliminar() {
+  var modal = document.createElement('div');
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px';
+  modal.innerHTML =
+    '<div style="background:#161616;border:1px solid #333;border-radius:20px;padding:26px;max-width:300px;width:100%">' +
+      '<div style="font-family:Syne,sans-serif;font-size:17px;font-weight:800;margin-bottom:8px">¿Eliminar publicación?</div>' +
+      '<div style="font-size:13px;color:#888;margin-bottom:22px;line-height:1.6">"' + esc(listing.titulo) + '" se eliminará permanentemente.</div>' +
+      '<div style="display:flex;gap:10px">' +
+        '<button onclick="this.closest(\'div[style]\').remove()" style="flex:1;padding:12px;border-radius:12px;background:#222;color:#fff;border:none;font-weight:600;cursor:pointer;font-family:Inter,sans-serif">Cancelar</button>' +
+        '<button onclick="eliminar()" style="flex:1;padding:12px;border-radius:12px;background:#FF4444;color:#fff;border:none;font-weight:700;cursor:pointer;font-family:Inter,sans-serif">Eliminar</button>' +
+      '</div>' +
+    '</div>';
+  document.body.appendChild(modal);
+}
+
+async function eliminar() {
+  var res = await sb.from('gift_cards').delete().eq('id', listingId).eq('seller_id', currentUser.id);
+  if (!res.error) {
+    showToast('🗑️ Publicación eliminada');
+    setTimeout(function(){ window.location.href = 'mis-listings.html'; }, 1000);
+  } else {
+    showToast('❌ ' + res.error.message);
+  }
+}
+
+function showError(msg) {
+  document.getElementById('mainContent').innerHTML = '<div class="error-screen"><div style="font-size:40px;margin-bottom:14px">⚠️</div><div style="color:#eee;font-weight:700;margin-bottom:8px">Algo salió mal</div><div style="font-size:13px">' + msg + '</div><a href="mis-listings.html" style="display:inline-block;margin-top:20px;color:var(--verde);text-decoration:none;font-size:13px">← Volver a mis publicaciones</a></div>';
+}
+
+function showToast(msg) {
+  var t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(function(){ t.classList.remove('show'); }, 2800);
+}
+
+function esc(str) {
+  return (str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+</script>
+</body>
+</html>
