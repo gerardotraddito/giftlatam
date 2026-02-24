@@ -338,7 +338,17 @@ function calcPrecio() {
 }
 
 async function publicar() {
-  var imgUrl = await uploadFotoIfNeeded();
+  // Verificar que la sesión esté cargada antes de hacer cualquier cosa
+  if (!currentUser) {
+    try {
+      var sessionRes = await sb.auth.getSession();
+      if (sessionRes.data && sessionRes.data.session) {
+        currentUser = sessionRes.data.session.user;
+      }
+    } catch(e) {}
+  }
+  if (!currentUser) { showErr('Tu sesión expiró. Recargá la página e iniciá sesión nuevamente.'); return; }
+
   const precio = parseFloat(document.getElementById('precioVenta').value);
   if (!precio || precio <= 0) { showErr('Ingresá un precio de venta válido'); return; }
 
@@ -347,8 +357,12 @@ async function publicar() {
   if (entrega === 'auto' && !codigo) { showErr('Ingresá el código de la gift card'); return; }
 
   const btn = document.getElementById('btnPublicar');
-  btn.disabled = true; btn.textContent = 'Publicando...';
+  btn.disabled = true; btn.textContent = 'Subiendo foto...';
   hideErr();
+
+  // Subir foto DESPUÉS de validar todo — así el botón ya está bloqueado y el user está listo
+  var imgUrl = await uploadFotoIfNeeded();
+  btn.textContent = 'Publicando...';
 
   const payload = {
     seller_id: currentUser.id,
@@ -365,6 +379,9 @@ async function publicar() {
     estado: 'activo',
     imagen_url: imgUrl || null
   };
+
+  // Log para debug — confirma qué imagen_url se va a guardar
+  console.log('[Publicar] imagen_url que se guarda:', payload.imagen_url);
 
   const { data, error } = await sb.from('gift_cards').insert(payload).select().single();
 
