@@ -288,6 +288,20 @@ function escapeHtml(str) {
 }
 
 // ─────────────────────────────────────────────────────────────
+// onImgError — fallback cuando una imagen de producto no carga
+// Se llama desde onerror="onImgError(this)" en cada <img>
+// Lee data-marca y data-tipo del mismo elemento para mostrar el logo correcto
+// ─────────────────────────────────────────────────────────────
+function onImgError(img) {
+  var marca = img.getAttribute('data-marca') || '';
+  var tipo  = img.getAttribute('data-tipo')  || '';
+  var parent = img.parentElement;
+  if (parent) {
+    parent.innerHTML = getBrandLogo(marca, tipo);
+  }
+}
+
+// ─────────────────────────────────────────────────────────────
 // ESTADOS DE UI — spinner, error, vacío
 // ─────────────────────────────────────────────────────────────
 function setLoading() {
@@ -490,19 +504,16 @@ function renderCards() {
     var vendidos = cantidad + ' disponible' + (cantidad !== 1 ? 's' : '');
 
     // ── Bloque de imagen ──
-    // Si hay imagen_url: la usamos; si falla la carga, mostramos logo de marca
+    // Usamos onImgError(this) en vez de inline onerror complejo — evita bugs de escape
     var imgBlock;
     if (card.imagen_url && card.imagen_url.trim()) {
-      // Preparamos el fallback escapado para el atributo onerror
-      var fallbackLogo = getBrandLogo(card.marca, card.tipo || card.categoria);
-      // Reemplazamos comillas dobles para que queden seguras dentro del atributo
-      var escapedFallback = fallbackLogo.replace(/"/g, '&quot;');
-      imgBlock = '<img src="' + escapeHtml(card.imagen_url) + '"' +
-                 ' alt="' + escapeHtml(card.titulo || '') + '"' +
-                 ' style="width:100%;height:100%;object-fit:cover;display:block;"' +
-                 ' onerror="this.parentElement.innerHTML=\'' + escapedFallback.replace(/'/g, "\\'") + '\'">';
+      imgBlock = '<img src="' + escapeHtml(card.imagen_url) + '"'
+               + ' alt="' + escapeHtml(card.titulo || '') + '"'
+               + ' data-marca="' + escapeHtml(card.marca || '') + '"'
+               + ' data-tipo="' + escapeHtml(card.tipo || card.categoria || '') + '"'
+               + ' style="width:100%;height:100%;object-fit:cover;display:block;"'
+               + ' onerror="onImgError(this)">';
     } else {
-      // Sin imagen: mostramos logo de la marca o emoji
       imgBlock = getBrandLogo(card.marca, card.tipo || card.categoria);
     }
 
