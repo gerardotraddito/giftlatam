@@ -63,15 +63,28 @@
     .nav-item { display: flex; flex-direction: column; align-items: center; gap: 3px; cursor: pointer; color: var(--gris); font-size: 10px; padding: 2px 8px; }
     .nav-item.active { color: var(--verde); }
     .nav-item svg { width: 21px; height: 21px; }
-    @media (min-width: 1024px) { .bottom-nav { display: none; } }
-    #imgUploadArea:hover { border-color: var(--verde); }
-    #imgUploadArea.has-img { border-style: solid; border-color: var(--gris-borde); }  
+    @media (min-width: 1024px) { .bottom-nav { display: none; } }  
     /* Step 3 — método de entrega — SIN flexbox para evitar bug Android */
     .d-option { display:block; position:relative; background:var(--negro); border:2px solid var(--gris-borde); border-radius:12px; padding:14px 14px 14px 42px; cursor:pointer; margin-bottom:10px; transition:border-color 0.2s; box-sizing:border-box; width:100%; }
     .d-option input[type=radio] { position:absolute; left:14px; top:18px; width:18px; height:18px; accent-color:var(--verde); margin:0; }
     .d-option.d-selected { border-color:var(--verde); }
     .d-title { font-size:14px; font-weight:700; margin-bottom:4px; color:var(--blanco); }
     .d-desc { font-size:12px; color:var(--gris); line-height:1.5; }
+
+  
+    /* === FOTO UPLOAD === */
+    .foto-upload-area { border: 2px dashed var(--gris-borde); border-radius: 14px; padding: 20px; text-align: center; cursor: pointer; transition: border-color 0.2s; background: #0d0d0d; margin-bottom: 4px; position: relative; }
+    .foto-upload-area:hover, .foto-upload-area.drag { border-color: var(--verde); background: rgba(0,200,83,0.04); }
+    .foto-upload-area input[type=file] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+    .foto-upload-icon { font-size: 32px; margin-bottom: 8px; }
+    .foto-upload-label { font-size: 13px; font-weight: 600; color: var(--blanco); margin-bottom: 4px; }
+    .foto-upload-sub { font-size: 11px; color: var(--gris); }
+    .foto-preview-wrap { position: relative; margin-bottom: 4px; }
+    .foto-preview-img { width: 100%; max-height: 200px; object-fit: cover; border-radius: 14px; display: block; border: 2px solid rgba(0,200,83,0.3); }
+    .foto-remove-btn { position: absolute; top: 8px; right: 8px; background: rgba(0,0,0,0.75); border: none; border-radius: 8px; color: #fff; padding: 5px 9px; font-size: 12px; cursor: pointer; font-weight: 600; }
+    .foto-hint { font-size: 11px; color: var(--gris); text-align: center; padding: 4px 0 8px; }
+    .foto-uploading { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--verde); padding: 8px 0; }
+    .foto-uploading .mini-spin { width: 14px; height: 14px; border: 2px solid #222; border-top-color: var(--verde); border-radius: 50%; animation: spin 0.8s linear infinite; flex-shrink: 0; }
 
   </style>
   <!-- GiftLatam core -->
@@ -143,7 +156,7 @@
       <div class="card-title">📝 Detalles del producto</div>
       <div class="form-group">
         <label>Marca / Servicio *</label>
-        <input type="text" id="marca" placeholder="Ej: Steam, Netflix, Xbox..." list="marcasList" autocomplete="off">
+        <input type=<input type="text" id="marca" placeholder="Ej: Steam, Netflix, Xbox..." list="marcasList" autocomplete="off">
         <datalist id="marcasList"><option value="Steam"><option value="PlayStation"><option value="Xbox"><option value="Apple"><option value="Nintendo"><option value="Roblox"><option value="PUBG"><option value="Spotify"><option value="Netflix"><option value="Amazon"><option value="YouTube"><option value="Discord"><option value="Twitch"><option value="Minecraft"><option value="Fortnite"><option value="Google Play"><option value="Disney+"><option value="Rappi"></datalist>
       </div>
       <div class="form-group">
@@ -155,25 +168,31 @@
         <textarea id="descripcion" placeholder="Describí tu producto, validez, condiciones..."></textarea>
       </div>
       <div class="form-group">
-        <label>Foto del producto (opcional)</label>
-        <div id="imgUploadArea" onclick="document.getElementById('imgInput').click()" style="border:2px dashed var(--gris-borde);border-radius:12px;padding:24px;text-align:center;cursor:pointer;transition:border-color 0.2s;background:var(--negro)">
-          <div id="imgPlaceholder">
-            <div style="font-size:32px;margin-bottom:8px">📷</div>
-            <div style="font-size:13px;color:var(--gris)">Tocá para subir una imagen</div>
-            <div style="font-size:11px;color:var(--gris);margin-top:4px">JPG, PNG · máx 2MB</div>
-          </div>
-          <img id="imgPreview" style="display:none;max-width:100%;max-height:180px;border-radius:8px;object-fit:contain">
-        </div>
-        <input type="file" id="imgInput" accept="image/*" style="display:none" onchange="previewImagen(this)">
-        <button type="button" id="imgRemoveBtn" onclick="removeImagen(event)" style="display:none;margin-top:8px;background:none;border:none;color:var(--gris);font-size:12px;cursor:pointer;padding:0">✕ Quitar imagen</button>
-      </div>
-      <div class="form-group">
         <label>Región</label>
         <select id="region">
           <option>Global</option><option>Argentina</option><option>México</option>
           <option>Brasil</option><option>Colombia</option><option>Chile</option>
           <option>Perú</option><option>Venezuela</option><option>Otro</option>
         </select>
+      </div>
+      <div class="form-group">
+        <label>Foto del producto <span style="color:var(--gris);font-weight:400">(opcional)</span></label>
+        <div id="fotoUploadArea" class="foto-upload-area" ondragover="event.preventDefault();this.classList.add('drag')" ondragleave="this.classList.remove('drag')" ondrop="handleDrop(event)">
+          <input type="file" id="fotoInput" accept="image/*" onchange="handleFotoSelect(this)">
+          <div id="fotoPlaceholder">
+            <div class="foto-upload-icon">🖼️</div>
+            <div class="foto-upload-label">Tocá o arrastrá una foto</div>
+            <div class="foto-upload-sub">JPG, PNG o WebP · máx. 5 MB</div>
+          </div>
+        </div>
+        <div id="fotoPreviewWrap" class="foto-preview-wrap" style="display:none">
+          <img id="fotoPreviewImg" class="foto-preview-img" src="" alt="preview">
+          <button class="foto-remove-btn" onclick="removeFoto()">✕ Quitar</button>
+        </div>
+        <div id="fotoUploading" class="foto-uploading" style="display:none">
+          <div class="mini-spin"></div> Subiendo foto...
+        </div>
+        <div class="foto-hint">La foto aparece en tu listing y en el explorador</div>
       </div>
       <div class="btn-row">
         <button class="btn-back" onclick="goStep(1)">← Atrás</button>
@@ -211,11 +230,17 @@
       </div>
     </div>
   </div>
+  </div>
 
   <!-- STEP 4 -->
   <div id="step4" style="display:none">
     <div class="card">
       <div class="card-title">💰 Fijá tu precio</div>
+      <div class="form-group">
+        <label>Cantidad disponible (unidades) *</label>
+        <div class="input-prefix"><span>#</span><input type="number" id="cantidad" placeholder="1" step="1" min="1" max="9999" value="1"></div>
+        <div style="font-size:11px;color:var(--gris);margin-top:5px">¿Cuántos códigos de este tipo tenés para vender?</div>
+      </div>
       <div class="form-group">
         <label>Valor nominal (precio original USD)</label>
         <div class="input-prefix"><span>$</span><input type="number" id="valorNominal" placeholder="20.00" step="0.01" min="0" oninput="calcPrecio()"></div>
@@ -257,46 +282,6 @@
 </div>
 
 <script>
-
-let imagenFile = null;
-
-function previewImagen(input) {
-  const file = input.files[0];
-  if (!file) return;
-  if (file.size > 2 * 1024 * 1024) { showErr('La imagen no puede superar 2MB'); input.value = ''; return; }
-  imagenFile = file;
-  const reader = new FileReader();
-  reader.onload = function(e) {
-    document.getElementById('imgPreview').src = e.target.result;
-    document.getElementById('imgPreview').style.display = 'block';
-    document.getElementById('imgPlaceholder').style.display = 'none';
-    document.getElementById('imgRemoveBtn').style.display = 'inline-block';
-    document.getElementById('imgUploadArea').classList.add('has-img');
-  };
-  reader.readAsDataURL(file);
-}
-
-function removeImagen(e) {
-  e.stopPropagation();
-  imagenFile = null;
-  document.getElementById('imgInput').value = '';
-  document.getElementById('imgPreview').style.display = 'none';
-  document.getElementById('imgPreview').src = '';
-  document.getElementById('imgPlaceholder').style.display = 'block';
-  document.getElementById('imgRemoveBtn').style.display = 'none';
-  document.getElementById('imgUploadArea').classList.remove('has-img');
-}
-
-async function subirImagen(userId) {
-  if (!imagenFile) return null;
-  const ext = imagenFile.name.split('.').pop();
-  const path = userId + '/' + Date.now() + '.' + ext;
-  const { error } = await sb.storage.from('gift-cards').upload(path, imagenFile, { upsert: true });
-  if (error) { console.error('Error subiendo imagen:', error); return null; }
-  const { data } = sb.storage.from('gift-cards').getPublicUrl(path);
-  return data.publicUrl;
-}
-
 
 let currentStep = 1;
 let tipoSeleccionado = 'gift_card';
@@ -353,6 +338,7 @@ function calcPrecio() {
 }
 
 async function publicar() {
+  var imgUrl = await uploadFotoIfNeeded();
   const precio = parseFloat(document.getElementById('precioVenta').value);
   if (!precio || precio <= 0) { showErr('Ingresá un precio de venta válido'); return; }
 
@@ -364,10 +350,7 @@ async function publicar() {
   btn.disabled = true; btn.textContent = 'Publicando...';
   hideErr();
 
-  const imagen_url = await subirImagen(currentUser.id);
-
   const payload = {
-    imagen_url: imagen_url || null,
     seller_id: currentUser.id,
     tipo: tipoSeleccionado,
     marca: document.getElementById('marca').value.trim(),
@@ -378,7 +361,9 @@ async function publicar() {
     codigo: codigo || null,
     valor_nominal: parseFloat(document.getElementById('valorNominal').value) || null,
     precio_venta: precio,
-    estado: 'activo'
+    cantidad: parseInt(document.getElementById('cantidad').value) || 1,
+    estado: 'activo',
+    imagen_url: imgUrl || null
   };
 
   const { data, error } = await sb.from('gift_cards').insert(payload).select().single();
@@ -418,6 +403,57 @@ function validateStep3() {
   }
   goStep(4);
 }
+
+// ── FOTO UPLOAD ──────────────────────────────────────────────────────────────
+var fotoFile = null;
+var fotoUrl  = null;
+
+function handleDrop(e) {
+  e.preventDefault();
+  document.getElementById('fotoUploadArea').classList.remove('drag');
+  var file = e.dataTransfer.files[0];
+  if (file) processFoto(file);
+}
+
+function handleFotoSelect(input) {
+  var file = input.files[0];
+  if (file) processFoto(file);
+}
+
+function processFoto(file) {
+  if (file.size > 5 * 1024 * 1024) { alert('La foto debe ser menor a 5 MB'); return; }
+  fotoFile = file;
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    document.getElementById('fotoPreviewImg').src = e.target.result;
+    document.getElementById('fotoUploadArea').style.display = 'none';
+    document.getElementById('fotoPreviewWrap').style.display = 'block';
+  };
+  reader.readAsDataURL(file);
+}
+
+function removeFoto() {
+  fotoFile = null; fotoUrl = null;
+  document.getElementById('fotoInput').value = '';
+  document.getElementById('fotoPreviewImg').src = '';
+  document.getElementById('fotoUploadArea').style.display = 'block';
+  document.getElementById('fotoPreviewWrap').style.display = 'none';
+}
+
+async function uploadFotoIfNeeded() {
+  if (!fotoFile) return null;
+  if (fotoUrl)   return fotoUrl;
+  document.getElementById('fotoUploading').style.display = 'flex';
+  var ext  = fotoFile.name.split('.').pop().toLowerCase() || 'jpg';
+  var path = currentUser.id + '/' + Date.now() + '.' + ext;
+  var res  = await sb.storage.from('gift-card-images').upload(path, fotoFile, { upsert: true, contentType: fotoFile.type });
+  document.getElementById('fotoUploading').style.display = 'none';
+  if (res.error) { console.error('Upload error:', res.error); return null; }
+  var pub = sb.storage.from('gift-card-images').getPublicUrl(path);
+  fotoUrl = pub.data.publicUrl;
+  return fotoUrl;
+}
+
 </script>
 </body>
 </html>
