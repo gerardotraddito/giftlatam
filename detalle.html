@@ -217,6 +217,12 @@ function renderProduct(c) {
   var entTxt  = ENTREGA[entVal] || entVal || 'A confirmar';
   var tipoTxt = TIPO[c.tipo]    || c.tipo  || 'Digital';
   var region  = c.region || 'Global';
+  var cantidad = (c.cantidad != null) ? parseInt(c.cantidad) : null;
+  var stockHtml = cantidad !== null
+    ? (cantidad <= 3
+        ? '<span style="display:inline-block;background:rgba(255,107,53,0.12);border:1px solid rgba(255,107,53,0.3);color:#ff6b35;border-radius:8px;padding:3px 10px;font-size:12px;font-weight:700;margin-bottom:14px">⚡ Solo quedan ' + cantidad + ' unidad' + (cantidad !== 1 ? 'es' : '') + '</span>'
+        : '<span style="display:inline-block;background:rgba(0,200,83,0.08);border:1px solid rgba(0,200,83,0.2);color:var(--verde);border-radius:8px;padding:3px 10px;font-size:12px;font-weight:600;margin-bottom:14px">✓ ' + cantidad + ' en stock</span>')
+    : '';
   var desc    = c.descripcion || 'Gift card digital. El código se entrega tras confirmar el pago vía escrow.';
 
   document.getElementById('detailCard').innerHTML =
@@ -229,12 +235,14 @@ function renderProduct(c) {
       '</div>' +
       '<div class="detail-title">' + esc(c.titulo || 'Sin título') + '</div>' +
       '<div class="detail-marca">' + esc(c.marca||'') + ' · Vendido por <strong id="vendNombre">@cargando...</strong></div>' +
+      stockHtml +
       '<span class="detail-price">$' + precio.toFixed(2) + ' USDT</span>' +
       (nominal > 0 ? '<span class="detail-price-old">Valor nominal: $' + nominal.toFixed(2) + ' USD</span>' : '') +
       '<p class="detail-desc">' + esc(desc) + '</p>' +
       '<table class="info-table">' +
         '<tr><td>Marca</td><td>' + esc(c.marca||'—') + '</td></tr>' +
         '<tr><td>Región</td><td>' + esc(region) + '</td></tr>' +
+        (cantidad !== null ? '<tr><td>Stock</td><td>' + cantidad + ' unidad' + (cantidad !== 1 ? 'es' : '') + '</td></tr>' : '') +
         '<tr><td>Entrega</td><td>' + esc(entTxt) + '</td></tr>' +
         '<tr><td>Pago</td><td>USDT · BTC · ETH</td></tr>' +
         '<tr><td>Protección</td><td>Escrow incluido ✓</td></tr>' +
@@ -255,9 +263,10 @@ function irAPago() {
 async function loadSeller(sid) {
   if (!sid) return;
   try {
-    var r = await sb.from('profiles').select('usuario,nombre,reputacion,ventas_totales,created_at').eq('id', sid).single();
+    var r = await sb.from('profiles').select('usuario,nombre,email,reputacion,ventas_totales,created_at').eq('id', sid).single();
+    if (r.error) console.warn('[loadSeller] error:', r.error.message);
     var p = r.data || {};
-    var nombre = p.usuario || p.nombre || 'Vendedor';
+    var nombre = p.usuario || p.nombre || (p.email ? p.email.split('@')[0] : null) || 'usuario';
     var since  = p.created_at ? new Date(p.created_at).getFullYear() : '2025';
     var rep    = p.reputacion   ? parseFloat(p.reputacion).toFixed(1)  : '5.0';
     var ventas = p.ventas_totales || 0;

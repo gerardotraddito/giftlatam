@@ -79,8 +79,68 @@
     @keyframes spin{to{transform:rotate(360deg)}}
 
     .error-screen{text-align:center;padding:50px 20px;color:var(--gris)}
+  
+    /* FOTO UPLOAD */
+    .foto-upload-area{border:2px dashed var(--borde);border-radius:14px;padding:20px;text-align:center;cursor:pointer;transition:border-color 0.2s;background:#0d0d0d;position:relative}
+    .foto-upload-area:hover,.foto-upload-area.drag{border-color:var(--verde);background:rgba(0,200,83,0.04)}
+    .foto-upload-area input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+    .foto-upload-icon{font-size:28px;margin-bottom:6px}
+    .foto-upload-label{font-size:13px;font-weight:600;margin-bottom:3px}
+    .foto-upload-sub{font-size:11px;color:var(--gris)}
+    .foto-preview-wrap{position:relative}
+    .foto-preview-img{width:100%;max-height:180px;object-fit:cover;border-radius:14px;display:block;border:2px solid rgba(0,200,83,0.3)}
+    .foto-remove-btn{position:absolute;top:8px;right:8px;background:rgba(0,0,0,0.75);border:none;border-radius:8px;color:#fff;padding:5px 9px;font-size:12px;cursor:pointer;font-weight:600}
+    .foto-hint{font-size:11px;color:var(--gris);text-align:center;padding:6px 0 2px}
+    .foto-uploading{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--verde);padding:6px 0}
+    .foto-uploading .mini-spin{width:14px;height:14px;border:2px solid #222;border-top-color:var(--verde);border-radius:50%;animation:spin 0.8s linear infinite}
+
   </style>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.js">
+// ── FOTO ──────────────────────────────────────────────────────────────
+var fotoFile = null;
+var fotoUrl  = null;
+
+function handleDrop(e) {
+  e.preventDefault();
+  document.getElementById('fotoUploadArea').classList.remove('drag');
+  var f = e.dataTransfer.files[0];
+  if (f) processFoto(f);
+}
+function handleFotoSelect(input) { if (input.files[0]) processFoto(input.files[0]); }
+
+function processFoto(file) {
+  if (file.size > 5*1024*1024) { showToast('⚠️ La foto debe ser menor a 5 MB'); return; }
+  fotoFile = file;
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    document.getElementById('fotoPreviewImg').src = e.target.result;
+    document.getElementById('fotoUploadArea').style.display = 'none';
+    document.getElementById('fotoPreviewWrap').style.display = 'block';
+  };
+  reader.readAsDataURL(file);
+}
+
+function removeFoto() {
+  fotoFile = null; fotoUrl = null;
+  document.getElementById('fotoInput').value = '';
+  document.getElementById('fotoUploadArea').style.display = 'block';
+  document.getElementById('fotoPreviewWrap').style.display = 'none';
+}
+
+async function uploadFotoIfNeeded() {
+  if (!fotoFile) return fotoUrl; // devuelve URL existente si no cambió
+  document.getElementById('fotoUploading').style.display = 'flex';
+  var ext  = fotoFile.name.split('.').pop().toLowerCase() || 'jpg';
+  var path = currentUser.id + '/' + Date.now() + '.' + ext;
+  var res  = await sb.storage.from('gift-card-images').upload(path, fotoFile, { upsert:true, contentType:fotoFile.type });
+  document.getElementById('fotoUploading').style.display = 'none';
+  if (res.error) { console.error(res.error); return fotoUrl; }
+  var pub = sb.storage.from('gift-card-images').getPublicUrl(path);
+  fotoUrl = pub.data.publicUrl;
+  return fotoUrl;
+}
+
+</script>
   <script src="supabase.js"></script>
   <script src="auth.js"></script>
 </head>
@@ -206,7 +266,14 @@ function renderForm() {
     '</div>' +
 
     // Precios
-    '<div class="section-label">Precios</div>' +
+    '<div class="section-label">Stock y precios</div>' +
+    '<div class="price-field">' +
+      '<span class="price-field-label">CANTIDAD DISPONIBLE (unidades) *</span>' +
+      '<div class="price-input-row">' +
+        '<span class="price-symbol" style="color:var(--gris)">#</span>' +
+        '<input id="fCantidad" type="number" step="1" min="1" max="9999" value="' + (l.cantidad||1) + '" placeholder="1" style="color:var(--blanco)">' +
+      '</div>' +
+    '</div>' +
     '<div class="price-field">' +
       '<span class="price-field-label">VALOR NOMINAL (precio original USD)</span>' +
       '<div class="price-input-row">' +
@@ -227,6 +294,19 @@ function renderForm() {
       '<div class="comision-row total"><span>Recibís</span><span class="val" id="cTotal">$0.00 USDT</span></div>' +
     '</div>' +
 
+    // Foto
+    '<div class="section-label">Foto del producto</div>' +
+    '<div id="fotoUploadArea" class="foto-upload-area" ondragover="event.preventDefault();this.classList.add(\'drag\')" ondragleave="this.classList.remove(\'drag\')" ondrop="handleDrop(event)">' +
+      '<input type="file" id="fotoInput" accept="image/*" onchange="handleFotoSelect(this)">' +
+      '<div id="fotoPlaceholder"><div class="foto-upload-icon">🖼️</div><div class="foto-upload-label">Tocá o arrastrá una foto</div><div class="foto-upload-sub">JPG, PNG · máx. 5 MB</div></div>' +
+    '</div>' +
+    '<div id="fotoPreviewWrap" class="foto-preview-wrap" style="display:none">' +
+      '<img id="fotoPreviewImg" class="foto-preview-img" src="" alt="preview">' +
+      '<button class="foto-remove-btn" onclick="removeFoto()">✕ Quitar</button>' +
+    '</div>' +
+    '<div id="fotoUploading" class="foto-uploading" style="display:none"><div class="mini-spin"></div> Subiendo foto...</div>' +
+    '<div class="foto-hint">La foto aparece en tu listing y en el explorador</div>' +
+
     // Peligro: eliminar
     '<div class="section-label">Zona peligrosa</div>' +
     '<button onclick="confirmarEliminar()" style="width:100%;background:rgba(255,68,68,0.08);border:1px solid rgba(255,68,68,0.2);color:var(--rojo);border-radius:14px;padding:13px;font-size:14px;font-weight:600;cursor:pointer;font-family:Inter,sans-serif;display:flex;align-items:center;justify-content:center;gap:8px">' +
@@ -234,6 +314,14 @@ function renderForm() {
     '</button>';
 
   calcComision();
+  // Si ya tiene foto, mostrarla
+  if (l.imagen_url) {
+    fotoUrl = l.imagen_url;
+    var pw = document.getElementById('fotoPreviewWrap');
+    var ua = document.getElementById('fotoUploadArea');
+    var pi = document.getElementById('fotoPreviewImg');
+    if (pw && ua && pi) { pi.src = l.imagen_url; pw.style.display='block'; ua.style.display='none'; }
+  }
 }
 
 function setTipo(id) {
@@ -285,6 +373,7 @@ async function guardar() {
 
   btn.textContent = 'Guardando...';
   btn.disabled = true;
+  var imgUrl = await uploadFotoIfNeeded();
 
   var update = {
     titulo:       titulo,
@@ -292,9 +381,11 @@ async function guardar() {
     descripcion:  desc || null,
     precio_venta: precio,
     valor_nominal:nominal,
+    cantidad: parseInt(document.getElementById('fCantidad').value) || 1,
     region:       regionActiva,
     tipo:         tipoActivo,
     updated_at:   new Date().toISOString(),
+    imagen_url:   imgUrl !== undefined ? imgUrl : listing.imagen_url,
   };
 
   var res = await sb.from('gift_cards').update(update).eq('id', listingId).eq('seller_id', currentUser.id);

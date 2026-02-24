@@ -39,42 +39,98 @@
     .filter-btn.active { border-color: var(--verde); color: var(--verde); background: rgba(0,200,83,0.1); font-weight: 600; }
     .results-count { font-size: 12px; color: var(--gris); white-space: nowrap; margin-left: auto; flex-shrink: 0; }
     .container { padding: 14px; max-width: 1280px; margin: 0 auto; }
+    
+    /* ── VOUCHER CARDS — estilo BuySellVouchers ── */
+    .vouchers-list { display:flex; flex-direction:column; gap:0; }
 
-    /* ── VOUCHER CARDS ── */
-    .vouchers-list { display: flex; flex-direction: column; gap: 0; }
     .voucher-card {
-      display: flex; flex-direction: row; align-items: stretch;
-      background: var(--gris-card); border: 1px solid var(--gris-borde);
-      border-radius: 14px; margin-bottom: 10px;
-      cursor: pointer; text-decoration: none; color: inherit;
-      overflow: hidden; transition: box-shadow 0.15s, border-color 0.15s;
-      min-height: 100px;
+      display:flex; flex-direction:row; align-items:stretch;
+      background:var(--gris-card); border:1px solid var(--gris-borde);
+      border-radius:14px; margin-bottom:10px;
+      cursor:pointer; text-decoration:none; color:inherit;
+      overflow:hidden; transition:box-shadow 0.15s, border-color 0.15s;
+      min-height:100px;
     }
-    .voucher-card:hover { border-color: rgba(0,200,83,0.4); box-shadow: 0 2px 12px rgba(0,200,83,0.08); }
+    .voucher-card:hover { border-color:rgba(0,200,83,0.4); box-shadow:0 2px 12px rgba(0,200,83,0.08); }
 
     /* Imagen cuadrada izquierda */
-    .vc-img { width: 100px; min-width: 100px; position: relative; background: #1a1a1a; overflow: hidden; flex-shrink: 0; }
-    .vc-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
-    .vc-img-emoji { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 40px; }
-    .vc-img-logo { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; padding: 18px; }
-    .vc-img-logo img { width: 100%; height: auto; object-fit: contain; display: block; }
+    .vc-img {
+      width:100px; min-width:100px; position:relative;
+      background:#1a1a1a; overflow:hidden; flex-shrink:0;
+    }
+    .vc-img img {
+      width:100%; height:100%; object-fit:cover; display:block;
+    }
+    .vc-img-emoji {
+      width:100%; height:100%; display:flex;
+      align-items:center; justify-content:center;
+      font-size:40px;
+    }
 
     /* Contenido derecho */
-    .vc-body { flex: 1; min-width: 0; padding: 11px 12px; display: flex; flex-direction: column; justify-content: space-between; gap: 6px; }
-    .vc-title { font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 700; color: var(--blanco); line-height: 1.35; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-    .vc-meta { font-size: 11px; color: var(--gris); }
-    .vc-seller { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
-    .vc-seller-name { font-size: 12px; font-weight: 600; color: var(--blanco); }
-    .vc-verified { width: 14px; height: 14px; background: var(--verde); border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 8px; color: #000; font-weight: 700; flex-shrink: 0; }
-    .vc-rep { display: inline-flex; align-items: center; gap: 3px; background: rgba(0,200,83,0.1); border: 1px solid rgba(0,200,83,0.2); border-radius: 5px; padding: 1px 5px; font-size: 10px; color: var(--verde); font-weight: 700; }
-    .vc-bottom { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
-    .vc-price-block { display: flex; align-items: baseline; gap: 6px; flex-wrap: wrap; }
-    .vc-price { font-family: 'Inter', sans-serif; font-size: 17px; font-weight: 800; color: var(--verde); font-variant-numeric: tabular-nums; }
-    .vc-price-old { font-size: 12px; color: var(--gris); text-decoration: line-through; font-variant-numeric: tabular-nums; }
-    .vc-discount { background: #ff0; color: #000; font-size: 10px; font-weight: 800; border-radius: 4px; padding: 1px 5px; }
-    .vc-sold { font-size: 11px; color: var(--gris); white-space: nowrap; flex-shrink: 0; }
+    .vc-body {
+      flex:1; min-width:0; padding:11px 12px;
+      display:flex; flex-direction:column; justify-content:space-between; gap:6px;
+    }
 
-    /* Estados UI */
+    .vc-title {
+      font-family:'Inter',sans-serif; font-size:14px; font-weight:700;
+      color:var(--blanco); line-height:1.35;
+      display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical;
+      overflow:hidden;
+    }
+
+    .vc-seller {
+      display:flex; align-items:center; gap:6px; flex-wrap:wrap;
+    }
+    .vc-seller-name {
+      font-size:12px; font-weight:600; color:var(--blanco);
+    }
+    .vc-verified {
+      width:14px; height:14px; background:var(--verde); border-radius:50%;
+      display:inline-flex; align-items:center; justify-content:center;
+      font-size:8px; color:#000; font-weight:700; flex-shrink:0;
+    }
+    .vc-rep {
+      display:inline-flex; align-items:center; gap:3px;
+      background:rgba(0,200,83,0.1); border:1px solid rgba(0,200,83,0.2);
+      border-radius:5px; padding:1px 5px; font-size:10px;
+      color:var(--verde); font-weight:700;
+    }
+
+    .vc-bottom {
+      display:flex; align-items:center; justify-content:space-between; gap:8px;
+    }
+    .vc-price-block { display:flex; align-items:baseline; gap:6px; flex-wrap:wrap; }
+    .vc-price {
+      font-family:'Inter',sans-serif; font-size:17px; font-weight:800;
+      color:var(--verde); font-variant-numeric:tabular-nums; font-feature-settings:'tnum';
+    }
+    .vc-price-old {
+      font-family:'Inter',sans-serif; font-size:12px; color:var(--gris);
+      text-decoration:line-through; font-variant-numeric:tabular-nums;
+    }
+    .vc-discount {
+      background:#ff0; color:#000; font-size:10px; font-weight:800;
+      border-radius:4px; padding:1px 5px;
+    }
+    .vc-sold {
+      font-size:11px; color:var(--gris); white-space:nowrap; flex-shrink:0;
+    }
+
+    /* Foto en voucher card (legacy compat) */
+    .voucher-foto { width:46px; height:46px; min-width:46px; border-radius:11px; object-fit:cover; flex-shrink:0; }
+    .voucher-icon-wrap { width:46px; height:46px; min-width:46px; border-radius:11px; display:flex; align-items:center; justify-content:center; font-size:22px; flex-shrink:0; }
+
+    .seller-line { display: flex; align-items: center; gap: 5px; margin-top: 3px; font-size: 11px; color: var(--gris); }
+    .seller-name { color: #ccc; font-weight: 500; }
+    .rep-stars { color: #F5A623; font-size: 10px; }
+    .badge { background: rgba(0,200,83,0.12); color: var(--verde); border: 1px solid rgba(0,200,83,0.25); border-radius: 5px; padding: 1px 6px; font-size: 10px; font-weight: 700; }
+    .voucher-price { flex-shrink: 0; width: 80px; display: flex; flex-direction: column; align-items: flex-end; gap: 2px; }
+    .price-main { font-family:'Inter',sans-serif;font-variant-numeric:tabular-nums;font-feature-settings:'tnum'; font-size: 14px; font-weight: 800; color: var(--verde); display: block; text-align: right; line-height: 1.3; }
+    .price-old { font-size: 11px; color: var(--gris); text-decoration: line-through; display: block; text-align: right; }
+    .voucher-seller { font-size: 11px; color: var(--gris); margin-top: 3px; display: flex; align-items: center; gap: 5px; flex-wrap: wrap; }
+    .seller-rep { color: #aaa; font-size: 10px; }
     .loading { text-align: center; padding: 60px 20px; color: var(--gris); font-size: 14px; }
     .loading-spinner { width: 32px; height: 32px; border: 3px solid var(--gris-borde); border-top-color: var(--verde); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 14px; }
     @keyframes spin { to { transform: rotate(360deg); } }
@@ -83,31 +139,24 @@
     .empty-state-title { font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 700; margin-bottom: 8px; }
     .empty-state-sub { font-size: 13px; color: var(--gris); margin-bottom: 20px; line-height: 1.6; }
     .btn-action { background: var(--verde); color: #000; border: none; border-radius: 12px; padding: 11px 22px; font-family: 'Syne', sans-serif; font-weight: 700; font-size: 13px; cursor: pointer; text-decoration: none; display: inline-block; }
-
-    /* Bottom nav */
     .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(14,14,14,0.97); border-top: 1px solid var(--gris-borde); display: flex; justify-content: space-around; align-items: center; padding: 8px 0 14px; z-index: 9999; backdrop-filter: blur(20px); }
     .nav-item { display: flex; flex-direction: column; align-items: center; gap: 3px; cursor: pointer; color: var(--gris); font-size: 10px; padding: 2px 8px; }
     .nav-item.active { color: var(--verde); }
     .nav-item svg { width: 21px; height: 21px; }
-
     @media (min-width: 768px) { .vouchers-list { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; } .voucher-card { margin-bottom: 0; } }
     @media (min-width: 1024px) { .bottom-nav { display: none; } .vouchers-list { grid-template-columns: repeat(3, 1fr); } }
-  </style>
+  
+    /* Foto en voucher card */
+    .voucher-foto { width:46px; height:46px; min-width:46px; border-radius:11px; object-fit:cover; flex-shrink:0; }
+    .voucher-icon-wrap { width:46px; height:46px; min-width:46px; border-radius:11px; display:flex; align-items:center; justify-content:center; font-size:22px; flex-shrink:0; }
 
-  <!--
-    ╔══════════════════════════════════════════════════╗
-    ║  DEPENDENCIAS SUPABASE                           ║
-    ║  Se carga el SDK de Supabase (UMD) desde JSDelivr║
-    ║  y luego supabase.js que exporta `sb` (el client)║
-    ╚══════════════════════════════════════════════════╝
-  -->
+  </style>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.js"></script>
   <script src="supabase.js"></script>
   <script src="auth.js"></script>
 </head>
 <body>
 
-<!-- ── NAV ── -->
 <nav>
   <a href="index.html" class="logo">
     <div class="logo-icon">💎</div>
@@ -119,18 +168,14 @@
   </div>
 </nav>
 
-<!-- ── BÚSQUEDA ── -->
 <div class="search-wrap">
   <div class="search-inner">
-    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-      <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
-    </svg>
+    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
     <input type="text" id="searchInput" placeholder="Buscar Netflix, Steam, Spotify, PSN..." oninput="doSearch(this.value)">
     <button class="clear-btn" id="clearBtn" onclick="clearSearch()">✕</button>
   </div>
 </div>
 
-<!-- ── CATEGORÍAS ── -->
 <div class="cat-bar">
   <div class="cat-pill active" data-cat="all"       onclick="filterCat(this)">🔥 Todos</div>
   <div class="cat-pill"        data-cat="gaming"    onclick="filterCat(this)">🎮 Gaming</div>
@@ -141,7 +186,6 @@
   <div class="cat-pill"        data-cat="viajes"    onclick="filterCat(this)">✈️ Viajes</div>
 </div>
 
-<!-- ── ORDENAMIENTO + CONTADOR ── -->
 <div class="filters-row">
   <button class="filter-btn active" data-sort="created_at"  onclick="filterSort(this)">Más nuevos</button>
   <button class="filter-btn"        data-sort="precio_asc"  onclick="filterSort(this)">Precio ↑</button>
@@ -149,10 +193,8 @@
   <div class="results-count" id="resultsCount"></div>
 </div>
 
-<!-- ── CONTENEDOR PRINCIPAL ── -->
 <div class="container">
   <div id="vouchersList">
-    <!-- Estado inicial: spinner de carga -->
     <div class="loading">
       <div class="loading-spinner"></div>
       Cargando gift cards...
@@ -160,7 +202,6 @@
   </div>
 </div>
 
-<!-- ── BOTTOM NAV ── -->
 <div class="bottom-nav">
   <div class="nav-item" onclick="window.location='index.html'">
     <svg viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>Inicio
@@ -180,72 +221,44 @@
 </div>
 
 <script>
-// ╔════════════════════════════════════════════════════════════╗
-// ║  explorar.html — Lógica principal                         ║
-// ║  Usa `sb` (Supabase client) definido en supabase.js       ║
-// ║  Tabla principal: gift_cards                              ║
-// ║  Tabla secundaria: profiles (para datos del vendedor)     ║
-// ╚════════════════════════════════════════════════════════════╝
-
-// ─────────────────────────────────────────────────────────────
-// ESTADO GLOBAL — variables reactivas del filtro
-// ─────────────────────────────────────────────────────────────
-var allCards    = [];   // Todos los productos cargados desde Supabase
+// ═══════════════════════════════════════════════
+// ESTADO GLOBAL
+// ═══════════════════════════════════════════════
+var allCards    = [];
 var activeCat   = 'all';
 var activeSort  = 'created_at';
 var searchQuery = '';
 
-// ─────────────────────────────────────────────────────────────
-// LOGOS DE MARCAS — URLs de íconos SVG desde simpleicons.org
-// Clave: nombre de marca en minúsculas
-// ─────────────────────────────────────────────────────────────
+// Logos por marca
 var BRAND_LOGOS = {
-  'xbox':         'https://cdn.simpleicons.org/xbox/107C10',
-  'playstation':  'https://cdn.simpleicons.org/playstation/003791',
-  'psn':          'https://cdn.simpleicons.org/playstation/003791',
-  'steam':        'https://cdn.simpleicons.org/steam/66c0f4',
-  'apple':        'https://cdn.simpleicons.org/apple/f5f5f7',
-  'nintendo':     'https://cdn.simpleicons.org/nintendo/E60012',
-  'roblox':       'https://cdn.simpleicons.org/roblox/E2231A',
-  'pubg':         'https://cdn.simpleicons.org/pubg/F0B400',
-  'spotify':      'https://cdn.simpleicons.org/spotify/1ED760',
-  'netflix':      'https://cdn.simpleicons.org/netflix/E50914',
-  'amazon':       'https://cdn.simpleicons.org/amazon/FF9900',
-  'youtube':      'https://cdn.simpleicons.org/youtube/FF0000',
-  'discord':      'https://cdn.simpleicons.org/discord/5865F2',
-  'twitch':       'https://cdn.simpleicons.org/twitch/9146FF',
-  'minecraft':    'https://cdn.simpleicons.org/minecraft/62B47A',
-  'epic':         'https://cdn.simpleicons.org/epicgames/ffffff',
-  'epic games':   'https://cdn.simpleicons.org/epicgames/ffffff',
-  'google play':  'https://cdn.simpleicons.org/googleplay/414141',
-  'valorant':     'https://cdn.simpleicons.org/valorant/FF4655',
-  'disney':       'https://cdn.simpleicons.org/disneyplus/113CCF',
-  'hbo':          'https://cdn.simpleicons.org/hbo/B007FF',
-  'apple tv':     'https://cdn.simpleicons.org/appletv/f5f5f7',
-  'prime video':  'https://cdn.simpleicons.org/primevideo/00A8E1',
-  'rappi':        'https://cdn.simpleicons.org/rappi/FF441F',
-  'uber eats':    'https://cdn.simpleicons.org/ubereats/06C167'
+  'xbox':        'https://cdn.simpleicons.org/xbox/107C10',
+  'playstation': 'https://cdn.simpleicons.org/playstation/003791',
+  'psn':         'https://cdn.simpleicons.org/playstation/003791',
+  'steam':       'https://cdn.simpleicons.org/steam/66c0f4',
+  'apple':       'https://cdn.simpleicons.org/apple/f5f5f7',
+  'nintendo':    'https://cdn.simpleicons.org/nintendo/E60012',
+  'roblox':      'https://cdn.simpleicons.org/roblox/E2231A',
+  'pubg':        'https://cdn.simpleicons.org/pubg/F0B400',
+  'spotify':     'https://cdn.simpleicons.org/spotify/1ED760',
+  'netflix':     'https://cdn.simpleicons.org/netflix/E50914',
+  'amazon':      'https://cdn.simpleicons.org/amazon/FF9900',
+  'youtube':     'https://cdn.simpleicons.org/youtube/FF0000',
+  'discord':     'https://cdn.simpleicons.org/discord/5865F2',
+  'twitch':      'https://cdn.simpleicons.org/twitch/9146FF',
+  'minecraft':   'https://cdn.simpleicons.org/minecraft/62B47A',
+  'epic':        'https://cdn.simpleicons.org/epicgames/ffffff',
+  'google play': 'https://cdn.simpleicons.org/googleplay/414141',
+  'valorant':    'https://cdn.simpleicons.org/valorant/FF4655'
 };
 
-// ─────────────────────────────────────────────────────────────
-// EMOJIS FALLBACK por categoría/tipo
-// ─────────────────────────────────────────────────────────────
+// Emojis fallback por tipo
 var CAT_ICONS = {
-  gaming:    '🎮',
-  streaming: '🎬',
-  retail:    '🛒',
-  comida:    '🍔',
-  musica:    '🎵',
-  viajes:    '✈️',
-  cuenta:    '👤',
-  licencia:  '🔑',
-  gift_card: '🎁',
-  otro:      '📄'
+  gaming: '🎮', streaming: '🎬', retail: '🛒', comida: '🍔',
+  musica: '🎵', viajes: '✈️', cuenta: '👤', licencia: '🔑',
+  gift_card: '🎁', otro: '📄'
 };
 
-// ─────────────────────────────────────────────────────────────
-// KEYWORDS para clasificar por categoría cuando no hay columna `tipo`
-// ─────────────────────────────────────────────────────────────
+// Keywords por categoría
 var CAT_KEYWORDS = {
   gaming:    ['steam','psn','xbox','roblox','nintendo','minecraft','valorant','fortnite','free fire','league','gaming','playstation','epic','pubg'],
   streaming: ['netflix','disney','hbo','prime','amazon video','streaming','hulu','paramount','apple tv','mubi'],
@@ -255,66 +268,40 @@ var CAT_KEYWORDS = {
   viajes:    ['booking','airbnb','despegar','expedia']
 };
 
-// ─────────────────────────────────────────────────────────────
-// getBrandLogo — devuelve el bloque HTML del ícono de la marca.
-// Prioridad: logo SVG de simpleicons → emoji de categoría → 🎁
-// ─────────────────────────────────────────────────────────────
-function getBrandLogo(marca, tipo) {
-  var key     = (marca || '').toLowerCase().trim();
-  var logoUrl = BRAND_LOGOS[key];
+// ── getBrandIcon — única definición ──
+function getBrandIcon(marca, tipo) {
+  var key = (marca || '').toLowerCase().trim();
+  var url = BRAND_LOGOS[key];
   var fallback = CAT_ICONS[tipo] || '🎁';
-
-  if (logoUrl) {
-    // Ícono SVG de la marca con fallback a emoji si la URL falla
-    return '<div class="vc-img-logo">' +
-      '<img src="' + logoUrl + '" alt="' + escapeHtml(marca || '') + '" ' +
-      'onerror="this.parentElement.innerHTML=\'<div style=&quot;font-size:40px;display:flex;align-items:center;justify-content:center;width:100%;height:100%&quot;>' + fallback + '</div>\'">' +
-      '</div>';
+  if (url) {
+    return '<img src="' + url + '" width="32" height="32" alt="' + (marca || '') + '" style="display:block;object-fit:contain" onerror="this.parentNode.innerHTML=\'' + fallback + '\'">';
   }
-  // Sin logo: emoji de categoría
-  return '<div class="vc-img-emoji">' + fallback + '</div>';
+  return fallback;
 }
 
-// ─────────────────────────────────────────────────────────────
-// escapeHtml — previene XSS en atributos/texto HTML
-// ─────────────────────────────────────────────────────────────
-function escapeHtml(str) {
-  return String(str)
-    .replace(/&/g,  '&amp;')
-    .replace(/</g,  '&lt;')
-    .replace(/>/g,  '&gt;')
-    .replace(/"/g,  '&quot;')
-    .replace(/'/g,  '&#39;');
-}
-
-// ─────────────────────────────────────────────────────────────
-// ESTADOS DE UI — spinner, error, vacío
-// ─────────────────────────────────────────────────────────────
+// ── Estados de UI ──
 function setLoading() {
   document.getElementById('resultsCount').textContent = '';
   document.getElementById('vouchersList').innerHTML =
     '<div class="loading"><div class="loading-spinner"></div>Cargando gift cards...</div>';
 }
 
-// setError: muestra mensaje de error + botón de reintento
-// msg: texto descriptivo | retryFn: string JS para onclick
 function setError(msg, retryFn) {
   document.getElementById('resultsCount').textContent = '';
   document.getElementById('vouchersList').innerHTML =
     '<div class="empty-state">' +
       '<span class="empty-state-emoji">⚠️</span>' +
       '<div class="empty-state-title">No pudimos cargar el catálogo</div>' +
-      '<div class="empty-state-sub">' + escapeHtml(msg) + '</div>' +
-      '<button class="btn-action" onclick="' + retryFn + '">↻ Reintentar</button>' +
+      '<div class="empty-state-sub">' + msg + '</div>' +
+      '<button class="btn-action" onclick="' + retryFn + '" style="margin-top:4px">↻ Reintentar</button>' +
     '</div>';
 }
 
-// setEmpty: estado vacío inteligente según si hay búsqueda o filtro activo
 function setEmpty() {
   var isSearch = !!searchQuery;
   var isCat    = activeCat !== 'all';
   var emoji    = isSearch ? '🔍' : isCat ? '📭' : '🌱';
-  var title    = isSearch ? ('Sin resultados para "' + escapeHtml(searchQuery) + '"')
+  var title    = isSearch ? ('Sin resultados para "' + searchQuery + '"')
                : isCat    ? 'No hay productos en esta categoría todavía'
                :             'El catálogo está creciendo';
   var sub      = isSearch ? 'Revisá la ortografía o buscá otra marca.'
@@ -324,7 +311,6 @@ function setEmpty() {
     ? '<button class="btn-action" onclick="clearSearch()">← Ver todos los productos</button>'
     : '<a class="btn-action" href="publicar.html">+ Publicar gift card</a>';
 
-  document.getElementById('resultsCount').textContent = '';
   document.getElementById('vouchersList').innerHTML =
     '<div class="empty-state">' +
       '<span class="empty-state-emoji">' + emoji + '</span>' +
@@ -334,26 +320,12 @@ function setEmpty() {
     '</div>';
 }
 
-// ─────────────────────────────────────────────────────────────
-// loadCards — fetch principal desde Supabase
-//
-// Estrategia:
-//   1. Trae gift_cards con estado='activo' (select('*'))
-//   2. Extrae los seller_id únicos
-//   3. Hace UNA sola query a `profiles` para todos los vendedores
-//   4. Adjunta el perfil a cada card en card._seller
-//   5. Llama a renderCards()
-//
-// Errores manejados:
-//   - Timeout de red (12s)
-//   - Error de red (catch)
-//   - Error de Supabase (result.error)
-//   - Columna seller_id inexistente → manejo silencioso con ?. y ||
-// ─────────────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════
+// FETCH — try/catch SOLO envuelve la llamada a Supabase
+// ═══════════════════════════════════════════════
 async function loadCards() {
   setLoading();
 
-  // Timeout de seguridad: si en 12s no responde, muestra error
   var timeoutId = setTimeout(function() {
     setError('La conexión está tardando. Verificá tu internet.', 'loadCards()');
   }, 12000);
@@ -361,9 +333,6 @@ async function loadCards() {
   var data, fetchError;
 
   try {
-    // ── QUERY PRINCIPAL ──
-    // select('*') evita romper si se agregan/quitan columnas en el futuro
-    // Solo productos activos, ordenados por más nuevos por defecto
     var result = await sb
       .from('gift_cards')
       .select('*')
@@ -374,70 +343,58 @@ async function loadCards() {
     fetchError = result.error;
 
   } catch (networkErr) {
-    // Error de red (sin conexión, CORS, DNS, etc.)
     clearTimeout(timeoutId);
-    console.error('[GiftLatam] Error de red en loadCards:', networkErr);
-    setError(
-      networkErr.message || 'No se pudo conectar con el servidor. Revisá tu conexión.',
-      'loadCards()'
-    );
+    console.error('[loadCards] Error de red:', networkErr);
+    setError(networkErr.message || 'No se pudo conectar con el servidor.', 'loadCards()');
     return;
   }
 
   clearTimeout(timeoutId);
 
-  // Error reportado por Supabase (query mal formada, permisos, etc.)
   if (fetchError) {
-    console.error('[GiftLatam] Error Supabase en gift_cards:', fetchError);
-    setError(fetchError.message || 'Error al obtener los productos.', 'loadCards()');
+    console.error('[loadCards] Error Supabase:', fetchError);
+    setError(fetchError.message, 'loadCards()');
     return;
   }
 
-  // Si data es null o vacío, mostramos estado vacío sin romper
-  allCards = Array.isArray(data) ? data : [];
-  console.log('[GiftLatam] ' + allCards.length + ' gift cards cargadas');
+  allCards = data || [];
+  console.log('[loadCards] ' + allCards.length + ' productos cargados');
 
-  // ── VENDEDOR ──
-  // El nombre ya viene en gift_cards.nombre_vendedor (guardado por trigger en Supabase).
-  // No hace falta query extra a profiles.
+  // Batch fetch perfiles de vendedores (una sola query)
+  var sellerIds = [...new Set(allCards.map(function(c){ return c.seller_id; }).filter(Boolean))];
+  if (sellerIds.length > 0) {
+    var profRes = await sb.from('profiles').select('id, usuario, nombre, email, reputacion, ventas_totales').in('id', sellerIds);
+    if (!profRes.error && profRes.data) {
+      var profileMap = {};
+      profRes.data.forEach(function(p){ profileMap[p.id] = p; });
+      allCards.forEach(function(card){ card._seller = profileMap[card.seller_id] || null; });
+    }
+  }
 
-  // renderCards está FUERA del try: sus errores son bugs de código, no de red
+  // (perfiles ya cargados arriba en _seller)
+
+  // renderCards va FUERA del try — sus errores son bugs, no errores de red
   renderCards();
 }
 
-// ─────────────────────────────────────────────────────────────
-// renderCards — aplica filtros sobre allCards y pinta el DOM
-//
-// Orden de operaciones:
-//   1. Filtro por categoría (keywords en título/marca o campo `tipo`/`categoria`)
-//   2. Filtro por búsqueda de texto
-//   3. Ordenamiento
-//   4. Actualización del contador
-//   5. Render de HTML de cards
-// ─────────────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════
+// RENDER — FUERA del try/catch
+// ═══════════════════════════════════════════════
 function renderCards() {
-  var filtered = allCards.slice(); // copia superficial para no mutar allCards
+  var filtered = allCards.slice();
 
-  // ── 1. Filtro por categoría ──
+  // 1. Filtro categoría
   if (activeCat !== 'all') {
     var keywords = CAT_KEYWORDS[activeCat] || [];
     filtered = filtered.filter(function(card) {
-      var m   = (card.marca      || '').toLowerCase();
-      var t   = (card.titulo     || '').toLowerCase();
-      // Chequeamos también columnas `tipo` y `categoria` si existen
-      var tp  = (card.tipo       || '').toLowerCase();
-      var cat = (card.categoria  || '').toLowerCase();
-
-      // Match por keywords en título/marca
-      var matchKeyword = keywords.some(function(k) { return m.includes(k) || t.includes(k); });
-      // Match por campo tipo/categoria directamente
-      var matchType = (tp === activeCat || cat === activeCat);
-
-      return matchKeyword || matchType;
+      var m = (card.marca  || '').toLowerCase();
+      var t = (card.titulo || '').toLowerCase();
+      return keywords.some(function(k) { return m.includes(k) || t.includes(k); })
+             || card.tipo === activeCat;
     });
   }
 
-  // ── 2. Filtro por búsqueda de texto ──
+  // 2. Filtro búsqueda
   if (searchQuery) {
     filtered = filtered.filter(function(card) {
       return (card.titulo || '').toLowerCase().includes(searchQuery)
@@ -445,123 +402,88 @@ function renderCards() {
     });
   }
 
-  // ── 3. Ordenamiento ──
-  if (activeSort === 'precio_asc') {
-    filtered.sort(function(a, b) {
-      return parseFloat(a.precio_venta || 0) - parseFloat(b.precio_venta || 0);
-    });
-  } else if (activeSort === 'precio_desc') {
-    filtered.sort(function(a, b) {
-      return parseFloat(b.precio_venta || 0) - parseFloat(a.precio_venta || 0);
-    });
-  }
-  // 'created_at' ya viene ordenado desde Supabase, no es necesario re-ordenar
+  // 3. Ordenar
+  if (activeSort === 'precio_asc')  filtered.sort(function(a,b){ return a.precio_venta - b.precio_venta; });
+  if (activeSort === 'precio_desc') filtered.sort(function(a,b){ return b.precio_venta - a.precio_venta; });
 
-  // ── 4. Contador de resultados ──
+  // 4. Contador
   var n = filtered.length;
   document.getElementById('resultsCount').textContent =
     allCards.length > 0 ? (n + ' resultado' + (n !== 1 ? 's' : '')) : '';
 
-  // ── 5. Estado vacío ──
+  // 5. Estado vacío
   if (n === 0) { setEmpty(); return; }
 
-  // ── 6. Render de cada card ──
+  // 6. Render de cards
   var html = filtered.map(function(card) {
+    var precio  = parseFloat(card.precio_venta  || 0);
+    var nominal = parseFloat(card.valor_nominal || 0);
+    var pct     = (nominal > 0 && precio < nominal) ? Math.round((1 - precio / nominal) * 100) : 0;
+    var icon    = getBrandIcon(card.marca, card.tipo);
+    var region  = (card.region && card.region !== 'Global') ? ' | ' + card.region : '';
+    var prof    = card._seller || {};
+    var seller  = prof.usuario || prof.nombre || (prof.email ? prof.email.split('@')[0] : null) || 'usuario';
+    var rep     = prof.reputacion ? parseFloat(prof.reputacion).toFixed(1) : null;
+    var nVentas = (prof.ventas_totales != null) ? parseInt(prof.ventas_totales) : 0;
+    var vendidos= nVentas + ' venta' + (nVentas !== 1 ? 's' : '');
+    var cantidad = (card.cantidad != null) ? parseInt(card.cantidad) : null;
+    var stockBadge = cantidad !== null
+      ? (cantidad <= 3
+          ? '<span style="color:#ff6b35;font-size:11px;font-weight:700">⚡ ' + cantidad + ' restante' + (cantidad !== 1 ? 's' : '') + '</span>'
+          : '<span style="color:var(--gris);font-size:11px">' + cantidad + ' en stock</span>')
+      : '';
 
-    // ── Precios con fallback seguro ──
-    var precio  = parseFloat(card.precio_venta  || 0) || 0;
-    var nominal = parseFloat(card.valor_nominal || card.precio_original || 0) || 0;
+    // Imagen: foto subida O emoji de marca
+    var imgBlock = card.imagen_url
+      ? '<img src="' + card.imagen_url + '" alt="' + (card.titulo||'') + '" onerror="this.parentElement.innerHTML=\'<div class=\"vc-img-emoji\">' + icon + '</div>\'">'
+      : '<div class="vc-img-emoji">' + icon + '</div>';
 
-    // Porcentaje de descuento (solo si hay precio original mayor al precio actual)
-    var pct = (nominal > 0 && precio < nominal && precio > 0)
-      ? Math.round((1 - precio / nominal) * 100)
-      : 0;
-
-    // ── Región ──
-    var region = (card.region && card.region.trim() && card.region.toLowerCase() !== 'global')
-      ? card.region : 'Global';
-
-    // ── Datos del vendedor ──
-    // nombre_vendedor viene directo en gift_cards (lo guarda el trigger de Supabase)
-    var seller   = card.nombre_vendedor || 'Anónimo';
-    var repNum   = null; // sin tabla de perfiles, no hay reputación por ahora
-    var nVentas  = 0;    // fallback seguro
-    var vendidos = nVentas + ' ventas';
-
-    // ── Bloque de imagen ──
-    // Si hay imagen_url: la usamos; si falla la carga, mostramos logo de marca
-    var imgBlock;
-    if (card.imagen_url && card.imagen_url.trim()) {
-      // Preparamos el fallback escapado para el atributo onerror
-      var fallbackLogo = getBrandLogo(card.marca, card.tipo || card.categoria);
-      // Reemplazamos comillas dobles para que queden seguras dentro del atributo
-      var escapedFallback = fallbackLogo.replace(/"/g, '&quot;');
-      imgBlock = '<img src="' + escapeHtml(card.imagen_url) + '"' +
-                 ' alt="' + escapeHtml(card.titulo || '') + '"' +
-                 ' style="width:100%;height:100%;object-fit:cover;display:block;"' +
-                 ' onerror="this.parentElement.innerHTML=\'' + escapedFallback.replace(/'/g, "\\'") + '\'">';
-    } else {
-      // Sin imagen: mostramos logo de la marca o emoji
-      imgBlock = getBrandLogo(card.marca, card.tipo || card.categoria);
-    }
-
-    // ── Badges ──
+    // Badge de descuento
     var discBadge = pct > 0
       ? '<span class="vc-discount">-' + pct + '%</span>' : '';
 
+    // Precio original tachado
     var oldPrice = (nominal > 0 && nominal > precio)
       ? '<span class="vc-price-old">$' + nominal.toFixed(2) + '</span>' : '';
 
-    var repBadge = repNum
-      ? '<span class="vc-rep">★ ' + repNum + '</span>' : '';
+    // Reputación del vendedor
+    var repBadge = rep
+      ? '<span class="vc-rep">★ ' + rep + '</span>' : '';
 
-    // ── HTML de la card ──
-    return '<a href="detalle.html?id=' + escapeHtml(String(card.id)) + '" class="voucher-card">' +
+    return '<a href="detalle.html?id=' + card.id + '" class="voucher-card">' +
         '<div class="vc-img">' + imgBlock + '</div>' +
         '<div class="vc-body">' +
-          // Título + región (si no es "Global" ya está filtrado arriba)
-          '<div class="vc-title">' + escapeHtml(card.titulo || 'Sin título') +
-            (region !== 'Global' ? ' <span style="color:var(--gris);font-weight:400">| ' + escapeHtml(region) + '</span>' : '') +
-          '</div>' +
-          // Marca como subtítulo
-          '<div class="vc-meta">' + escapeHtml(card.marca || '') + '</div>' +
-          // Vendedor + verificado + reputación
+          '<div class="vc-title">' + (card.titulo || '') + region + '</div>' +
           '<div class="vc-seller">' +
-            '<span class="vc-seller-name">@' + escapeHtml(seller) + '</span>' +
-            '<span class="vc-verified" title="Vendedor activo">✓</span>' +
+            '<span class="vc-seller-name">@' + seller + '</span>' +
+            '<span class="vc-verified">✓</span>' +
             repBadge +
           '</div>' +
-          // Precio + descuento + ventas
           '<div class="vc-bottom">' +
             '<div class="vc-price-block">' +
               '<span class="vc-price">$' + precio.toFixed(2) + ' USDT</span>' +
               oldPrice +
               discBadge +
             '</div>' +
-            '<span class="vc-sold">' + escapeHtml(vendidos) + '</span>' +
+            '<span class="vc-sold">' + stockBadge + (stockBadge && vendidos ? ' · ' : '') + vendidos + '</span>' +
           '</div>' +
         '</div>' +
       '</a>';
-
   }).join('');
 
-  // Envolvemos en el grid .vouchers-list
   document.getElementById('vouchersList').innerHTML =
     '<div class="vouchers-list">' + html + '</div>';
 }
 
-// ─────────────────────────────────────────────────────────────
-// CONTROLES DE FILTRO — manejadores de eventos del usuario
-// ─────────────────────────────────────────────────────────────
-
-// Búsqueda de texto: se actualiza con cada tecla (oninput)
+// ═══════════════════════════════════════════════
+// CONTROLES
+// ═══════════════════════════════════════════════
 function doSearch(val) {
   searchQuery = val.toLowerCase().trim();
   document.getElementById('clearBtn').style.display = searchQuery ? 'block' : 'none';
   renderCards();
 }
 
-// Limpiar búsqueda
 function clearSearch() {
   document.getElementById('searchInput').value = '';
   searchQuery = '';
@@ -569,7 +491,6 @@ function clearSearch() {
   renderCards();
 }
 
-// Filtro por categoría (pills superiores)
 function filterCat(el) {
   document.querySelectorAll('.cat-pill').forEach(function(p) { p.classList.remove('active'); });
   el.classList.add('active');
@@ -577,7 +498,6 @@ function filterCat(el) {
   renderCards();
 }
 
-// Filtro de ordenamiento
 function filterSort(el) {
   document.querySelectorAll('.filter-btn').forEach(function(b) { b.classList.remove('active'); });
   el.classList.add('active');
@@ -585,22 +505,18 @@ function filterSort(el) {
   renderCards();
 }
 
-// ─────────────────────────────────────────────────────────────
-// INICIALIZACIÓN — se ejecuta al cargar el DOM
-// ─────────────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════
 window.addEventListener('DOMContentLoaded', function() {
-
-  // ── Leer parámetros de URL (?q=spotify&cat=streaming) ──
   var params = new URLSearchParams(window.location.search);
   var q      = params.get('q');
   var cat    = params.get('cat');
 
   if (q) {
     document.getElementById('searchInput').value = q;
-    searchQuery = q.toLowerCase().trim();
-    document.getElementById('clearBtn').style.display = 'block';
+    searchQuery = q.toLowerCase();
   }
-
   if (cat) {
     var pill = document.querySelector('.cat-pill[data-cat="' + cat + '"]');
     if (pill) {
@@ -610,37 +526,23 @@ window.addEventListener('DOMContentLoaded', function() {
     }
   }
 
-  // ── Verificar que `sb` (Supabase client) esté disponible ──
-  // `sb` debe estar definido en supabase.js como:
-  //   const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
-  if (typeof sb === 'undefined') {
-    setError(
-      'El cliente de Supabase no está disponible. Verificá que supabase.js esté cargado y que la URL sea correcta.',
-      'location.reload()'
-    );
-    return;
-  }
-
-  // ── Auth: actualizar botón de nav si hay sesión activa ──
-  sb.auth.getSession().then(function(res) {
-    if (res && res.data && res.data.session) {
-      var btn  = document.getElementById('navAuthBtn');
-      var user = res.data.session.user;
-      // Nombre de usuario desde metadata (puede no existir)
-      var nombre = (user.user_metadata && (user.user_metadata.usuario || user.user_metadata.nombre))
-                || user.email.split('@')[0];
-      if (btn) {
-        btn.textContent = '@' + nombre;
-        btn.onclick = function() { window.location.href = 'panel.html'; };
+  if (typeof sb !== 'undefined') {
+    // Auth: actualizar botón si hay sesión
+    sb.auth.getSession().then(function(res) {
+      if (res.data && res.data.session) {
+        var btn = document.getElementById('navAuthBtn');
+        var user = res.data.session.user;
+        var nombre = (user.user_metadata && user.user_metadata.usuario) || 'Mi panel';
+        if (btn) {
+          btn.textContent = '@' + nombre;
+          btn.onclick = function() { window.location.href = 'panel.html'; };
+        }
       }
-    }
-  }).catch(function(e) {
-    // Si falla auth, no bloqueamos la carga de cards
-    console.warn('[GiftLatam] No se pudo verificar la sesión:', e);
-  });
-
-  // ── Cargar las gift cards desde Supabase ──
-  loadCards();
+    });
+    loadCards();
+  } else {
+    setError('Supabase no disponible. Abrí la página desde Vercel.', 'location.reload()');
+  }
 });
 </script>
 </body>
