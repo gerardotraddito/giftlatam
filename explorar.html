@@ -229,6 +229,14 @@ var activeCat   = 'all';
 var activeSort  = 'created_at';
 var searchQuery = '';
 
+// Fallback para imágenes rotas
+function imgFallback(imgEl, idx) {
+  var div = document.createElement('div');
+  div.className = 'vc-img-emoji';
+  div.innerHTML = (window._imgFallbacks && window._imgFallbacks[idx]) || '🎁';
+  imgEl.parentNode.replaceChild(div, imgEl);
+}
+
 // Logos por marca
 var BRAND_LOGOS = {
   'xbox':        'https://cdn.simpleicons.org/xbox/107C10',
@@ -440,8 +448,11 @@ function renderCards() {
     var rep     = card._sellerRep ? parseFloat(card._sellerRep).toFixed(1) : null;
 
     // Imagen: foto subida O emoji de marca
+    if (!window._imgFallbacks) window._imgFallbacks = [];
+    var imgIdx = window._imgFallbacks.length;
+    window._imgFallbacks.push(icon);
     var imgBlock = card.imagen_url
-      ? '<img src="' + card.imagen_url + '" alt="' + (card.titulo||'').replace(/"/g,'') + '" onerror="this.style.display=\'none\';this.parentElement.innerHTML=\'<div class=&quot;vc-img-emoji&quot;>' + icon + '</div>\'">'
+      ? '<img src="' + card.imagen_url + '" alt="" style="width:100%;height:100%;object-fit:cover;display:block" onerror="imgFallback(this,' + imgIdx + ')">'
       : '<div class="vc-img-emoji">' + icon + '</div>';
 
     // Badge de descuento
