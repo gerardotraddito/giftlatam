@@ -63,7 +63,9 @@
     .nav-item { display: flex; flex-direction: column; align-items: center; gap: 3px; cursor: pointer; color: var(--gris); font-size: 10px; padding: 2px 8px; }
     .nav-item.active { color: var(--verde); }
     .nav-item svg { width: 21px; height: 21px; }
-    @media (min-width: 1024px) { .bottom-nav { display: none; } }  
+    @media (min-width: 1024px) { .bottom-nav { display: none; } }
+    #imgUploadArea:hover { border-color: var(--verde); }
+    #imgUploadArea.has-img { border-style: solid; border-color: var(--gris-borde); }  
     /* Step 3 — método de entrega — SIN flexbox para evitar bug Android */
     .d-option { display:block; position:relative; background:var(--negro); border:2px solid var(--gris-borde); border-radius:12px; padding:14px 14px 14px 42px; cursor:pointer; margin-bottom:10px; transition:border-color 0.2s; box-sizing:border-box; width:100%; }
     .d-option input[type=radio] { position:absolute; left:14px; top:18px; width:18px; height:18px; accent-color:var(--verde); margin:0; }
@@ -151,6 +153,19 @@
       <div class="form-group">
         <label>Descripción (opcional)</label>
         <textarea id="descripcion" placeholder="Describí tu producto, validez, condiciones..."></textarea>
+      </div>
+      <div class="form-group">
+        <label>Foto del producto (opcional)</label>
+        <div id="imgUploadArea" onclick="document.getElementById('imgInput').click()" style="border:2px dashed var(--gris-borde);border-radius:12px;padding:24px;text-align:center;cursor:pointer;transition:border-color 0.2s;background:var(--negro)">
+          <div id="imgPlaceholder">
+            <div style="font-size:32px;margin-bottom:8px">📷</div>
+            <div style="font-size:13px;color:var(--gris)">Tocá para subir una imagen</div>
+            <div style="font-size:11px;color:var(--gris);margin-top:4px">JPG, PNG · máx 2MB</div>
+          </div>
+          <img id="imgPreview" style="display:none;max-width:100%;max-height:180px;border-radius:8px;object-fit:contain">
+        </div>
+        <input type="file" id="imgInput" accept="image/*" style="display:none" onchange="previewImagen(this)">
+        <button type="button" id="imgRemoveBtn" onclick="removeImagen(event)" style="display:none;margin-top:8px;background:none;border:none;color:var(--gris);font-size:12px;cursor:pointer;padding:0">✕ Quitar imagen</button>
       </div>
       <div class="form-group">
         <label>Región</label>
@@ -244,7 +259,46 @@
 
 <script>
 
-let currentStep = 1;
+let imagenFile = null;
+
+function previewImagen(input) {
+  const file = input.files[0];
+  if (!file) return;
+  if (file.size > 2 * 1024 * 1024) { showErr('La imagen no puede superar 2MB'); input.value = ''; return; }
+  imagenFile = file;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    document.getElementById('imgPreview').src = e.target.result;
+    document.getElementById('imgPreview').style.display = 'block';
+    document.getElementById('imgPlaceholder').style.display = 'none';
+    document.getElementById('imgRemoveBtn').style.display = 'inline-block';
+    document.getElementById('imgUploadArea').classList.add('has-img');
+  };
+  reader.readAsDataURL(file);
+}
+
+function removeImagen(e) {
+  e.stopPropagation();
+  imagenFile = null;
+  document.getElementById('imgInput').value = '';
+  document.getElementById('imgPreview').style.display = 'none';
+  document.getElementById('imgPreview').src = '';
+  document.getElementById('imgPlaceholder').style.display = 'block';
+  document.getElementById('imgRemoveBtn').style.display = 'none';
+  document.getElementById('imgUploadArea').classList.remove('has-img');
+}
+
+async function subirImagen(userId) {
+  if (!imagenFile) return null;
+  const ext = imagenFile.name.split('.').pop();
+  const path = userId + '/' + Date.now() + '.' + ext;
+  const { error } = await sb.storage.from('gift-cards').upload(path, imagenFile, { upsert: true });
+  if (error) { console.error('Error subiendo imagen:', error); return null; }
+  const { data } = sb.storage.from('gift-cards').getPublicUrl(path);
+  return data.publicUrl;
+}
+
+
 let tipoSeleccionado = 'gift_card';
 let currentUser = null;
 
@@ -310,7 +364,10 @@ async function publicar() {
   btn.disabled = true; btn.textContent = 'Publicando...';
   hideErr();
 
+  const imagen_url = await subirImagen(currentUser.id);
+
   const payload = {
+    imagen_url: imagen_url || null,
     seller_id: currentUser.id,
     tipo: tipoSeleccionado,
     marca: document.getElementById('marca').value.trim(),
