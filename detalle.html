@@ -341,7 +341,13 @@ footer {
 }
   .detail-grid { display: grid; grid-template-columns: 1fr; gap: 20px; }
   .detail-card { background: var(--card); border: 1px solid var(--borde); border-radius: 20px; padding: 24px; }
-  .detail-img { width: 80px; height: 80px; border-radius: 16px; background: #1A1A2E; display: flex; align-items: center; justify-content: center; font-size: 40px; margin-bottom: 16px; }
+  .detail-img {
+    width: 100%; height: 220px; border-radius: 18px;
+    background: #1A1A2E; display: flex; align-items: center;
+    justify-content: center; font-size: 72px; margin-bottom: 20px;
+    overflow: hidden; flex-shrink: 0;
+  }
+  .detail-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
   .detail-title { font-size: 22px; font-weight: 800; margin-bottom: 6px; }
   .detail-seller { font-size: 13px; color: var(--gris); margin-bottom: 16px; }
   .detail-price { font-size: 32px; font-weight: 800; color: var(--verde); font-variant-numeric: tabular-nums; line-height: 1; }
@@ -458,7 +464,7 @@ function getBrandBg(marca) {
 
 // ── Cargar producto desde DB ──
 document.addEventListener('DOMContentLoaded', async () => {
-  if (typeof sb === 'undefined') return;
+  if (typeof sb === 'undefined') { showError('Error de configuración: no se pudo inicializar Supabase.'); return; }
 
   const params = new URLSearchParams(window.location.search);
   const id = params.get('id');
@@ -471,7 +477,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Cargar producto
   const { data: card, error } = await sb
     .from('gift_cards')
-    .select('*')
+    .select('id, titulo, marca, descripcion, tipo, region, precio_venta, valor_nominal, estado, seller_id, imagen_url, metodo_entrega, created_at')
     .eq('id', id)
     .single();
 
@@ -504,7 +510,11 @@ function renderProduct(card) {
   const tipoMap = { gift_card: 'Gift Card Digital', cuenta: 'Cuenta de usuario', licencia: 'Licencia/Key', otro: 'Otro' };
 
   document.getElementById('detailCard').innerHTML = `
-    <div class="detail-img" style="background:${bg}">${icon}</div>
+    <div class="detail-img" style="background:${bg}">
+      ${card.imagen_url
+        ? `<img src="${card.imagen_url}" alt="${card.titulo}" style="width:100%;height:100%;object-fit:cover;border-radius:inherit;" onerror="this.style.display='none'">`
+        : icon}
+    </div>
     <div class="detail-title">${card.titulo}</div>
     <div class="detail-seller">Vendido por <strong id="vendedorNombre">...</strong></div>
     <div class="price-row">
@@ -573,7 +583,7 @@ async function loadRelacionados(currentId, marca) {
 }
 
 function guardarFavorito(id) {
-  if (typeof sb === 'undefined') return;
+  if (typeof sb === 'undefined') { showError('Error de configuración: no se pudo inicializar Supabase.'); return; }
   sb.auth.getSession().then(({ data }) => {
     if (!data.session) {
       document.querySelector('.btn-wishlist').textContent = '→ Iniciá sesión para guardar favoritos';
