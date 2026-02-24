@@ -63,15 +63,14 @@
     .nav-item { display: flex; flex-direction: column; align-items: center; gap: 3px; cursor: pointer; color: var(--gris); font-size: 10px; padding: 2px 8px; }
     .nav-item.active { color: var(--verde); }
     .nav-item svg { width: 21px; height: 21px; }
-    @media (min-width: 1024px) { .bottom-nav { display: none; } }
-  
-  
-    .d-option { display:flex; flex-direction:row; align-items:flex-start; gap:12px; background:var(--negro); border:2px solid var(--gris-borde); border-radius:12px; padding:14px; cursor:pointer; margin-bottom:10px; transition:border-color 0.2s; box-sizing:border-box; width:100%; overflow:hidden; }
+    @media (min-width: 1024px) { .bottom-nav { display: none; } }  
+    /* Step 3 — método de entrega — SIN flexbox para evitar bug Android */
+    .d-option { display:block; position:relative; background:var(--negro); border:2px solid var(--gris-borde); border-radius:12px; padding:14px 14px 14px 42px; cursor:pointer; margin-bottom:10px; transition:border-color 0.2s; box-sizing:border-box; width:100%; }
+    .d-option input[type=radio] { position:absolute; left:14px; top:18px; width:18px; height:18px; accent-color:var(--verde); margin:0; }
     .d-option.d-selected { border-color:var(--verde); }
-    .d-option input[type=radio] { flex-shrink:0; margin-top:3px; accent-color:var(--verde); }
-    .d-text { flex:1; overflow:hidden; min-width:0; }
-    .d-title { font-size:14px; font-weight:700; margin-bottom:4px; }
-    .d-desc { font-size:12px; color:var(--gris); line-height:1.5; white-space:normal; word-break:break-word; }
+    .d-title { font-size:14px; font-weight:700; margin-bottom:4px; color:var(--blanco); }
+    .d-desc { font-size:12px; color:var(--gris); line-height:1.5; }
+
   </style>
   <!-- GiftLatam core -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.js"></script>
@@ -175,18 +174,14 @@
 
       <div class="d-option d-selected" id="opt-auto" onclick="selectDelivery('auto')">
         <input type="radio" name="entrega" value="auto" checked>
-        <div class="d-text">
-          <div class="d-title">⚡ Entrega automática</div>
-          <div class="d-desc">Cargás el código ahora y se entrega solo cuando el comprador pague.</div>
-        </div>
+        <div class="d-title">⚡ Entrega automática</div>
+        <div class="d-desc">Cargás el código ahora y se entrega solo cuando el comprador pague.</div>
       </div>
 
       <div class="d-option" id="opt-manual" onclick="selectDelivery('manual')">
         <input type="radio" name="entrega" value="manual">
-        <div class="d-text">
-          <div class="d-title">✋ Entrega manual</div>
-          <div class="d-desc">Vos enviás el código manualmente en máximo 30 minutos.</div>
-        </div>
+        <div class="d-title">✋ Entrega manual</div>
+        <div class="d-desc">Vos enviás el código manualmente en máximo 30 minutos.</div>
       </div>
 
       <div class="form-group" id="codigoGroup" style="margin-top:16px">
