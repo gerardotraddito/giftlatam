@@ -156,7 +156,7 @@
       <div class="card-title">📝 Detalles del producto</div>
       <div class="form-group">
         <label>Marca / Servicio *</label>
-        <input type=<input type="text" id="marca" placeholder="Ej: Steam, Netflix, Xbox..." list="marcasList" autocomplete="off">
+        <input type="text" id="marca" placeholder="Ej: Steam, Netflix, Xbox..." list="marcasList" autocomplete="off">
         <datalist id="marcasList"><option value="Steam"><option value="PlayStation"><option value="Xbox"><option value="Apple"><option value="Nintendo"><option value="Roblox"><option value="PUBG"><option value="Spotify"><option value="Netflix"><option value="Amazon"><option value="YouTube"><option value="Discord"><option value="Twitch"><option value="Minecraft"><option value="Fortnite"><option value="Google Play"><option value="Disney+"><option value="Rappi"></datalist>
       </div>
       <div class="form-group">
@@ -441,17 +441,49 @@ function removeFoto() {
 }
 
 async function uploadFotoIfNeeded() {
+  // Sin foto seleccionada: OK, publicamos sin imagen
   if (!fotoFile) return null;
-  if (fotoUrl)   return fotoUrl;
+  // Ya fue subida antes (evita doble upload)
+  if (fotoUrl) return fotoUrl;
+
   document.getElementById('fotoUploading').style.display = 'flex';
-  var ext  = fotoFile.name.split('.').pop().toLowerCase() || 'jpg';
-  var path = currentUser.id + '/' + Date.now() + '.' + ext;
-  var res  = await sb.storage.from('gift-card-images').upload(path, fotoFile, { upsert: true, contentType: fotoFile.type });
-  document.getElementById('fotoUploading').style.display = 'none';
-  if (res.error) { console.error('Upload error:', res.error); return null; }
-  var pub = sb.storage.from('gift-card-images').getPublicUrl(path);
-  fotoUrl = pub.data.publicUrl;
-  return fotoUrl;
+
+  try {
+    var ext  = fotoFile.name.split('.').pop().toLowerCase().replace(/[^a-z0-9]/g, '') || 'jpg';
+    var path = currentUser.id + '/' + Date.now() + '.' + ext;
+
+    // Subir al bucket gift-card-images
+    // IMPORTANTE: el bucket debe tener RLS público o policy INSERT para usuarios autenticados
+    var res = await sb.storage
+      .from('gift-card-images')
+      .upload(path, fotoFile, { upsert: true, contentType: fotoFile.type });
+
+    document.getElementById('fotoUploading').style.display = 'none';
+
+    if (res.error) {
+      console.error('[Foto] Error al subir:', res.error);
+      // Avisamos pero NO bloqueamos la publicación — se publica sin foto
+      showErr('⚠️ No se pudo subir la foto (' + (res.error.message || 'error desconocido') + '). Se publicará sin imagen.');
+      return null;
+    }
+
+    // Obtener URL pública del archivo subido
+    var pub = sb.storage.from('gift-card-images').getPublicUrl(path);
+    if (!pub.data || !pub.data.publicUrl) {
+      console.warn('[Foto] getPublicUrl devolvió vacío');
+      return null;
+    }
+
+    fotoUrl = pub.data.publicUrl;
+    console.log('[Foto] Subida OK:', fotoUrl);
+    return fotoUrl;
+
+  } catch (e) {
+    document.getElementById('fotoUploading').style.display = 'none';
+    console.error('[Foto] Excepción:', e);
+    showErr('⚠️ Error inesperado al subir la foto. Se publicará sin imagen.');
+    return null;
+  }
 }
 
 </script>
