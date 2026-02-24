@@ -335,7 +335,7 @@ async function loadCards() {
   try {
     var result = await sb
       .from('gift_cards')
-      .select('id, titulo, marca, imagen_url, tipo, region, precio_venta, valor_nominal, estado, seller_id')
+      .select('*')
       .eq('estado', 'activo')
       .order('created_at', { ascending: false });
 
