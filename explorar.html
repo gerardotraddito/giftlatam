@@ -397,53 +397,9 @@ async function loadCards() {
   allCards = Array.isArray(data) ? data : [];
   console.log('[GiftLatam] ' + allCards.length + ' gift cards cargadas');
 
-  // ── FETCH DE VENDEDORES ──
-  // Extraemos seller_id de forma segura (puede que no exista la columna)
-  var sellerIds = [];
-  try {
-    sellerIds = [...new Set(
-      allCards
-        .map(function(c) { return c.seller_id || c.user_id || null; })
-        .filter(Boolean)
-    )];
-  } catch(e) {
-    console.warn('[GiftLatam] No se pudieron extraer seller_id:', e);
-  }
-
-  // Si hay vendedores, los traemos en UNA sola query (batch)
-  if (sellerIds.length > 0) {
-    try {
-      var profRes = await sb
-        .from('profiles')
-        .select('id, usuario, nombre, nombre_usuario, email, reputacion, ventas_totales')
-        .in('id', sellerIds);
-
-      if (!profRes.error && Array.isArray(profRes.data)) {
-        // Construimos un mapa { id → perfil } para acceso O(1)
-        var profileMap = {};
-        profRes.data.forEach(function(p) { profileMap[p.id] = p; });
-
-        // Adjuntamos el perfil a cada card como _seller
-        allCards.forEach(function(card) {
-          var sid = card.seller_id || card.user_id || null;
-          card._seller = sid ? (profileMap[sid] || null) : null;
-        });
-
-        console.log('[GiftLatam] ' + profRes.data.length + ' perfiles de vendedor cargados');
-      } else {
-        // Error en profiles: no rompemos la página, simplemente no hay datos de vendedor
-        console.warn('[GiftLatam] No se pudieron cargar perfiles:', profRes.error);
-        allCards.forEach(function(card) { card._seller = null; });
-      }
-    } catch(e) {
-      // Error de red en la query de profiles → fallback silencioso
-      console.warn('[GiftLatam] Error de red en profiles:', e);
-      allCards.forEach(function(card) { card._seller = null; });
-    }
-  } else {
-    // Sin seller_ids, marcamos _seller como null en todos
-    allCards.forEach(function(card) { card._seller = null; });
-  }
+  // ── VENDEDOR ──
+  // El nombre ya viene en gift_cards.nombre_vendedor (guardado por trigger en Supabase).
+  // No hace falta query extra a profiles.
 
   // renderCards está FUERA del try: sus errores son bugs de código, no de red
   renderCards();
@@ -526,24 +482,11 @@ function renderCards() {
       ? card.region : 'Global';
 
     // ── Datos del vendedor ──
-    // _seller puede ser null si no había perfil; usamos ?. y fallbacks en cascada
-    var prof   = card._seller || {};
-
-    // Nombre del vendedor: busca en múltiples columnas posibles, finaliza en 'Anónimo'
-    var seller = prof.usuario
-              || prof.nombre_usuario
-              || prof.nombre
-              || (prof.email ? prof.email.split('@')[0] : null)
-              || 'Anónimo';
-
-    // Reputación: solo si existe y es un número válido
-    var repNum = (prof.reputacion != null && !isNaN(parseFloat(prof.reputacion)))
-      ? parseFloat(prof.reputacion).toFixed(1) : null;
-
-    // Ventas totales: fallback a 0
-    var nVentas  = (prof.ventas_totales != null && !isNaN(parseInt(prof.ventas_totales)))
-      ? parseInt(prof.ventas_totales) : 0;
-    var vendidos = nVentas + ' venta' + (nVentas !== 1 ? 's' : '');
+    // nombre_vendedor viene directo en gift_cards (lo guarda el trigger de Supabase)
+    var seller   = card.nombre_vendedor || 'Anónimo';
+    var repNum   = null; // sin tabla de perfiles, no hay reputación por ahora
+    var nVentas  = 0;    // fallback seguro
+    var vendidos = nVentas + ' ventas';
 
     // ── Bloque de imagen ──
     // Si hay imagen_url: la usamos; si falla la carga, mostramos logo de marca
