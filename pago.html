@@ -365,29 +365,74 @@ async function confirmarPago() {
 
   var btn = document.querySelector('.btn-confirm');
   btn.disabled = true;
-  btn.textContent = 'Registrando pago...';
+  btn.textContent = 'Registrando...';
 
   var selEl  = document.querySelector('.crypto-method.selected');
   var red    = selEl ? selEl.dataset.net.toUpperCase() : 'TRC20';
   var precio = CARD_DATA ? parseFloat(CARD_DATA.precio_venta) || 0 : 0;
+  var userId = sess.data.session.user.id;
+  var txId   = null;
 
-  // Intentar guardar en tabla 'orders' (si existe)
+  // Intentar en transactions
   try {
-    await sb.from('orders').insert({
-      gift_card_id: id,
-      buyer_id: sess.data.session.user.id,
-      monto: precio,
-      moneda: 'USDT',
-      red: red,
-      estado: 'pendiente',
-      wallet_destino: WALLETS[red.toLowerCase()]
-    });
-  } catch(e) { /* tabla puede no existir aún */ }
+    var ins = await sb.from('transactions').insert({
+      gift_card_id:   id,
+      buyer_id:       userId,
+      seller_id:      CARD_DATA ? CARD_DATA.seller_id : null,
+      monto:          precio,
+      moneda:         'USDT',
+      red:            red,
+      estado:         'pendiente_pago',
+      wallet_destino: WALLETS[red.toLowerCase()],
+      created_at:     new Date().toISOString()
+    }).select('id').single();
+    if (ins.data) txId = ins.data.id;
+  } catch(e) { console.warn('tx:', e); }
 
-  btn.textContent = '✓ Pago registrado';
-  setTimeout(function() {
-    window.location.href = 'panel.html?pago=pendiente&id=' + id;
-  }, 1200);
+  // Fallback en orders
+  if (!txId) {
+    try {
+      var ins2 = await sb.from('orders').insert({
+        gift_card_id: id,
+        buyer_id:     userId,
+        monto:        precio,
+        moneda:       'USDT',
+        red:          red,
+        estado:       'pendiente_pago',
+        created_at:   new Date().toISOString()
+      }).select('id').single();
+      if (ins2.data) txId = ins2.data.id;
+    } catch(e) { console.warn('orders:', e); }
+  }
+
+  // Decrementar stock en gift_cards
+  try {
+    // Primero leer cantidad actual
+    var stockRes = await sb.from('gift_cards').select('cantidad').eq('id', id).single();
+    var cantActual = stockRes.data && stockRes.data.cantidad != null ? parseInt(stockRes.data.cantidad) : 1;
+    var nuevaCant  = Math.max(0, cantActual - 1);
+    await sb.from('gift_cards').update({ cantidad: nuevaCant }).eq('id', id);
+  } catch(e) { console.warn('stock decrement:', e); }
+
+  // Guardar en localStorage para el timer de confirmacion.html
+  var expiresAt = Date.now() + (10 * 60 * 1000); // 10 minutos
+  try {
+    localStorage.setItem('gl_pago_pending', JSON.stringify({
+      giftId:    id,
+      txId:      txId,
+      red:       red,
+      monto:     precio,
+      expiresAt: expiresAt
+    }));
+  } catch(e) {}
+
+  btn.textContent = '✓ Confirmado';
+
+  var dest = 'confirmacion.html?id=' + encodeURIComponent(id);
+  if (txId) dest += '&tx=' + encodeURIComponent(txId);
+  dest += '&red=' + red + '&monto=' + precio + '&exp=' + expiresAt;
+
+  setTimeout(function() { window.location.href = dest; }, 800);
 }
 </script>
 </body>
