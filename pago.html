@@ -373,36 +373,34 @@ async function confirmarPago() {
   var userId = sess.data.session.user.id;
   var txId   = null;
 
-  // Intentar en transactions
-  try {
-    var ins = await sb.from('transactions').insert({
-      gift_card_id:   id,
-      buyer_id:       userId,
-      seller_id:      CARD_DATA ? CARD_DATA.seller_id : null,
-      monto:          precio,
-      moneda:         'USDT',
-      red:            red,
-      estado:         'pendiente_pago',
-      wallet_destino: WALLETS[red.toLowerCase()],
-      created_at:     new Date().toISOString()
-    }).select('id').single();
-    if (ins.data) txId = ins.data.id;
-  } catch(e) { console.warn('tx:', e); }
+  // Log para debug
+  console.log('[pago] userId:', userId);
+  console.log('[pago] id:', id);
+  console.log('[pago] seller_id:', CARD_DATA ? CARD_DATA.seller_id : 'null');
+  console.log('[pago] precio:', precio);
+  console.log('[pago] red:', red);
 
-  // Fallback en orders
-  if (!txId) {
-    try {
-      var ins2 = await sb.from('orders').insert({
-        gift_card_id: id,
-        buyer_id:     userId,
-        monto:        precio,
-        moneda:       'USDT',
-        red:          red,
-        estado:       'pendiente_pago',
-        created_at:   new Date().toISOString()
-      }).select('id').single();
-      if (ins2.data) txId = ins2.data.id;
-    } catch(e) { console.warn('orders:', e); }
+  // Intentar en transactions
+  var insResult = await sb.from('transactions').insert({
+    gift_card_id:   id,
+    buyer_id:       userId,
+    seller_id:      CARD_DATA ? CARD_DATA.seller_id : null,
+    monto:          precio,
+    moneda:         'USDT',
+    red:            red,
+    estado:         'pendiente_pago',
+    wallet_destino: WALLETS[red.toLowerCase()],
+    created_at:     new Date().toISOString()
+  }).select('id').single();
+
+  console.log('[pago] insert result:', JSON.stringify(insResult));
+
+  if (insResult.error) {
+    console.error('[pago] INSERT ERROR:', insResult.error.message, insResult.error.code, insResult.error.details);
+    btn.textContent = '✓ Confirmado (sin registro)';
+  } else if (insResult.data) {
+    txId = insResult.data.id;
+    console.log('[pago] txId:', txId);
   }
 
   // Decrementar stock en gift_cards
