@@ -402,8 +402,24 @@ async function onTimerVencido(orden, card) {
 async function cancelarOrden() {
   if (!ORDEN || !ORDEN.id) return;
   try {
-    // Usar función SQL atómica: cancela + restaura stock en una transacción
-    await sb.rpc('cancelar_orden', { p_orden_id: ORDEN.id });
+    // Verificar que sigue pendiente antes de cancelar
+    var check = await sb.from('ordenes').select('estado, gift_card_id').eq('id', ORDEN.id).single();
+    if (!check.data || check.data.estado !== 'pendiente_pago') return; // ya cancelada o pagada
+
+    // Cancelar la orden
+    await sb.from('ordenes').update({
+      estado:     'cancelado',
+      updated_at: new Date().toISOString()
+    }).eq('id', ORDEN.id).eq('estado', 'pendiente_pago');
+
+    // Restaurar stock
+    var giftId = check.data.gift_card_id || (ORDEN && ORDEN.gift_card_id);
+    if (giftId) {
+      var sr = await sb.from('gift_cards').select('cantidad').eq('id', giftId).single();
+      if (sr.data && sr.data.cantidad != null) {
+        await sb.from('gift_cards').update({ cantidad: parseInt(sr.data.cantidad) + 1 }).eq('id', giftId);
+      }
+    }
   } catch(e) { console.warn('cancelar:', e); }
 }
 
@@ -431,44 +447,59 @@ async function confirmarPago() {
   btn.textContent = 'Confirmando...';
 
   if (!ORDEN || !ORDEN.id) {
+    btn.disabled = false;
+    btn.textContent = 'Ya pagué — Confirmar →';
+    return;
+  }
+
+  // 1. Verificar estado actual de la orden en la DB
+  var check = null;
+  try {
+    var r = await sb.from('ordenes').select('estado, expires_at').eq('id', ORDEN.id).single();
+    check = r.data;
+  } catch(e) {}
+
+  if (!check) {
+    alert('No se pudo verificar el estado de la orden. Intentá de nuevo.');
     btn.disabled = false; btn.textContent = 'Ya pagué — Confirmar →';
     return;
   }
 
-  // Verificar que la orden sigue en pendiente_pago (no expiró)
-  try {
-    var check = await sb.from('ordenes').select('estado, expires_at').eq('id', ORDEN.id).single();
-    if (!check.data || check.data.estado !== 'pendiente_pago') {
-      alert('Esta orden ya no está activa. Puede haber expirado.');
-      window.location.reload();
-      return;
-    }
-    // Verificar que no expiró
-    if (check.data.expires_at && new Date(check.data.expires_at) < new Date()) {
-      await sb.rpc('cancelar_orden', { p_orden_id: ORDEN.id });
-      alert('El tiempo de la orden venció. El stock fue liberado.');
-      window.location.reload();
-      return;
-    }
-  } catch(e) {}
+  if (check.estado !== 'pendiente_pago') {
+    alert('Esta orden ya no está activa (estado: ' + check.estado + ').');
+    window.location.reload();
+    return;
+  }
 
+  // 2. Verificar que no expiró
+  if (check.expires_at && new Date(check.expires_at) < new Date()) {
+    await cancelarOrden();
+    alert('El tiempo de la orden venció. El stock fue liberado. Podés iniciar una nueva compra.');
+    renderCancelado(null);
+    return;
+  }
+
+  // 3. Cambiar a 'verificando' — el comprador avisa que pagó
+  //    Solo admin/webhook puede pasar a 'pagado'. Nunca el JS del cliente.
   var selEl = document.querySelector('.net-method.selected');
   var red   = selEl ? selEl.dataset.net.toUpperCase() : 'TRC20';
 
-  // Cambiar estado a 'pagado' — el stock ya estaba descontado al crear la orden
   var upd = await sb.from('ordenes').update({
-    estado:     'pagado',
+    estado:     'verificando',
     red:        red,
     updated_at: new Date().toISOString()
-  }).eq('id', ORDEN.id).eq('estado', 'pendiente_pago'); // eq extra previene doble-click
+  }).eq('id', ORDEN.id).eq('estado', 'pendiente_pago'); // previene doble ejecución
 
   if (upd.error) {
-    console.error('confirmar pago:', upd.error);
+    console.error('[confirmarPago]', upd.error);
+    alert('Error al enviar aviso: ' + upd.error.message);
     btn.disabled = false; btn.textContent = 'Ya pagué — Confirmar →';
     return;
   }
 
-  btn.textContent = '✓ Pago confirmado';
+  btn.textContent = '✓ Aviso enviado';
+  clearInterval(timerInterval); // detener el timer
+
   setTimeout(function() {
     window.location.href = 'confirmacion.html?orden_id=' + ORDEN.id + '&red=' + red + '&monto=' + ORDEN.precio;
   }, 700);

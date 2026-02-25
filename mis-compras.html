@@ -10,36 +10,48 @@
     :root{--negro:#080808;--card:#161616;--borde:#222;--blanco:#F0F0F0;--gris:#888;--verde:#00C853;--naranja:#FF6B35;--amarillo:#f3ba2f}
     body{font-family:'Inter',sans-serif;background:var(--negro);color:var(--blanco);padding-bottom:90px;min-height:100vh}
     nav{display:flex;align-items:center;padding:0 14px;height:52px;border-bottom:1px solid var(--borde);position:sticky;top:0;z-index:100;background:rgba(8,8,8,0.97);backdrop-filter:blur(16px);gap:12px}
-    .back-btn{display:flex;align-items:center;gap:6px;color:var(--gris);font-size:13px;cursor:pointer;text-decoration:none}
+    .back-btn{display:flex;align-items:center;gap:6px;color:var(--gris);font-size:13px;text-decoration:none}
     .back-btn:hover{color:var(--blanco)}
     .nav-title{font-family:'Syne',sans-serif;font-weight:800;font-size:16px;flex:1;text-align:center}
     .container{padding:16px 14px;max-width:600px;margin:0 auto}
+
     .stats-mini{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:20px}
     .stat-mini{background:var(--card);border:1px solid var(--borde);border-radius:12px;padding:12px;text-align:center}
-    .stat-mini-num{font-family:'Inter',sans-serif;font-variant-numeric:tabular-nums;font-size:20px;font-weight:800;color:var(--verde);display:block;line-height:1}
+    .stat-mini-num{font-variant-numeric:tabular-nums;font-size:20px;font-weight:800;color:var(--verde);display:block;line-height:1}
     .stat-mini-label{font-size:10px;color:var(--gris);display:block;margin-top:4px}
-    .tx-card{background:var(--card);border:1px solid var(--borde);border-radius:14px;padding:14px 16px;margin-bottom:10px;display:block;text-decoration:none;color:inherit;transition:border-color 0.15s}
-    .tx-card:hover{border-color:rgba(0,200,83,0.3)}
+
+    .tx-card{background:var(--card);border:1px solid var(--borde);border-radius:14px;padding:14px 16px;margin-bottom:10px}
     .tx-top{display:flex;align-items:center;gap:12px}
     .tx-icon{width:42px;height:42px;border-radius:10px;background:#1a1a1a;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
     .tx-info{flex:1;min-width:0}
     .tx-title{font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
     .tx-meta{font-size:11px;color:var(--gris);margin-top:2px;font-family:'Courier New',monospace}
     .tx-amount{font-variant-numeric:tabular-nums;font-size:15px;font-weight:800;color:var(--verde);flex-shrink:0}
-    .tx-status{display:inline-flex;align-items:center;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:700;margin-top:8px}
+    .tx-footer{display:flex;align-items:center;justify-content:space-between;margin-top:10px;flex-wrap:wrap;gap:8px}
+
+    .tx-status{display:inline-flex;align-items:center;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:700}
     .st-pendiente_pago{background:rgba(243,186,47,0.1);color:var(--amarillo);border:1px solid rgba(243,186,47,0.25)}
     .st-pagado{background:rgba(0,200,83,0.1);color:var(--verde);border:1px solid rgba(0,200,83,0.2)}
-    .st-entregado{background:rgba(0,200,83,0.1);color:var(--verde);border:1px solid rgba(0,200,83,0.2)}
+    .st-entregado{background:rgba(0,200,83,0.15);color:var(--verde);border:1px solid rgba(0,200,83,0.3)}
+    .st-verificando{background:rgba(243,186,47,0.08);color:var(--amarillo);border:1px solid rgba(243,186,47,0.2)}
     .st-cancelado{background:rgba(136,136,136,0.1);color:var(--gris);border:1px solid #333}
+
+    .btn-accion{border:none;border-radius:9px;padding:6px 14px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;transition:opacity 0.2s}
+    .btn-accion:hover{opacity:0.85}
+    .btn-accion:disabled{opacity:0.4;cursor:not-allowed}
+    .btn-pagar{background:var(--amarillo);color:#000}
+    .btn-entregar{background:var(--verde);color:#000}
+    .btn-cancelar{background:transparent;color:var(--gris);border:1px solid var(--borde)}
+
+    .expires-label{font-size:11px;color:var(--naranja);font-weight:600}
+
     .empty{text-align:center;padding:50px 20px;color:var(--gris)}
     .empty-emoji{font-size:44px;display:block;margin-bottom:14px}
     .empty-title{font-family:'Syne',sans-serif;font-size:17px;font-weight:700;color:var(--blanco);margin-bottom:8px}
     .empty-sub{font-size:13px;line-height:1.6;margin-bottom:20px}
-    .btn-action{display:inline-block;background:var(--verde);color:#000;border:none;border-radius:12px;padding:11px 22px;font-family:'Syne',sans-serif;font-weight:700;font-size:13px;cursor:pointer;text-decoration:none}
+    .btn-action{display:inline-block;background:var(--verde);color:#000;border-radius:12px;padding:11px 22px;font-family:'Syne',sans-serif;font-weight:700;font-size:13px;text-decoration:none}
     .spinner{width:28px;height:28px;border:3px solid #222;border-top-color:var(--verde);border-radius:50%;animation:spin 0.8s linear infinite;margin:50px auto}
     @keyframes spin{to{transform:rotate(360deg)}}
-    .orden-id{font-size:10px;color:var(--gris);font-family:'Courier New',monospace;margin-top:8px}
-    .btn-ver{display:inline-block;margin-top:8px;font-size:11px;color:var(--verde);text-decoration:none;font-weight:600}
   </style>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.js"></script>
   <script src="supabase.js"></script>
@@ -58,30 +70,37 @@
 <div class="container">
   <div class="stats-mini">
     <div class="stat-mini"><span class="stat-mini-num" id="cntTotal">—</span><span class="stat-mini-label">Órdenes</span></div>
-    <div class="stat-mini"><span class="stat-mini-num" id="cntMonto">—</span><span class="stat-mini-label">USDT gastado</span></div>
+    <div class="stat-mini"><span class="stat-mini-num" id="cntMonto">—</span><span class="stat-mini-label">USDT pagado</span></div>
     <div class="stat-mini"><span class="stat-mini-num" id="cntEntregado">—</span><span class="stat-mini-label">Entregadas</span></div>
   </div>
   <div id="txList"><div class="spinner"></div></div>
 </div>
 
 <script>
-var ST_LABEL = { pendiente_pago:'⏳ Verificando pago', pagado:'💰 Pagado', entregado:'✓ Entregado', cancelado:'✗ Cancelada' };
-var ST_CLS   = { pendiente_pago:'st-pendiente_pago', pagado:'st-pagado', entregado:'st-entregado', cancelado:'st-cancelado' };
+var ST_LABEL = { pendiente_pago:'⏳ Pago pendiente', verificando:'🔍 Verificando pago', pagado:'💰 Pagado — esperando entrega', entregado:'✓ Entregado', cancelado:'✗ Cancelada' };
+var ST_CLS   = { pendiente_pago:'st-pendiente_pago', verificando:'st-verificando', pagado:'st-pagado', entregado:'st-entregado', cancelado:'st-cancelado' };
 var ICONS    = { steam:'🎮',xbox:'🎮',playstation:'🎮',psn:'🎮',nintendo:'🎮',roblox:'🎮',netflix:'🎬',spotify:'🎵',amazon:'🛒',youtube:'📺',discord:'💬',apple:'🍎' };
 function icon(m){ return ICONS[(m||'').toLowerCase().split(' ')[0]] || '🎁'; }
 
+var USER_EMAIL = '';
+
 document.addEventListener('DOMContentLoaded', async function() {
+  // Expirar órdenes vencidas primero
+  try { await sb.rpc('expirar_ordenes_vencidas'); } catch(e) {}
+
   var sess = await sb.auth.getSession();
   if (!sess.data || !sess.data.session) { window.location.href='login.html'; return; }
-  var email = sess.data.session.user.email;
-  cargar(email);
+  USER_EMAIL = sess.data.session.user.email;
+  cargar();
 });
 
-async function cargar(email) {
+async function cargar() {
   var list = document.getElementById('txList');
-  var res  = await sb.from('ordenes')
-    .select('id, gift_card_id, precio, red, estado, created_at, gift_cards(titulo, marca)')
-    .eq('comprador_email', email)
+  list.innerHTML = '<div class="spinner"></div>';
+
+  var res = await sb.from('ordenes')
+    .select('id, gift_card_id, precio, red, estado, created_at, expires_at, gift_cards(titulo, marca)')
+    .eq('comprador_email', USER_EMAIL)
     .order('created_at', { ascending: false });
 
   if (res.error) {
@@ -90,11 +109,14 @@ async function cargar(email) {
   }
 
   var data = res.data || [];
+
+  // Solo suma pagado o entregado — verificando y pendiente NO cuentan
+  var pagadas    = data.filter(function(o){ return o.estado === 'pagado' || o.estado === 'entregado'; });
   var entregadas = data.filter(function(o){ return o.estado === 'entregado'; });
-  var montoTotal = data.reduce(function(s,o){ return s + parseFloat(o.precio||0); }, 0);
+  var montoReal  = pagadas.reduce(function(s,o){ return s + parseFloat(o.precio||0); }, 0);
 
   document.getElementById('cntTotal').textContent     = data.length;
-  document.getElementById('cntMonto').textContent     = '$' + montoTotal.toFixed(0);
+  document.getElementById('cntMonto').textContent     = '$' + montoReal.toFixed(0);
   document.getElementById('cntEntregado').textContent = entregadas.length;
 
   if (data.length === 0) {
@@ -110,10 +132,28 @@ async function cargar(email) {
     var fecha  = o.created_at ? new Date(o.created_at).toLocaleDateString('es', {day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}) : '';
     var ref    = o.id ? o.id.substring(0,8).toUpperCase() : '—';
     var st     = o.estado || 'pendiente_pago';
-    var linkPago = (st === 'pendiente_pago' && o.id)
-      ? '<a class="btn-ver" href="pago.html?orden_id=' + o.id + '">Ver instrucciones de pago →</a>'
-      : (o.gift_card_id ? '<a class="btn-ver" href="detalle.html?id=' + o.gift_card_id + '">Ver producto →</a>' : '');
-    return '<div class="tx-card">' +
+
+    // Tiempo restante si está pendiente
+    var expiresHtml = '';
+    if (st === 'pendiente_pago' && o.expires_at) {
+      var mins = Math.max(0, Math.floor((new Date(o.expires_at) - Date.now()) / 60000));
+      expiresHtml = mins > 0
+        ? '<span class="expires-label">⏰ Expira en ' + mins + ' min</span>'
+        : '<span class="expires-label">⏰ Expirada</span>';
+    }
+
+    // Botones según estado
+    var botones = '';
+    if (st === 'pendiente_pago') {
+      botones = '<button class="btn-accion btn-pagar" onclick="irAPago(\'' + o.id + '\')">💳 Ver instrucciones de pago</button>' +
+                '<button class="btn-accion btn-cancelar" onclick="cancelar(\'' + o.id + '\', this)">Cancelar</button>';
+    } else if (st === 'verificando') {
+      botones = '<div style="font-size:12px;color:#f3ba2f;padding:6px 0">🔍 Estamos verificando tu pago. Te avisamos cuando esté confirmado.</div>';
+    } else if (st === 'pagado') {
+      botones = '<button class="btn-accion btn-entregar" onclick="confirmarEntrega(\'' + o.id + '\', this)">✓ Confirmar que lo recibí</button>';
+    }
+
+    return '<div class="tx-card" id="orden-' + o.id + '">' +
       '<div class="tx-top">' +
         '<div class="tx-icon">' + icon(marca) + '</div>' +
         '<div class="tx-info">' +
@@ -122,10 +162,56 @@ async function cargar(email) {
         '</div>' +
         '<div class="tx-amount">$' + monto + '</div>' +
       '</div>' +
-      '<span class="tx-status ' + (ST_CLS[st]||'st-pendiente_pago') + '">' + (ST_LABEL[st]||st) + '</span>' +
-      linkPago +
+      '<div class="tx-footer">' +
+        '<span class="tx-status ' + (ST_CLS[st]||'st-pendiente_pago') + '">' + (ST_LABEL[st]||st) + '</span>' +
+        expiresHtml +
+      '</div>' +
+      (botones ? '<div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">' + botones + '</div>' : '') +
     '</div>';
   }).join('');
+}
+
+function irAPago(ordenId) {
+  window.location.href = 'pago.html?orden_id=' + ordenId;
+}
+
+async function cancelar(ordenId, btn) {
+  if (!confirm('¿Cancelar esta orden? El stock volverá a estar disponible.')) return;
+  btn.disabled = true; btn.textContent = 'Cancelando...';
+
+  // Solo se puede cancelar desde pendiente_pago
+  var check = await sb.from('ordenes').select('estado').eq('id', ordenId).single();
+  if (!check.data || check.data.estado !== 'pendiente_pago') {
+    alert('Esta orden ya no puede cancelarse desde este estado.');
+    btn.disabled = false; btn.textContent = 'Cancelar'; return;
+  }
+
+  try {
+    var r = await sb.rpc('cancelar_orden', { p_orden_id: ordenId });
+    if (r.error) { alert('Error: ' + r.error.message); btn.disabled = false; btn.textContent = 'Cancelar'; return; }
+    cargar();
+  } catch(e) { alert('Error inesperado.'); btn.disabled = false; btn.textContent = 'Cancelar'; }
+}
+
+async function confirmarEntrega(ordenId, btn) {
+  if (!confirm('¿Confirmás que recibiste el producto correctamente?')) return;
+  btn.disabled = true; btn.textContent = 'Confirmando...';
+
+  // Solo se puede marcar entregado si está en 'pagado'
+  var check = await sb.from('ordenes').select('estado').eq('id', ordenId).single();
+  if (!check.data || check.data.estado !== 'pagado') {
+    alert('Esta orden no puede marcarse como entregada en su estado actual.');
+    btn.disabled = false; btn.textContent = '✓ Confirmar que lo recibí';
+    return;
+  }
+
+  var upd = await sb.from('ordenes').update({
+    estado:     'entregado',
+    updated_at: new Date().toISOString()
+  }).eq('id', ordenId).eq('estado', 'pagado'); // protección doble
+
+  if (upd.error) { alert('Error: ' + upd.error.message); btn.disabled = false; return; }
+  cargar();
 }
 </script>
 </body>
