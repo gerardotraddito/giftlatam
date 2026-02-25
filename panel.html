@@ -451,6 +451,19 @@ footer {
     </div>
   </div>
 
+  <!-- ── Mis compras ── -->
+  <div style="margin-top:20px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+      <span style="font-size:15px;font-weight:700">🛒 Mis compras</span>
+    </div>
+    <div id="misComprasPreview">
+      <div style="text-align:center;padding:20px;color:#888;font-size:13px">
+        <div style="width:20px;height:20px;border:2px solid #222;border-top-color:var(--verde);border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 8px"></div>
+        Cargando...
+      </div>
+    </div>
+  </div>
+
 </div></div>
 <div class="bottom-nav">
   <div class="nav-item" onclick="window.location='index.html'"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>Inicio</div>
@@ -672,22 +685,101 @@ async function loadMisVentas(userId) {
   }).join('');
 }
 
-// Escuchar sesión para cargar extras
-sb.auth.onAuthStateChange(function(_e, session) {
-  if (session && session.user) {
-    loadPanelExtras(session.user.id);
-    loadMisVentas(session.user.id);
-  }
-});
+// ── Punto de entrada único para cargar todo ──────────────────────────────
+async function cargarTodoElPanel(userId) {
+  if (!userId) return;
+  await Promise.all([
+    loadPanelExtras(userId),
+    loadMisVentas(userId),
+    loadMisCompras(userId),
+    limpiarOrdenesExpiradas(userId)
+  ]);
+}
 
-// También al cargar la página
+// ── Mis Compras (buyer) ───────────────────────────────────────────────────
+async function loadMisCompras(userId) {
+  var container = document.getElementById('misComprasPreview');
+  if (!container) return;
+
+  var estadoColors = { pendiente_pago:'#f3ba2f', pagado:'#00C853', entregado:'#00C853', cancelado:'#555' };
+  var estadoLabel  = { pendiente_pago:'⏳ Verificando pago', pagado:'💰 Pagado', entregado:'✓ Entregado', cancelado:'✗ Cancelada' };
+
+  var res = null;
+  try {
+    // Buscar por email del comprador
+    var sessR = await sb.auth.getSession();
+    var email = sessR.data && sessR.data.session ? sessR.data.session.user.email : null;
+    if (!email) { container.innerHTML = '<div style="text-align:center;padding:16px;color:#888;font-size:13px">Iniciá sesión para ver tus compras.</div>'; return; }
+
+    res = await sb.from('ordenes')
+      .select('id, gift_card_id, precio, red, estado, created_at')
+      .eq('comprador_email', email)
+      .order('created_at', { ascending: false })
+      .limit(10);
+  } catch(e) { console.warn('compras query:', e); }
+
+  if (!res || res.error || !res.data || res.data.length === 0) {
+    container.innerHTML = '<div style="text-align:center;padding:16px;color:#888;font-size:13px">Todavía no realizaste compras.</div>';
+    return;
+  }
+
+  container.innerHTML = res.data.map(function(v) {
+    var fecha = new Date(v.created_at).toLocaleDateString('es', { day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit' });
+    var est   = v.estado || 'pendiente_pago';
+    var monto = parseFloat(v.precio || 0).toFixed(2);
+    var ref   = v.id ? v.id.substring(0,8).toUpperCase() : '—';
+    return '<a href="detalle.html?id=' + (v.gift_card_id||'') + '" style="display:flex;align-items:center;gap:12px;padding:11px 14px;background:#161616;border:1px solid #222;border-radius:12px;margin-bottom:8px;text-decoration:none;color:inherit">' +
+      '<div style="flex:1;min-width:0">' +
+        '<div style="font-size:13px;font-weight:600">$' + monto + ' USDT</div>' +
+        '<div style="font-size:11px;color:#888;margin-top:2px">' + fecha + ' · #' + ref + '</div>' +
+      '</div>' +
+      '<span style="font-size:11px;font-weight:700;color:' + (estadoColors[est]||'#888') + ';flex-shrink:0;white-space:nowrap">' + (estadoLabel[est]||est) + '</span>' +
+    '</a>';
+  }).join('');
+}
+
+// ── Limpiar órdenes expiradas y restaurar stock ───────────────────────────
+async function limpiarOrdenesExpiradas(userId) {
+  try {
+    // Buscar órdenes pendiente_pago con más de 10 minutos
+    var hace10min = new Date(Date.now() - 10 * 60 * 1000).toISOString();
+    var res = await sb.from('ordenes')
+      .select('id, gift_card_id')
+      .eq('estado', 'pendiente_pago')
+      .lt('created_at', hace10min);
+
+    if (!res.data || res.data.length === 0) return;
+
+    for (var i = 0; i < res.data.length; i++) {
+      var orden = res.data[i];
+      // Cancelar
+      await sb.from('ordenes').update({ estado: 'cancelado', updated_at: new Date().toISOString() }).eq('id', orden.id);
+      // Restaurar stock
+      if (orden.gift_card_id) {
+        var sr = await sb.from('gift_cards').select('cantidad').eq('id', orden.gift_card_id).single();
+        if (sr.data && sr.data.cantidad != null) {
+          await sb.from('gift_cards').update({ cantidad: parseInt(sr.data.cantidad) + 1 }).eq('id', orden.gift_card_id);
+        }
+      }
+    }
+    console.log('[panel] Limpiadas ' + res.data.length + ' órdenes expiradas');
+  } catch(e) { console.warn('limpiar expiradas:', e); }
+}
+
+// ── Auth: un solo listener ────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', async function() {
   try {
     var s = await sb.auth.getSession();
     if (s.data && s.data.session && s.data.session.user) {
-      loadMisVentas(s.data.session.user.id);
+      cargarTodoElPanel(s.data.session.user.id);
     }
-  } catch(e) {}
+  } catch(e) { console.warn('panel init:', e); }
+
+  sb.auth.onAuthStateChange(function(_e, session) {
+    if (session && session.user) {
+      cargarTodoElPanel(session.user.id);
+    }
+  });
 });
 </script>
 </body></html>
