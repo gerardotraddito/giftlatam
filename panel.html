@@ -635,43 +635,41 @@ async function loadPanelExtras(userId) {
     (listings.length > 5 ? `<a href="mis-listings.html" style="display:block;text-align:center;padding:10px;color:var(--verde);font-size:12px;font-weight:600;text-decoration:none">Ver las ${listings.length} publicaciones →</a>` : '');
 }
 
-// Cargar ventas del vendedor
+// Cargar ventas del vendedor desde tabla ordenes
 async function loadMisVentas(userId) {
   var container = document.getElementById('misVentasPreview');
   if (!container) return;
 
+  var estadoColors = { pendiente_pago:'#f3ba2f', pagado:'#00C853', entregado:'#00C853', cancelado:'#555' };
+  var estadoLabel  = { pendiente_pago:'⏳ Verificando pago', pagado:'💰 Pagado', entregado:'✓ Entregado', cancelado:'✗ Cancelada' };
+
   var res = null;
   try {
-    res = await sb.from('transactions')
-      .select('id, gift_card_id, monto, red, estado, created_at')
+    res = await sb.from('ordenes')
+      .select('id, gift_card_id, precio, red, estado, created_at')
       .eq('seller_id', userId)
       .order('created_at', { ascending: false })
       .limit(10);
-  } catch(e) {}
+  } catch(e) { console.warn('ordenes query:', e); }
 
-  // Fallback a orders si transactions no tiene seller_id
   if (!res || res.error || !res.data || res.data.length === 0) {
-    // mostrar estado vacío
-    container.innerHTML = '<div style="text-align:center;padding:16px;color:#888;font-size:13px">Todavía no tenés ventas.<br><span style="font-size:11px">Las ventas aparecen aquí cuando un comprador confirma el pago.</span></div>';
+    container.innerHTML = '<div style="text-align:center;padding:16px;color:#888;font-size:13px">Todavía no tenés ventas.<br><span style="font-size:11px">Las órdenes aparecen aquí cuando un comprador inicia una compra.</span></div>';
     return;
   }
 
-  var estadoColors = { pendiente_pago:'#f3ba2f', completado:'#00C853', expirado:'#555', cancelado:'#FF6B35' };
-  var estadoLabel  = { pendiente_pago:'⏳ Verificando pago', completado:'✓ Completada', expirado:'⏰ Expirada', cancelado:'✗ Cancelada' };
-
   container.innerHTML = res.data.map(function(v) {
-    var fecha = new Date(v.created_at).toLocaleDateString('es', { day:'2-digit', month:'short' });
+    var fecha = new Date(v.created_at).toLocaleDateString('es', { day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit' });
     var est   = v.estado || 'pendiente_pago';
-    var monto = parseFloat(v.monto || 0).toFixed(2);
-    return '<div style="display:flex;align-items:center;gap:12px;padding:11px 14px;background:#161616;border:1px solid #222;border-radius:12px;margin-bottom:8px">' +
+    var monto = parseFloat(v.precio || 0).toFixed(2);
+    var ref   = v.id ? v.id.substring(0,8).toUpperCase() : '—';
+    return '<a href="detalle.html?id=' + (v.gift_card_id||'') + '" style="display:flex;align-items:center;gap:12px;padding:11px 14px;background:#161616;border:1px solid #222;border-radius:12px;margin-bottom:8px;text-decoration:none;color:inherit;transition:border-color 0.15s" onmouseover="this.style.borderColor='rgba(0,200,83,0.3)'" onmouseout="this.style.borderColor='#222'">' +
       '<div style="flex:1;min-width:0">' +
-        '<div style="font-size:13px;font-weight:600">$' + monto + ' USDT · ' + (v.red||'USDT') + '</div>' +
-        '<div style="font-size:11px;color:#888;margin-top:2px">' + fecha + '</div>' +
+        '<div style="font-size:13px;font-weight:600">$' + monto + ' USDT · ' + (v.red||'TRC20') + '</div>' +
+        '<div style="font-size:11px;color:#888;margin-top:2px">' + fecha + ' · #' + ref + '</div>' +
       '</div>' +
-      '<span style="font-size:11px;font-weight:700;color:' + (estadoColors[est]||'#888') + ';flex-shrink:0">' + (estadoLabel[est]||est) + '</span>' +
-    '</div>';
-  }).join('') +
-  (res.data.length >= 10 ? '<div style="text-align:center;padding:8px;font-size:12px;color:#888">Ver historial completo en <a href="panel.html" style="color:var(--verde)">tu panel</a></div>' : '');
+      '<span style="font-size:11px;font-weight:700;color:' + (estadoColors[est]||'#888') + ';flex-shrink:0;white-space:nowrap">' + (estadoLabel[est]||est) + '</span>' +
+    '</a>';
+  }).join('');
 }
 
 // Escuchar sesión para cargar extras

@@ -247,16 +247,69 @@ function renderProduct(c) {
         '<tr><td>Pago</td><td>USDT · BTC · ETH</td></tr>' +
         '<tr><td>Protección</td><td>Escrow incluido ✓</td></tr>' +
       '</table>' +
-      '<button class="btn-comprar" onclick="irAPago()">🔒 Comprar por $' + precio.toFixed(2) + ' USDT</button>' +
+      (cantidad === 0
+        ? '<button class="btn-comprar" disabled style="opacity:0.4;cursor:not-allowed;background:#333;color:#888">😔 Sin stock</button>'
+        : '<button class="btn-comprar" id="btnComprar" onclick="irAPago()">🔒 Comprar por $' + precio.toFixed(2) + ' USDT</button>') +
       '<button class="btn-wishlist" id="btnWish" onclick="guardarFav(\'' + c.id + '\')">♡ Guardar en favoritos</button>' +
     '</div>';
 
   window._card = c;
 }
 
-function irAPago() {
-  var c = window._card; if (!c) return;
-  location.href = 'pago.html?id=' + c.id + '&precio=' + c.precio_venta + '&titulo=' + encodeURIComponent(c.titulo||'');
+async function irAPago() {
+  var c = window._card;
+  if (!c) return;
+
+  // Bloquear doble-click
+  var btn = document.getElementById('btnComprar');
+  if (btn) { btn.disabled = true; btn.textContent = 'Iniciando...'; }
+
+  var WALLETS = {
+    trc20: 'TXnbM7ZGpRZbhCBCm7UwJZWcRMbB5L9Kzt',
+    bep20: '0x4A7bF2D8eC6E1F3a9b5D0C2E8F1A6B3C7D4E9F2A'
+  };
+
+  // Obtener email del usuario si está logueado
+  var email = '';
+  try {
+    var sess = await sb.auth.getSession();
+    if (sess.data && sess.data.session) {
+      email = sess.data.session.user.email || '';
+    }
+  } catch(e) {}
+
+  // Crear orden inmediatamente
+  try {
+    var ins = await sb.from('ordenes').insert({
+      gift_card_id:   c.id,
+      seller_id:      c.seller_id || null,
+      comprador_email: email,
+      precio:         parseFloat(c.precio_venta) || 0,
+      moneda:         'USDT',
+      red:            'TRC20',
+      wallet_destino: WALLETS.trc20,
+      estado:         'pendiente_pago',
+      codigo_entrega: null
+    }).select('id').single();
+
+    if (ins.error || !ins.data) {
+      console.error('[comprar] insert error:', ins.error);
+      // Aunque falle el insert, mandamos igual con los datos en URL
+      location.href = 'pago.html?gift_id=' + c.id
+        + '&precio=' + c.precio_venta
+        + '&titulo=' + encodeURIComponent(c.titulo||'');
+      return;
+    }
+
+    var ordenId = ins.data.id;
+    location.href = 'pago.html?orden_id=' + ordenId;
+
+  } catch(e) {
+    console.error('[comprar] catch:', e);
+    location.href = 'pago.html?gift_id=' + c.id
+      + '&precio=' + c.precio_venta
+      + '&titulo=' + encodeURIComponent(c.titulo||'');
+  }
 }
 
 // ── Vendedor ────────────────────────────────────────────────────────────────
