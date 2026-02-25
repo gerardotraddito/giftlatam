@@ -33,6 +33,7 @@
     .st-pendiente_pago{background:rgba(243,186,47,0.1);color:var(--amarillo);border:1px solid rgba(243,186,47,0.25)}
     .st-pagado{background:rgba(0,200,83,0.1);color:var(--verde);border:1px solid rgba(0,200,83,0.2)}
     .st-entregado{background:rgba(0,200,83,0.15);color:var(--verde);border:1px solid rgba(0,200,83,0.3)}
+    .st-verificando{background:rgba(243,186,47,0.08);color:var(--amarillo);border:1px solid rgba(243,186,47,0.2)}
     .st-cancelado{background:rgba(136,136,136,0.1);color:var(--gris);border:1px solid #333}
 
     .btn-accion{border:none;border-radius:9px;padding:6px 14px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;transition:opacity 0.2s}
@@ -76,8 +77,8 @@
 </div>
 
 <script>
-var ST_LABEL = { pendiente_pago:'⏳ Pago pendiente', pagado:'💰 Pagado — esperando entrega', entregado:'✓ Entregado', cancelado:'✗ Cancelada' };
-var ST_CLS   = { pendiente_pago:'st-pendiente_pago', pagado:'st-pagado', entregado:'st-entregado', cancelado:'st-cancelado' };
+var ST_LABEL = { pendiente_pago:'⏳ Pago pendiente', verificando:'🔍 Verificando pago', pagado:'💰 Pagado — esperando entrega', entregado:'✓ Entregado', cancelado:'✗ Cancelada' };
+var ST_CLS   = { pendiente_pago:'st-pendiente_pago', verificando:'st-verificando', pagado:'st-pagado', entregado:'st-entregado', cancelado:'st-cancelado' };
 var ICONS    = { steam:'🎮',xbox:'🎮',playstation:'🎮',psn:'🎮',nintendo:'🎮',roblox:'🎮',netflix:'🎬',spotify:'🎵',amazon:'🛒',youtube:'📺',discord:'💬',apple:'🍎' };
 function icon(m){ return ICONS[(m||'').toLowerCase().split(' ')[0]] || '🎁'; }
 
@@ -98,18 +99,27 @@ async function cargar() {
   list.innerHTML = '<div class="spinner"></div>';
 
   var res = await sb.from('ordenes')
-    .select('id, gift_card_id, precio, red, estado, created_at, expires_at, gift_cards(titulo, marca)')
+    .select('id, gift_card_id, precio, red, estado, created_at, expires_at')
     .eq('comprador_email', USER_EMAIL)
     .order('created_at', { ascending: false });
 
   if (res.error) {
-    list.innerHTML = '<div class="empty"><span class="empty-emoji">⚠️</span><div>' + res.error.message + '</div></div>';
+    list.innerHTML = '<div class="empty"><span class="empty-emoji">⚠️</span><div>Error: ' + res.error.message + '</div></div>';
     return;
   }
 
   var data = res.data || [];
 
-  // Solo suma órdenes pagadas o entregadas (no pendientes)
+  var giftIds = data.map(function(o){ return o.gift_card_id; }).filter(Boolean);
+  var gcMap = {};
+  if (giftIds.length > 0) {
+    try {
+      var gcRes = await sb.from('gift_cards').select('id, titulo, marca').in('id', giftIds);
+      if (gcRes.data) { gcRes.data.forEach(function(g){ gcMap[g.id] = g; }); }
+    } catch(e) {}
+  }
+
+  // Solo suma pagado o entregado — verificando y pendiente NO cuentan
   var pagadas    = data.filter(function(o){ return o.estado === 'pagado' || o.estado === 'entregado'; });
   var entregadas = data.filter(function(o){ return o.estado === 'entregado'; });
   var montoReal  = pagadas.reduce(function(s,o){ return s + parseFloat(o.precio||0); }, 0);
@@ -124,7 +134,7 @@ async function cargar() {
   }
 
   list.innerHTML = data.map(function(o) {
-    var gc     = o.gift_cards || {};
+    var gc     = gcMap[o.gift_card_id] || {};
     var titulo = gc.titulo || 'Gift card';
     var marca  = gc.marca  || '';
     var monto  = parseFloat(o.precio || 0).toFixed(2);
@@ -146,6 +156,8 @@ async function cargar() {
     if (st === 'pendiente_pago') {
       botones = '<button class="btn-accion btn-pagar" onclick="irAPago(\'' + o.id + '\')">💳 Ver instrucciones de pago</button>' +
                 '<button class="btn-accion btn-cancelar" onclick="cancelar(\'' + o.id + '\', this)">Cancelar</button>';
+    } else if (st === 'verificando') {
+      botones = '<div style="font-size:12px;color:#f3ba2f;padding:6px 0">🔍 Estamos verificando tu pago. Te avisamos cuando esté confirmado.</div>';
     } else if (st === 'pagado') {
       botones = '<button class="btn-accion btn-entregar" onclick="confirmarEntrega(\'' + o.id + '\', this)">✓ Confirmar que lo recibí</button>';
     }
@@ -175,10 +187,18 @@ function irAPago(ordenId) {
 async function cancelar(ordenId, btn) {
   if (!confirm('¿Cancelar esta orden? El stock volverá a estar disponible.')) return;
   btn.disabled = true; btn.textContent = 'Cancelando...';
+
+  // Solo se puede cancelar desde pendiente_pago
+  var check = await sb.from('ordenes').select('estado').eq('id', ordenId).single();
+  if (!check.data || check.data.estado !== 'pendiente_pago') {
+    alert('Esta orden ya no puede cancelarse desde este estado.');
+    btn.disabled = false; btn.textContent = 'Cancelar'; return;
+  }
+
   try {
     var r = await sb.rpc('cancelar_orden', { p_orden_id: ordenId });
     if (r.error) { alert('Error: ' + r.error.message); btn.disabled = false; btn.textContent = 'Cancelar'; return; }
-    cargar(); // recargar lista
+    cargar();
   } catch(e) { alert('Error inesperado.'); btn.disabled = false; btn.textContent = 'Cancelar'; }
 }
 

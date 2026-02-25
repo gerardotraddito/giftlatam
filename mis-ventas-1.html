@@ -30,6 +30,7 @@
     .st-pendiente_pago{background:rgba(243,186,47,0.1);color:var(--amarillo);border:1px solid rgba(243,186,47,0.25)}
     .st-pagado{background:rgba(0,200,83,0.1);color:var(--verde);border:1px solid rgba(0,200,83,0.2)}
     .st-entregado{background:rgba(0,200,83,0.15);color:var(--verde);border:1px solid rgba(0,200,83,0.3)}
+    .st-verificando{background:rgba(243,186,47,0.08);color:var(--amarillo);border:1px solid rgba(243,186,47,0.2)}
     .st-cancelado{background:rgba(136,136,136,0.1);color:var(--gris);border:1px solid #333}
     .btn-accion{border:none;border-radius:9px;padding:6px 14px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;transition:opacity 0.2s}
     .btn-accion:hover{opacity:0.85}
@@ -73,8 +74,8 @@
 </div>
 
 <script>
-var ST_LABEL = { pendiente_pago:'⏳ Esperando pago', pagado:'💰 Pagado — entregar código', entregado:'✓ Entregado', cancelado:'✗ Cancelada' };
-var ST_CLS   = { pendiente_pago:'st-pendiente_pago', pagado:'st-pagado', entregado:'st-entregado', cancelado:'st-cancelado' };
+var ST_LABEL = { pendiente_pago:'⏳ Esperando pago', verificando:'🔍 Comprador avisó que pagó', pagado:'💰 Pago confirmado — entregar código', entregado:'✓ Entregado', cancelado:'✗ Cancelada' };
+var ST_CLS   = { pendiente_pago:'st-pendiente_pago', verificando:'st-verificando', pagado:'st-pagado', entregado:'st-entregado', cancelado:'st-cancelado' };
 var ICONS    = { steam:'🎮',xbox:'🎮',playstation:'🎮',psn:'🎮',nintendo:'🎮',roblox:'🎮',netflix:'🎬',spotify:'🎵',amazon:'🛒',youtube:'📺',discord:'💬',apple:'🍎' };
 function icon(m){ return ICONS[(m||'').toLowerCase().split(' ')[0]] || '🎁'; }
 
@@ -94,26 +95,42 @@ async function cargar() {
   list.innerHTML = '<div class="spinner"></div>';
 
   var res = await sb.from('ordenes')
-    .select('id, gift_card_id, comprador_email, precio, red, estado, created_at, gift_cards(titulo, marca)')
+    .select('id, gift_card_id, comprador_email, precio, red, estado, created_at')
     .eq('seller_id', SELLER_ID)
     .order('created_at', { ascending: false });
 
   if (res.error) {
-    list.innerHTML = '<div class="empty"><span class="empty-emoji">⚠️</span><div>' + res.error.message + '</div></div>';
+    list.innerHTML = '<div class="empty"><span class="empty-emoji">⚠️</span><div>Error: ' + res.error.message + '</div></div>';
     return;
   }
 
   var data = res.data || [];
 
+  // Cargar títulos de gift_cards por separado para evitar problemas de RLS en el join
+  var giftIds = data.map(function(o){ return o.gift_card_id; }).filter(Boolean);
+  var gcMap = {};
+  if (giftIds.length > 0) {
+    try {
+      var gcRes = await sb.from('gift_cards').select('id, titulo, marca').in('id', giftIds);
+      if (gcRes.data) {
+        gcRes.data.forEach(function(g){ gcMap[g.id] = g; });
+      }
+    } catch(e) {}
+  }
+
   // Solo suma pagadas o entregadas
   var pagadas   = data.filter(function(o){ return o.estado === 'pagado' || o.estado === 'entregado'; });
   var montoReal = pagadas.reduce(function(s,o){ return s + parseFloat(o.precio||0); }, 0);
   var hayPagadas = data.some(function(o){ return o.estado === 'pagado'; });
+  var hayVerificando = data.some(function(o){ return o.estado === 'verificando'; });
 
   document.getElementById('cntTotal').textContent  = data.length;
   document.getElementById('cntMonto').textContent  = '$' + montoReal.toFixed(0);
   document.getElementById('cntPagado').textContent = pagadas.length;
-  document.getElementById('alertaPagado').style.display = hayPagadas ? 'block' : 'none';
+  document.getElementById('alertaPagado').style.display = (hayPagadas || hayVerificando) ? 'block' : 'none';
+  if (hayVerificando && !hayPagadas) {
+    document.getElementById('alertaPagado').innerHTML = '🔍 <strong>Hay pagos en verificación.</strong> El admin debe confirmarlos para que puedas entregar.';
+  }
 
   if (data.length === 0) {
     list.innerHTML = '<div class="empty"><span class="empty-emoji">📭</span><div class="empty-title">Todavía no tenés ventas</div><div class="empty-sub">Las órdenes aparecen cuando un comprador inicia una compra.</div><a class="btn-action" href="publicar.html">Publicar gift card</a></div>';
@@ -121,7 +138,7 @@ async function cargar() {
   }
 
   list.innerHTML = data.map(function(o) {
-    var gc      = o.gift_cards || {};
+    var gc      = gcMap[o.gift_card_id] || {};
     var titulo  = gc.titulo || 'Gift card';
     var marca   = gc.marca  || '';
     var monto   = parseFloat(o.precio || 0).toFixed(2);
@@ -130,13 +147,13 @@ async function cargar() {
     var st      = o.estado || 'pendiente_pago';
     var comprador = o.comprador_email ? o.comprador_email.replace(/(.{2}).*@/, '$1***@') : '—';
 
-    // Botón solo si está pagado (el vendedor marca entregado)
+    // Botón: solo 'pagado' puede marcar entregado. 'verificando' espera al admin.
     var boton = '';
-    if (st === 'pagado') {
+    if (st === 'verificando') {
+      boton = '<div style="font-size:12px;color:var(--amarillo);padding:6px 0">🔍 Esperando confirmación del admin antes de entregar.</div>';
+    } else if (st === 'pagado') {
       boton = '<button class="btn-accion btn-entregar" onclick="marcarEntregado(\'' + o.id + '\', this)">📦 Marcar como entregado</button>';
     }
-
-    return '<div class="tx-card" id="orden-' + o.id + '">' +
       '<div class="tx-top">' +
         '<div class="tx-icon">' + icon(marca) + '</div>' +
         '<div class="tx-info">' +
@@ -161,7 +178,10 @@ async function marcarEntregado(ordenId, btn) {
   // Protección: solo se puede si está en 'pagado'
   var check = await sb.from('ordenes').select('estado').eq('id', ordenId).single();
   if (!check.data || check.data.estado !== 'pagado') {
-    alert('Esta orden no está en estado pagado.');
+    var est = check.data ? check.data.estado : 'desconocido';
+    alert(est === 'verificando'
+      ? 'El pago todavía no fue confirmado por el admin. Esperá la aprobación.'
+      : 'Esta orden no está en estado pagado (estado actual: ' + est + ').');
     btn.disabled = false; btn.textContent = '📦 Marcar como entregado';
     return;
   }
