@@ -3,114 +3,109 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>GiftLatam - Confirmar pago</title>
+  <title>GiftLatam - Pagar</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Syne:wght@700;800&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
-      --negro: #080808; --oscuro: #111111; --card: #161616;
-      --borde: #222222; --blanco: #F0F0F0; --gris: #888888;
-      --verde: #00C853; --naranja: #FF6B35;
+      --negro: #080808; --oscuro: #111; --card: #161616;
+      --borde: #222; --blanco: #F0F0F0; --gris: #888;
+      --verde: #00C853; --naranja: #FF6B35; --amarillo: #f3ba2f;
     }
     html, body { max-width: 100%; overflow-x: hidden; }
-    body {
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-      background: var(--negro); color: var(--blanco);
-      padding-bottom: 90px;
-    }
-    nav {
-      display: flex; align-items: center;
-      padding: 0 14px; height: 54px;
-      border-bottom: 1px solid var(--borde);
-      position: sticky; top: 0; z-index: 1000;
-      background: rgba(8,8,8,0.97); backdrop-filter: blur(16px);
-      gap: 10px;
-    }
+    body { font-family: 'Inter', sans-serif; background: var(--negro); color: var(--blanco); padding-bottom: 60px; }
+
+    nav { display: flex; align-items: center; padding: 0 14px; height: 54px; border-bottom: 1px solid var(--borde); position: sticky; top: 0; z-index: 1000; background: rgba(8,8,8,0.97); backdrop-filter: blur(16px); gap: 10px; }
     .logo { display: flex; align-items: center; gap: 7px; text-decoration: none; flex-shrink: 0; }
-    .logo-icon { width: 32px; height: 32px; background: var(--verde); border-radius: 9px; display: flex; align-items: center; justify-content: center; }
-    .logo-icon svg { width: 18px; height: 18px; }
-    .logo-text { font-weight: 800; font-size: 19px; color: var(--blanco); white-space: nowrap; }
-    .logo-text .g { color: var(--verde); }
-    .nav-spacer { flex: 1; }
-    .nav-back { font-size: 13px; color: var(--gris); text-decoration: none; }
+    .logo-icon { width: 32px; height: 32px; background: var(--verde); border-radius: 9px; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+    .logo-text { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 18px; color: var(--blanco); }
+    .logo-text span { color: var(--verde); }
+    .nav-back { margin-left: auto; font-size: 13px; color: var(--gris); text-decoration: none; }
     .nav-back:hover { color: var(--verde); }
-    .container { max-width: 860px; margin: 0 auto; padding: 0 14px; }
-    .main { padding: 22px 0; }
-    @keyframes spin { to { transform: rotate(360deg); } }
-    .spinner { width: 28px; height: 28px; border: 3px solid #333; border-top-color: var(--verde); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 50px auto; }
 
-    .pago-grid { display: grid; grid-template-columns: 1fr; gap: 14px; }
-    @media (min-width: 700px) { .pago-grid { grid-template-columns: 1fr 300px; } }
+    .container { max-width: 860px; margin: 0 auto; padding: 20px 14px; }
+    .page-title { font-family: 'Syne', sans-serif; font-size: 22px; font-weight: 800; margin-bottom: 4px; }
+    .page-sub { font-size: 13px; color: var(--gris); margin-bottom: 24px; }
 
-    .pago-card { background: var(--card); border: 1px solid var(--borde); border-radius: 20px; padding: 20px; }
-    .card-title { font-size: 15px; font-weight: 700; margin-bottom: 14px; }
+    .grid { display: grid; grid-template-columns: 1fr; gap: 14px; }
+    @media(min-width: 700px) { .grid { grid-template-columns: 1fr 300px; } }
 
+    .card { background: var(--card); border: 1px solid var(--borde); border-radius: 18px; padding: 20px; }
+    .card-title { font-size: 14px; font-weight: 700; margin-bottom: 14px; color: var(--gris); text-transform: uppercase; letter-spacing: 0.5px; }
+
+    /* Timer */
+    .timer-wrap { text-align: center; padding: 16px 0 8px; }
+    .timer-label { font-size: 12px; color: var(--gris); margin-bottom: 6px; }
+    .timer-num { font-family: 'Syne', sans-serif; font-size: 48px; font-weight: 800; font-variant-numeric: tabular-nums; letter-spacing: 2px; transition: color 0.5s; color: var(--verde); }
+    .timer-num.warn { color: var(--amarillo); }
+    .timer-num.urgent { color: var(--naranja); }
+    .timer-bar-bg { background: #1a1a1a; border-radius: 99px; height: 4px; margin-top: 10px; overflow: hidden; }
+    .timer-bar-fill { height: 100%; background: var(--verde); border-radius: 99px; transition: width 1s linear, background 0.5s; width: 100%; }
+
+    /* Resumen */
     .order-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--borde); font-size: 13px; }
     .order-row:last-child { border: none; }
     .order-label { color: var(--gris); }
-    .order-total-val { font-size: 20px; font-weight: 800; color: var(--verde); font-variant-numeric: tabular-nums; }
+    .order-total { font-size: 20px; font-weight: 800; color: var(--verde); }
 
-    .crypto-methods { display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px; }
-    .crypto-method {
-      display: flex; align-items: center; gap: 12px;
-      background: var(--negro); border: 2px solid var(--borde);
-      border-radius: 13px; padding: 13px 14px; cursor: pointer;
-      transition: border-color 0.2s;
-    }
-    .crypto-method:hover { border-color: rgba(0,200,83,0.4); }
-    .crypto-method.selected { border-color: var(--verde); background: rgba(0,200,83,0.04); }
-    .cm-icon { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: 800; flex-shrink: 0; }
-    .cm-icon.trc { background: rgba(230,57,70,0.14); color: #ff6b6b; }
-    .cm-icon.bep { background: rgba(243,186,47,0.14); color: #f3ba2f; }
-    .cm-info { flex: 1; }
-    .cm-name { font-weight: 700; font-size: 14px; }
-    .cm-sub { font-size: 11px; color: var(--gris); margin-top: 2px; }
-    .cm-check { width: 20px; height: 20px; border: 2px solid var(--borde); border-radius: 50%; flex-shrink: 0; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
-    .crypto-method.selected .cm-check { background: var(--verde); border-color: var(--verde); }
-    .cm-check::after { content: ''; width: 6px; height: 6px; background: #000; border-radius: 50%; display: none; }
-    .crypto-method.selected .cm-check::after { display: block; }
+    /* Métodos */
+    .net-method { display: flex; align-items: center; gap: 12px; background: var(--negro); border: 2px solid var(--borde); border-radius: 13px; padding: 13px 14px; cursor: pointer; transition: border-color 0.2s; margin-bottom: 8px; }
+    .net-method:hover { border-color: rgba(0,200,83,0.4); }
+    .net-method.selected { border-color: var(--verde); background: rgba(0,200,83,0.04); }
+    .net-icon { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 800; flex-shrink: 0; }
+    .net-icon.trc { background: rgba(230,57,70,0.14); color: #ff6b6b; }
+    .net-icon.bep { background: rgba(243,186,47,0.14); color: var(--amarillo); }
+    .net-info { flex: 1; }
+    .net-name { font-weight: 700; font-size: 14px; }
+    .net-sub { font-size: 11px; color: var(--gris); margin-top: 2px; }
+    .net-check { width: 20px; height: 20px; border: 2px solid var(--borde); border-radius: 50%; flex-shrink: 0; transition: all 0.2s; display: flex; align-items: center; justify-content: center; }
+    .net-method.selected .net-check { background: var(--verde); border-color: var(--verde); }
+    .net-check-dot { width: 6px; height: 6px; background: #000; border-radius: 50%; display: none; }
+    .net-method.selected .net-check-dot { display: block; }
 
-    .network-badge { display: inline-flex; align-items: center; gap: 5px; border-radius: 20px; padding: 4px 12px; font-size: 11px; font-weight: 700; margin-bottom: 14px; }
-    .network-badge.trc { background: rgba(230,57,70,0.12); color: #ff6b6b; border: 1px solid rgba(230,57,70,0.3); }
-    .network-badge.bep { background: rgba(243,186,47,0.12); color: #f3ba2f; border: 1px solid rgba(243,186,47,0.3); }
-
-    .amount-box { background: rgba(0,200,83,0.06); border: 1px solid rgba(0,200,83,0.2); border-radius: 10px; padding: 10px 14px; font-size: 13px; margin-bottom: 14px; display: flex; justify-content: space-between; align-items: center; }
-    .amount-val { font-weight: 800; color: var(--verde); font-variant-numeric: tabular-nums; font-size: 18px; }
-
+    /* Instrucciones */
+    .instr-wrap { margin-top: 14px; }
+    .net-badge { display: inline-flex; align-items: center; gap: 5px; border-radius: 20px; padding: 4px 12px; font-size: 11px; font-weight: 700; margin-bottom: 14px; }
+    .net-badge.trc { background: rgba(230,57,70,0.12); color: #ff6b6b; border: 1px solid rgba(230,57,70,0.3); }
+    .net-badge.bep { background: rgba(243,186,47,0.12); color: var(--amarillo); border: 1px solid rgba(243,186,47,0.3); }
+    .amount-box { background: rgba(0,200,83,0.06); border: 1px solid rgba(0,200,83,0.2); border-radius: 10px; padding: 10px 14px; margin-bottom: 14px; display: flex; justify-content: space-between; align-items: center; }
+    .amount-val { font-weight: 800; color: var(--verde); font-size: 18px; font-variant-numeric: tabular-nums; }
     .qr-box { background: white; border-radius: 14px; padding: 14px; text-align: center; margin-bottom: 12px; }
     .qr-box img { display: block; margin: 0 auto; border-radius: 4px; }
     .qr-label { font-size: 11px; color: #777; margin-top: 8px; }
-
-    .addr-wrapper { position: relative; margin-bottom: 12px; }
+    .addr-wrap { position: relative; margin-bottom: 12px; }
     .addr-box { background: var(--negro); border: 1px solid var(--borde); border-radius: 10px; padding: 10px 44px 10px 12px; font-size: 11px; color: #bbb; word-break: break-all; line-height: 1.6; font-family: 'Courier New', monospace; }
     .copy-btn { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: var(--gris); transition: color 0.2s; }
-    .copy-btn:hover, .copy-btn.copied { color: var(--verde); }
+    .copy-btn:hover, .copy-btn.ok { color: var(--verde); }
+    .warn-box { background: rgba(255,107,53,0.07); border: 1px solid rgba(255,107,53,0.2); border-radius: 10px; padding: 11px 13px; font-size: 11px; color: #bbb; line-height: 1.6; margin-bottom: 14px; }
+    .warn-box strong { color: var(--naranja); }
+    .escrow-box { background: rgba(0,200,83,0.06); border: 1px solid rgba(0,200,83,0.15); border-radius: 10px; padding: 12px 14px; font-size: 12px; color: #aaa; line-height: 1.6; margin-bottom: 16px; }
 
-    .warning-box { background: rgba(255,107,53,0.07); border: 1px solid rgba(255,107,53,0.2); border-radius: 10px; padding: 11px 13px; font-size: 11px; color: #bbb; line-height: 1.6; margin-bottom: 14px; }
-    .warning-box strong { color: var(--naranja); }
-    .escrow-badge { background: rgba(0,200,83,0.06); border: 1px solid rgba(0,200,83,0.15); border-radius: 10px; padding: 12px 14px; font-size: 12px; color: #aaa; line-height: 1.6; margin-bottom: 16px; }
+    .btn-confirm { background: var(--verde); color: #000; border: none; border-radius: 14px; padding: 15px; font-family: 'Syne', sans-serif; font-weight: 800; font-size: 15px; cursor: pointer; width: 100%; transition: opacity 0.2s; }
+    .btn-confirm:disabled { opacity: 0.5; cursor: not-allowed; }
 
-    .btn-confirm { background: var(--verde); color: #000; border: none; border-radius: 14px; padding: 14px; font-family: 'Syne', sans-serif; font-weight: 800; font-size: 15px; cursor: pointer; width: 100%; }
-    .btn-confirm:disabled { opacity: 0.6; cursor: not-allowed; }
+    /* Sidebar producto */
+    .prod-img { width: 100%; height: 140px; display: flex; align-items: center; justify-content: center; font-size: 56px; overflow: hidden; border-radius: 14px 14px 0 0; }
+    .prod-img img { width: 100%; height: 100%; object-fit: cover; }
+    .prod-body { padding: 16px; }
+    .prod-title { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
+    .prod-sub { font-size: 12px; color: var(--gris); margin-bottom: 10px; }
+    .prod-price { font-size: 22px; font-weight: 800; color: var(--verde); }
 
-    .product-mini-card { background: var(--card); border: 1px solid var(--borde); border-radius: 20px; overflow: hidden; }
-    .product-mini-img { width: 100%; height: 150px; display: flex; align-items: center; justify-content: center; font-size: 60px; overflow: hidden; }
-    .product-mini-img img { width: 100%; height: 100%; object-fit: cover; }
-    .product-mini-body { padding: 16px; }
-    .product-mini-title { font-size: 15px; font-weight: 700; margin-bottom: 6px; }
-    .product-mini-sub { font-size: 12px; color: var(--gris); line-height: 1.5; margin-bottom: 12px; }
-    .product-mini-price { font-size: 22px; font-weight: 800; color: var(--verde); font-variant-numeric: tabular-nums; }
+    .step { display: flex; gap: 12px; align-items: flex-start; background: var(--negro); border: 1px solid var(--borde); border-radius: 12px; padding: 12px 14px; margin-bottom: 8px; }
+    .step-n { width: 26px; height: 26px; border-radius: 7px; flex-shrink: 0; background: rgba(0,200,83,0.1); border: 1px solid rgba(0,200,83,0.2); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 800; color: var(--verde); }
+    .step-t { font-size: 12px; color: #ccc; line-height: 1.5; }
+    .step-t strong { color: var(--blanco); }
 
-    .steps { display: flex; flex-direction: column; gap: 8px; margin-top: 14px; }
-    .step { display: flex; gap: 12px; align-items: flex-start; background: var(--negro); border: 1px solid var(--borde); border-radius: 12px; padding: 12px 14px; }
-    .step-num { width: 26px; height: 26px; border-radius: 7px; flex-shrink: 0; background: rgba(0,200,83,0.1); border: 1px solid rgba(0,200,83,0.2); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 800; color: var(--verde); }
-    .step-text { font-size: 12px; color: #ccc; line-height: 1.5; }
-    .step-text strong { color: var(--blanco); font-weight: 600; }
+    /* Cancelado */
+    .cancelado-box { background: rgba(255,107,53,0.08); border: 1px solid rgba(255,107,53,0.3); border-radius: 16px; padding: 28px 20px; text-align: center; display: none; }
+    .cancelado-icon { font-size: 44px; margin-bottom: 12px; }
+    .cancelado-title { font-family: 'Syne', sans-serif; font-size: 20px; font-weight: 800; color: var(--naranja); margin-bottom: 8px; }
+    .cancelado-sub { font-size: 13px; color: #bbb; line-height: 1.6; margin-bottom: 20px; }
 
-    .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(14,14,14,0.97); border-top: 1px solid var(--borde); display: flex; justify-content: space-around; align-items: center; padding: 8px 0 14px; z-index: 9999; backdrop-filter: blur(20px); }
-    .nav-item { display: flex; flex-direction: column; align-items: center; gap: 3px; cursor: pointer; color: var(--gris); font-size: 10px; padding: 2px 8px; }
-    .nav-item svg { width: 21px; height: 21px; }
-    @media (min-width: 1024px) { .bottom-nav { display: none; } }
+    .spinner { width: 28px; height: 28px; border: 3px solid #333; border-top-color: var(--verde); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 60px auto; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
   </style>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.js"></script>
   <script src="supabase.js"></script>
@@ -120,317 +115,383 @@
 
 <nav>
   <a href="index.html" class="logo">
-    <div class="logo-icon"><svg viewBox="0 0 44 44" fill="none"><rect width="44" height="44" rx="11" fill="#00C853"/><polygon points="22,10 32,22 22,34 12,22" fill="#003D1A" opacity="0.6"/><polygon points="22,10 32,22 22,34 12,22" fill="#00FF6E" opacity="0.85" transform="scale(0.6) translate(14.7,14.7)"/></svg></div>
-    <span class="logo-text">Gift<span class="g">Latam</span></span>
+    <div class="logo-icon">💎</div>
+    <span class="logo-text">Gift<span>Latam</span></span>
   </a>
-  <div class="nav-spacer"></div>
-  <a class="nav-back" id="backLink" href="explorar.html">← Volver al detalle</a>
+  <a class="nav-back" id="backLink" href="explorar.html">← Volver</a>
 </nav>
 
-<div class="container">
-  <div class="main" id="mainContent">
-    <div class="spinner"></div>
-  </div>
-</div>
-
-<div class="bottom-nav">
-  <div class="nav-item" onclick="window.location='index.html'"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>Inicio</div>
-  <div class="nav-item" onclick="window.location='explorar.html'"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>Explorar</div>
-  <div class="nav-item" onclick="window.location='publicar.html'"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>Vender</div>
-  <div class="nav-item" onclick="window.location='explorar.html'"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 12V22H4V12"/><path d="M22 7H2v5h20V7z"/><path d="M12 22V7"/></svg>Ofertas</div>
-  <div class="nav-item" onclick="window.location='panel.html'"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Perfil</div>
+<div class="container" id="mainContent">
+  <div class="spinner"></div>
 </div>
 
 <script>
-// ── WALLETS DE RECEPCIÓN ─────────────────────────────────────────────────
-// ⚠️ Reemplazá estas con tus direcciones reales de USDT
+// ── Wallets escrow ────────────────────────────────────────────────────────
 var WALLETS = {
   trc20: 'TXnbM7ZGpRZbhCBCm7UwJZWcRMbB5L9Kzt',
   bep20: '0x4A7bF2D8eC6E1F3a9b5D0C2E8F1A6B3C7D4E9F2A'
 };
 
-var CARD_DATA = null; // guardamos los datos del producto
+var TIMER_SECS = 10 * 60; // 10 minutos
+var timerInterval = null;
+var ORDEN = null; // datos de la orden actual
 
-// ── LOGOS / FONDOS ───────────────────────────────────────────────────────
-var brandLogos = {
-  'xbox':'https://cdn.simpleicons.org/xbox/107C10','playstation':'https://cdn.simpleicons.org/playstation/003791',
-  'psn':'https://cdn.simpleicons.org/playstation/003791','steam':'https://cdn.simpleicons.org/steam/66c0f4',
-  'apple':'https://cdn.simpleicons.org/apple/f5f5f7','spotify':'https://cdn.simpleicons.org/spotify/1ED760',
-  'netflix':'https://cdn.simpleicons.org/netflix/E50914','nintendo':'https://cdn.simpleicons.org/nintendo/E60012',
-  'roblox':'https://cdn.simpleicons.org/roblox/E2231A','youtube':'https://cdn.simpleicons.org/youtube/FF0000',
-  'amazon':'https://cdn.simpleicons.org/amazon/FF9900','discord':'https://cdn.simpleicons.org/discord/5865F2',
-  'twitch':'https://cdn.simpleicons.org/twitch/9146FF'
-};
-var brandBgs = {
-  'steam':'rgba(102,192,244,0.12)','xbox':'rgba(16,124,16,0.15)','playstation':'rgba(0,55,145,0.15)',
-  'psn':'rgba(0,55,145,0.15)','spotify':'rgba(30,215,96,0.15)','netflix':'rgba(229,9,20,0.15)',
-  'apple':'rgba(255,255,255,0.07)','nintendo':'rgba(230,0,18,0.15)','roblox':'rgba(226,35,26,0.15)',
-  'youtube':'rgba(255,0,0,0.15)','amazon':'rgba(255,153,0,0.15)'
-};
-function getBg(m) { return brandBgs[(m||'').toLowerCase().trim()] || 'rgba(0,200,83,0.1)'; }
-function getLogo(m, sz) {
-  var url = brandLogos[(m||'').toLowerCase().trim()];
-  return url ? '<img src="'+url+'" width="'+sz+'" height="'+sz+'" alt="'+m+'" style="object-fit:contain">' : '🎁';
-}
-
-// ── INIT ─────────────────────────────────────────────────────────────────
+// ── INIT ──────────────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', async function() {
-  var params = new URLSearchParams(window.location.search);
-  var id     = params.get('id');
-  var main   = document.getElementById('mainContent');
+  var params   = new URLSearchParams(window.location.search);
+  var ordenId  = params.get('orden_id');
+  var giftId   = params.get('gift_id');   // fallback sin orden
+  var main     = document.getElementById('mainContent');
 
-  if (!id) {
-    main.innerHTML = '<p style="color:var(--gris);text-align:center;padding:50px 0">Sin producto especificado. <a href="explorar.html" style="color:var(--verde)">← Volver</a></p>';
+  if (!ordenId && !giftId) {
+    main.innerHTML = '<p style="text-align:center;padding:50px;color:var(--gris)">Sin datos de compra. <a href="explorar.html" style="color:var(--verde)">← Volver</a></p>';
     return;
   }
 
-  document.getElementById('backLink').href = 'detalle.html?id=' + id;
+  var orden = null;
+  var card  = null;
 
-  if (typeof sb === 'undefined') {
-    main.innerHTML = '<p style="color:var(--gris);text-align:center;padding:50px 0">Error de configuración. Recargá la página.</p>';
+  if (ordenId) {
+    // Cargar desde tabla ordenes
+    try {
+      var r = await sb.from('ordenes').select('*').eq('id', ordenId).single();
+      if (r.data) orden = r.data;
+    } catch(e) {}
+
+    if (orden && orden.gift_card_id) {
+      try {
+        var rc = await sb.from('gift_cards').select('*').eq('id', orden.gift_card_id).single();
+        if (rc.data) card = rc.data;
+      } catch(e) {}
+    }
+
+    if (!orden) {
+      main.innerHTML = '<p style="text-align:center;padding:50px;color:var(--gris)">Orden no encontrada. <a href="explorar.html" style="color:var(--verde)">← Volver</a></p>';
+      return;
+    }
+  } else {
+    // Fallback: cargar solo el gift_card
+    try {
+      var rc2 = await sb.from('gift_cards').select('*').eq('id', giftId).single();
+      if (rc2.data) card = rc2.data;
+    } catch(e) {}
+    if (card) {
+      orden = {
+        id:           null,
+        gift_card_id: card.id,
+        precio:       parseFloat(card.precio_venta) || 0,
+        moneda:       'USDT',
+        red:          'TRC20',
+        estado:       'pendiente_pago'
+      };
+    }
+  }
+
+  ORDEN = orden;
+
+  if (card) {
+    document.getElementById('backLink').href = 'detalle.html?id=' + card.id;
+  }
+
+  // Si la orden ya fue cancelada
+  if (orden.estado === 'cancelado') {
+    renderCancelado(card);
     return;
   }
 
-  var result = await sb.from('gift_cards').select('*').eq('id', id).single();
-  var card   = result.data;
-  var err    = result.error;
+  // Calcular tiempo restante desde created_at
+  var expiresAt;
+  if (orden.created_at) {
+    var creado = new Date(orden.created_at).getTime();
+    expiresAt = creado + TIMER_SECS * 1000;
+  } else {
+    expiresAt = Date.now() + TIMER_SECS * 1000;
+  }
 
-  if (err || !card) {
-    main.innerHTML = '<p style="color:var(--gris);text-align:center;padding:50px 0">Producto no encontrado. <a href="explorar.html" style="color:var(--verde)">← Ver catálogo</a></p>';
+  var restante = Math.max(0, Math.floor((expiresAt - Date.now()) / 1000));
+  if (restante === 0) {
+    await cancelarOrden();
+    renderCancelado(card);
     return;
   }
 
-  CARD_DATA = card;
-  renderPago(card);
+  renderPago(orden, card, restante);
+  iniciarTimer(restante, expiresAt, orden, card);
 });
 
-// ── RENDER PRINCIPAL ─────────────────────────────────────────────────────
-function renderPago(card) {
-  var precio   = parseFloat(card.precio_venta) || 0;
-  var nominal  = parseFloat(card.valor_nominal) || 0;
-  var desc     = (nominal > 0 && precio < nominal) ? nominal - precio : 0;
-  var pct      = desc > 0 ? Math.round((desc / nominal) * 100) : 0;
-  var marca    = card.marca || '';
-  var bg       = getBg(marca);
+// ── RENDER PAGO ───────────────────────────────────────────────────────────
+function renderPago(orden, card, restante) {
+  var precio  = parseFloat(orden.precio || 0);
+  var nominal = card ? parseFloat(card.valor_nominal || 0) : 0;
+  var pct     = (nominal > 0 && precio < nominal) ? Math.round((1 - precio/nominal)*100) : 0;
+  var titulo  = card ? (card.titulo || '') : 'Gift Card';
+  var marca   = card ? (card.marca || '') : '';
+  var region  = card ? (card.region || 'Global') : 'Global';
+  var desc    = card ? (card.descripcion || 'Gift card digital.') : '';
 
-  var imgBlock = card.imagen_url
-    ? '<img src="'+card.imagen_url+'" alt="'+card.titulo+'" style="width:100%;height:100%;object-fit:cover" onerror="this.parentElement.innerHTML=\''+getLogo(marca,64)+'\'">'
-    : getLogo(marca, 64);
+  var imgBlock = '';
+  if (card && card.imagen_url) {
+    imgBlock = '<img src="' + card.imagen_url + '" style="width:100%;height:100%;object-fit:cover" alt="">';
+  } else {
+    imgBlock = '<span style="font-size:56px">🎁</span>';
+  }
 
   document.getElementById('mainContent').innerHTML =
-    '<div style="margin-bottom:20px">' +
-      '<div style="font-size:20px;font-weight:800;margin-bottom:4px">🔒 Confirmar pago</div>' +
-      '<div style="font-size:13px;color:var(--gris)">Revisá tu pedido y elegí cómo pagar en USDT</div>' +
-    '</div>' +
-    '<div class="pago-grid">' +
+    '<div class="page-title">🔒 Confirmar pago</div>' +
+    '<div class="page-sub">Elegí la red y enviá el monto exacto en USDT</div>' +
 
-      // ── Columna principal
+    // Cancelado (oculto)
+    '<div class="cancelado-box" id="canceladoBox">' +
+      '<div class="cancelado-icon">⏰</div>' +
+      '<div class="cancelado-title">Tiempo agotado</div>' +
+      '<div class="cancelado-sub">El tiempo de reserva venció. La orden fue cancelada y el stock fue liberado.<br>Podés iniciar una nueva compra si el producto sigue disponible.</div>' +
+      '<a href="' + (card ? 'detalle.html?id=' + card.id : 'explorar.html') + '" style="display:inline-block;background:var(--verde);color:#000;border:none;border-radius:12px;padding:12px 28px;font-family:Syne,sans-serif;font-weight:800;font-size:14px;text-decoration:none">Volver al producto</a>' +
+    '</div>' +
+
+    '<div class="grid" id="pagoGrid">' +
+
+      // Columna izquierda
       '<div style="display:flex;flex-direction:column;gap:14px">' +
 
-        // Resumen
-        '<div class="pago-card">' +
-          '<div class="card-title">Resumen del pedido</div>' +
-          '<div class="order-row"><span class="order-label">Producto</span><span style="font-weight:600;text-align:right">'+card.titulo+'</span></div>' +
-          '<div class="order-row"><span class="order-label">Marca</span><span>'+marca+'</span></div>' +
-          '<div class="order-row"><span class="order-label">Región</span><span>'+(card.region||'Global')+'</span></div>' +
-          (nominal > 0 ? '<div class="order-row"><span class="order-label">Valor nominal</span><span style="text-decoration:line-through;color:var(--gris)">$'+nominal.toFixed(2)+' USD</span></div>' : '') +
-          (desc > 0 ? '<div class="order-row"><span class="order-label">Ahorrás</span><span style="color:var(--verde)">-$'+desc.toFixed(2)+' (-'+pct+'%)</span></div>' : '') +
-          '<div class="order-row"><span class="order-label">Comisión</span><span style="color:var(--verde)">Gratis</span></div>' +
-          '<div class="order-row"><span style="font-weight:700;font-size:14px">Total a pagar</span><span class="order-total-val">$'+precio.toFixed(2)+' USDT</span></div>' +
+        // Timer
+        '<div class="card">' +
+          '<div class="timer-wrap">' +
+            '<div class="timer-label">⏳ Tiempo para completar el pago</div>' +
+            '<div class="timer-num ok" id="timerNum">' + formatTime(restante) + '</div>' +
+            '<div class="timer-bar-bg"><div class="timer-bar-fill" id="timerBar" style="width:' + (restante/TIMER_SECS*100) + '%"></div></div>' +
+          '</div>' +
         '</div>' +
 
-        // Método de pago
-        '<div class="pago-card">' +
+        // Resumen
+        '<div class="card">' +
+          '<div class="card-title">Resumen del pedido</div>' +
+          '<div class="order-row"><span class="order-label">Producto</span><span style="font-weight:600;text-align:right;max-width:200px">' + titulo + '</span></div>' +
+          (marca ? '<div class="order-row"><span class="order-label">Marca</span><span>' + marca + '</span></div>' : '') +
+          '<div class="order-row"><span class="order-label">Región</span><span>' + region + '</span></div>' +
+          (nominal > 0 ? '<div class="order-row"><span class="order-label">Valor nominal</span><span style="text-decoration:line-through;color:var(--gris)">$' + nominal.toFixed(2) + '</span></div>' : '') +
+          (pct > 0 ? '<div class="order-row"><span class="order-label">Ahorrás</span><span style="color:var(--verde)">-' + pct + '%</span></div>' : '') +
+          '<div class="order-row"><span style="font-weight:700">Total</span><span class="order-total">$' + precio.toFixed(2) + ' USDT</span></div>' +
+          (orden.id ? '<div class="order-row"><span class="order-label">Orden #</span><span style="font-family:monospace;font-size:11px;color:#888">' + orden.id.substring(0,8).toUpperCase() + '...</span></div>' : '') +
+        '</div>' +
+
+        // Selección de red
+        '<div class="card">' +
           '<div class="card-title">Método de pago</div>' +
-          '<div class="crypto-methods" id="cryptoMethods">' +
-            '<div class="crypto-method selected" data-net="trc20" onclick="selectNet(\'trc20\')">' +
-              '<div class="cm-icon trc">₮</div>' +
-              '<div class="cm-info"><div class="cm-name">USDT · Red TRC20</div><div class="cm-sub">Tether en red TRON · comisiones muy bajas</div></div>' +
-              '<div class="cm-check"></div>' +
+          '<div id="netMethods">' +
+            '<div class="net-method selected" data-net="trc20" onclick="selectNet(this)">' +
+              '<div class="net-icon trc">₮</div>' +
+              '<div class="net-info"><div class="net-name">USDT · TRC20</div><div class="net-sub">Red TRON · comisiones bajas</div></div>' +
+              '<div class="net-check"><div class="net-check-dot"></div></div>' +
             '</div>' +
-            '<div class="crypto-method" data-net="bep20" onclick="selectNet(\'bep20\')">' +
-              '<div class="cm-icon bep">₮</div>' +
-              '<div class="cm-info"><div class="cm-name">USDT · Red BEP20</div><div class="cm-sub">Tether en BNB Smart Chain · rápido</div></div>' +
-              '<div class="cm-check"></div>' +
+            '<div class="net-method" data-net="bep20" onclick="selectNet(this)">' +
+              '<div class="net-icon bep">₮</div>' +
+              '<div class="net-info"><div class="net-name">USDT · BEP20</div><div class="net-sub">BNB Smart Chain · rápido</div></div>' +
+              '<div class="net-check"><div class="net-check-dot"></div></div>' +
             '</div>' +
           '</div>' +
-          '<div id="pagoInstructions"></div>' +
-          '<div class="escrow-badge">🔒 Tu pago está protegido por escrow. El código se libera al confirmar el depósito en la blockchain. Si hay un problema, podés abrir una disputa.</div>' +
-          '<button class="btn-confirm" onclick="confirmarPago()">Ya pagué — Confirmar →</button>' +
+          '<div id="instrucciones"></div>' +
+          '<div class="escrow-box">🔒 Tu pago está protegido por escrow. El código se libera al confirmar el depósito. Si hay algún problema podés abrir una disputa.</div>' +
+          '<button class="btn-confirm" id="btnConfirmar" onclick="confirmarPago()">Ya pagué — Confirmar →</button>' +
         '</div>' +
+
       '</div>' +
 
-      // ── Columna lateral
+      // Columna derecha (producto)
       '<div>' +
-        '<div class="product-mini-card">' +
-          '<div class="product-mini-img" style="background:'+bg+'">'+imgBlock+'</div>' +
-          '<div class="product-mini-body">' +
-            '<div class="product-mini-title">'+card.titulo+'</div>' +
-            '<div class="product-mini-sub">'+(card.descripcion||'Gift card digital. Entrega inmediata del código tras confirmar el pago.')+'</div>' +
-            '<div class="product-mini-price">$'+precio.toFixed(2)+' USDT</div>' +
-            (pct > 0 ? '<div style="font-size:12px;color:var(--gris);margin-top:4px">Valor original: <span style="text-decoration:line-through">$'+nominal.toFixed(2)+'</span> <span style="color:var(--verde);font-weight:700">-'+pct+'%</span></div>' : '') +
+        '<div class="card" style="padding:0;overflow:hidden">' +
+          '<div class="prod-img" style="background:rgba(0,200,83,0.08)">' + imgBlock + '</div>' +
+          '<div class="prod-body">' +
+            '<div class="prod-title">' + titulo + '</div>' +
+            '<div class="prod-sub">' + desc + '</div>' +
+            '<div class="prod-price">$' + precio.toFixed(2) + ' USDT</div>' +
           '</div>' +
         '</div>' +
-        '<div class="steps" style="margin-top:14px">' +
-          '<div style="font-size:13px;font-weight:700;margin-bottom:2px">¿Cómo funciona?</div>' +
-          '<div class="step"><div class="step-num">1</div><div class="step-text"><strong>Elegí la red</strong> TRC20 o BEP20 — ambas son USDT válido.</div></div>' +
-          '<div class="step"><div class="step-num">2</div><div class="step-text"><strong>Enviá exactamente</strong> $'+precio.toFixed(2)+' USDT a la dirección de escrow.</div></div>' +
-          '<div class="step"><div class="step-num">3</div><div class="step-text"><strong>Confirmá</strong> el pago con el botón. Verificamos tu tx en la blockchain.</div></div>' +
-          '<div class="step"><div class="step-num">4</div><div class="step-text"><strong>Recibís el código</strong> de la gift card en tu panel en minutos.</div></div>' +
+        '<div style="margin-top:14px">' +
+          '<div style="font-size:13px;font-weight:700;margin-bottom:8px">¿Cómo funciona?</div>' +
+          '<div class="step"><div class="step-n">1</div><div class="step-t"><strong>Elegí la red</strong> — TRC20 o BEP20, ambas son USDT válido.</div></div>' +
+          '<div class="step"><div class="step-n">2</div><div class="step-t"><strong>Enviá exactamente</strong> $' + precio.toFixed(2) + ' USDT a la dirección de escrow.</div></div>' +
+          '<div class="step"><div class="step-n">3</div><div class="step-t"><strong>Confirmá</strong> con el botón. Verificamos en la blockchain.</div></div>' +
+          '<div class="step"><div class="step-n">4</div><div class="step-t"><strong>Recibís el código</strong> en tu panel en minutos.</div></div>' +
         '</div>' +
       '</div>' +
 
     '</div>';
 
-  // Render inicial de instrucciones
-  renderInstructions('trc20', precio);
+  // Render instrucciones inicial
+  renderInstrucciones('trc20', precio);
 }
 
-// ── SELECCIÓN DE RED ─────────────────────────────────────────────────────
-function selectNet(net) {
-  document.querySelectorAll('.crypto-method').forEach(function(el) { el.classList.remove('selected'); });
-  document.querySelector('[data-net="'+net+'"]').classList.add('selected');
-  var precio = CARD_DATA ? parseFloat(CARD_DATA.precio_venta) || 0 : 0;
-  renderInstructions(net, precio);
-}
-
-function renderInstructions(net, precio) {
+// ── INSTRUCCIONES DE PAGO ─────────────────────────────────────────────────
+function renderInstrucciones(net, precio) {
   var addr  = WALLETS[net];
   var isTrc = net === 'trc20';
   var label = isTrc ? 'TRC20 (TRON)' : 'BEP20 (BNB Chain)';
   var cls   = isTrc ? 'trc' : 'bep';
   var qrUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=' + encodeURIComponent(addr);
 
-  document.getElementById('pagoInstructions').innerHTML =
-    '<span class="network-badge '+cls+'">● Red '+label+'</span>' +
-
-    '<div class="amount-box">' +
-      '<span style="color:var(--gris);font-size:12px">Monto exacto a enviar</span>' +
-      '<span class="amount-val">$'+precio.toFixed(2)+' USDT</span>' +
-    '</div>' +
-
-    '<div class="qr-box">' +
-      '<img src="'+qrUrl+'" width="180" height="180" alt="QR">' +
-      '<div class="qr-label">Escaneá con tu wallet · Red '+label+'</div>' +
-    '</div>' +
-
-    '<div class="addr-wrapper">' +
-      '<div class="addr-box" id="addrText">'+addr+'</div>' +
-      '<button class="copy-btn" id="copyBtn" onclick="copyAddr(\''+addr+'\')" title="Copiar">' +
+  document.getElementById('instrucciones').innerHTML =
+    '<span class="net-badge ' + cls + '">● Red ' + label + '</span>' +
+    '<div class="amount-box"><span style="color:var(--gris);font-size:12px">Monto exacto</span><span class="amount-val">$' + precio.toFixed(2) + ' USDT</span></div>' +
+    '<div class="qr-box"><img src="' + qrUrl + '" width="180" height="180" alt="QR"><div class="qr-label">Escaneá con tu wallet · Red ' + label + '</div></div>' +
+    '<div class="addr-wrap">' +
+      '<div class="addr-box" id="addrText">' + addr + '</div>' +
+      '<button class="copy-btn" id="copyBtn" onclick="copyAddr(\'' + addr + '\')" title="Copiar">' +
         '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>' +
       '</button>' +
     '</div>' +
-
-    '<div class="warning-box">⚠️ <strong>Importante:</strong> Enviá <strong>solo USDT por red '+label+'</strong>. Si enviás por otra red o en otra moneda el pago se perderá. Enviá exactamente el monto indicado.</div>';
+    '<div class="warn-box">⚠️ <strong>Importante:</strong> Enviá <strong>solo USDT por red ' + label + '</strong>. Otro token o red = pago perdido. Enviá el monto exacto.</div>';
 }
 
-// ── COPIAR DIRECCIÓN ─────────────────────────────────────────────────────
-function copyAddr(addr) {
-  var btn = document.getElementById('copyBtn');
-  var ok = function() {
-    btn.classList.add('copied');
-    btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>';
-    setTimeout(function() {
-      btn.classList.remove('copied');
-      btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>';
-    }, 2000);
-  };
-  if (navigator.clipboard) {
-    navigator.clipboard.writeText(addr).then(ok).catch(function() {
-      var ta = document.createElement('textarea');
-      ta.value = addr; document.body.appendChild(ta);
-      ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
-      ok();
-    });
-  } else {
-    var ta = document.createElement('textarea');
-    ta.value = addr; document.body.appendChild(ta);
-    ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
-    ok();
+function selectNet(el) {
+  document.querySelectorAll('.net-method').forEach(function(e){ e.classList.remove('selected'); });
+  el.classList.add('selected');
+  var net    = el.dataset.net;
+  var precio = ORDEN ? parseFloat(ORDEN.precio || 0) : 0;
+  renderInstrucciones(net, precio);
+  // Actualizar red en la orden
+  if (ORDEN && ORDEN.id) {
+    sb.from('ordenes').update({ red: net.toUpperCase(), wallet_destino: WALLETS[net] }).eq('id', ORDEN.id).then(function(){});
+  }
+}
+
+// ── TIMER ─────────────────────────────────────────────────────────────────
+function formatTime(secs) {
+  var m = Math.floor(secs / 60);
+  var s = secs % 60;
+  return String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
+}
+
+function iniciarTimer(restante, expiresAt, orden, card) {
+  var total = TIMER_SECS;
+
+  function tick() {
+    var now  = Date.now();
+    var left = Math.max(0, Math.floor((expiresAt - now) / 1000));
+    var pct  = (left / total) * 100;
+    var el   = document.getElementById('timerNum');
+    var bar  = document.getElementById('timerBar');
+    if (!el) { clearInterval(timerInterval); return; }
+
+    el.textContent = formatTime(left);
+    if (bar) bar.style.width = pct + '%';
+
+    if (left <= 60) {
+      el.className = 'timer-num urgent';
+      if (bar) bar.style.background = 'var(--naranja)';
+    } else if (left <= 180) {
+      el.className = 'timer-num warn';
+      if (bar) bar.style.background = 'var(--amarillo)';
+    }
+
+    if (left === 0) {
+      clearInterval(timerInterval);
+      onTimerVencido(orden, card);
+    }
+  }
+
+  tick();
+  timerInterval = setInterval(tick, 1000);
+}
+
+async function onTimerVencido(orden, card) {
+  await cancelarOrden();
+  renderCancelado(card);
+}
+
+async function cancelarOrden() {
+  if (!ORDEN || !ORDEN.id) return;
+  try {
+    await sb.from('ordenes').update({
+      estado:     'cancelado',
+      updated_at: new Date().toISOString()
+    }).eq('id', ORDEN.id);
+    // Restaurar stock
+    var r = await sb.from('gift_cards').select('cantidad').eq('id', ORDEN.gift_card_id).single();
+    if (r.data && r.data.cantidad != null) {
+      await sb.from('gift_cards').update({ cantidad: parseInt(r.data.cantidad) + 1 }).eq('id', ORDEN.gift_card_id);
+    }
+  } catch(e) { console.warn('cancelar:', e); }
+}
+
+function renderCancelado(card) {
+  var grid = document.getElementById('pagoGrid');
+  var box  = document.getElementById('canceladoBox');
+  if (grid) grid.style.display = 'none';
+  if (box)  box.style.display  = 'block';
+  // Si aún no se renderizó la página (llegó cancelada)
+  if (!box) {
+    document.getElementById('mainContent').innerHTML =
+      '<div class="cancelado-box" style="display:block">' +
+        '<div class="cancelado-icon">⏰</div>' +
+        '<div class="cancelado-title">Orden cancelada</div>' +
+        '<div class="cancelado-sub">El tiempo venció o la orden fue cancelada. El stock fue liberado.</div>' +
+        '<a href="' + (card ? 'detalle.html?id=' + card.id : 'explorar.html') + '" style="display:inline-block;background:var(--verde);color:#000;border-radius:12px;padding:12px 28px;font-family:Syne,sans-serif;font-weight:800;font-size:14px;text-decoration:none">Volver al producto</a>' +
+      '</div>';
   }
 }
 
 // ── CONFIRMAR PAGO ────────────────────────────────────────────────────────
 async function confirmarPago() {
-  if (typeof sb === 'undefined') return;
-
-  var params = new URLSearchParams(window.location.search);
-  var id = params.get('id');
-
-  var sess = await sb.auth.getSession();
-  if (!sess.data || !sess.data.session) {
-    window.location.href = 'login.html?from=' + encodeURIComponent(window.location.href);
-    return;
-  }
-
-  var btn = document.querySelector('.btn-confirm');
+  var btn = document.getElementById('btnConfirmar');
   btn.disabled = true;
-  btn.textContent = 'Registrando...';
+  btn.textContent = 'Confirmando...';
 
-  var selEl  = document.querySelector('.crypto-method.selected');
-  var red    = selEl ? selEl.dataset.net.toUpperCase() : 'TRC20';
-  var precio = CARD_DATA ? parseFloat(CARD_DATA.precio_venta) || 0 : 0;
-  var userId = sess.data.session.user.id;
-  var txId   = null;
+  var selEl = document.querySelector('.net-method.selected');
+  var red   = selEl ? selEl.dataset.net.toUpperCase() : 'TRC20';
 
-  // Log para debug
-  console.log('[pago] userId:', userId);
-  console.log('[pago] id:', id);
-  console.log('[pago] seller_id:', CARD_DATA ? CARD_DATA.seller_id : 'null');
-  console.log('[pago] precio:', precio);
-  console.log('[pago] red:', red);
+  // Cambiar estado a 'pagado' en la orden
+  if (ORDEN && ORDEN.id) {
+    try {
+      await sb.from('ordenes').update({
+        estado:         'pagado',
+        red:            red,
+        wallet_destino: WALLETS[red.toLowerCase()],
+        updated_at:     new Date().toISOString()
+      }).eq('id', ORDEN.id);
 
-  // Intentar en transactions
-  var insResult = await sb.from('transactions').insert({
-    gift_card_id:   id,
-    buyer_id:       userId,
-    seller_id:      CARD_DATA ? CARD_DATA.seller_id : null,
-    monto:          precio,
-    moneda:         'USDT',
-    red:            red,
-    estado:         'pendiente_pago',
-    wallet_destino: WALLETS[red.toLowerCase()],
-    created_at:     new Date().toISOString()
-  }).select('id').single();
+      // Descontar stock
+      try {
+        var sr = await sb.from('gift_cards').select('cantidad').eq('id', ORDEN.gift_card_id).single();
+        if (sr.data && sr.data.cantidad != null) {
+          var nuevaCant = Math.max(0, parseInt(sr.data.cantidad) - 1);
+          await sb.from('gift_cards').update({ cantidad: nuevaCant }).eq('id', ORDEN.gift_card_id);
+        }
+      } catch(e) { console.warn('stock:', e); }
 
-  console.log('[pago] insert result:', JSON.stringify(insResult));
-
-  if (insResult.error) {
-    console.error('[pago] INSERT ERROR:', insResult.error.message, insResult.error.code, insResult.error.details);
-    btn.textContent = '✓ Confirmado (sin registro)';
-  } else if (insResult.data) {
-    txId = insResult.data.id;
-    console.log('[pago] txId:', txId);
+    } catch(e) {
+      console.error('confirmar:', e);
+    }
   }
 
-  // Decrementar stock en gift_cards
-  try {
-    // Primero leer cantidad actual
-    var stockRes = await sb.from('gift_cards').select('cantidad').eq('id', id).single();
-    var cantActual = stockRes.data && stockRes.data.cantidad != null ? parseInt(stockRes.data.cantidad) : 1;
-    var nuevaCant  = Math.max(0, cantActual - 1);
-    await sb.from('gift_cards').update({ cantidad: nuevaCant }).eq('id', id);
-  } catch(e) { console.warn('stock decrement:', e); }
+  btn.textContent = '✓ Pago confirmado';
 
-  // Guardar en localStorage para el timer de confirmacion.html
-  var expiresAt = Date.now() + (10 * 60 * 1000); // 10 minutos
-  try {
-    localStorage.setItem('gl_pago_pending', JSON.stringify({
-      giftId:    id,
-      txId:      txId,
-      red:       red,
-      monto:     precio,
-      expiresAt: expiresAt
-    }));
-  } catch(e) {}
+  // Redirigir a confirmacion
+  setTimeout(function() {
+    var dest = 'confirmacion.html?orden_id=' + (ORDEN && ORDEN.id ? ORDEN.id : '') +
+               '&red=' + red +
+               '&monto=' + (ORDEN ? ORDEN.precio : 0);
+    window.location.href = dest;
+  }, 800);
+}
 
-  btn.textContent = '✓ Confirmado';
-
-  var dest = 'confirmacion.html?id=' + encodeURIComponent(id);
-  if (txId) dest += '&tx=' + encodeURIComponent(txId);
-  dest += '&red=' + red + '&monto=' + precio + '&exp=' + expiresAt;
-
-  setTimeout(function() { window.location.href = dest; }, 800);
+// ── COPIAR DIRECCIÓN ──────────────────────────────────────────────────────
+function copyAddr(addr) {
+  var btn = document.getElementById('copyBtn');
+  function ok() {
+    btn.classList.add('ok');
+    btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>';
+    setTimeout(function(){
+      btn.classList.remove('ok');
+      btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>';
+    }, 2000);
+  }
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(addr).then(ok).catch(function(){
+      var ta=document.createElement('textarea'); ta.value=addr; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta); ok();
+    });
+  } else {
+    var ta=document.createElement('textarea'); ta.value=addr; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta); ok();
+  }
 }
 </script>
 </body>
