@@ -199,11 +199,12 @@ document.addEventListener('DOMContentLoaded', async function() {
     return;
   }
 
-  // Calcular tiempo restante desde created_at
+  // Calcular tiempo restante desde expires_at real de la orden
   var expiresAt;
-  if (orden.created_at) {
-    var creado = new Date(orden.created_at).getTime();
-    expiresAt = creado + TIMER_SECS * 1000;
+  if (orden.expires_at) {
+    expiresAt = new Date(orden.expires_at).getTime();
+  } else if (orden.created_at) {
+    expiresAt = new Date(orden.created_at).getTime() + TIMER_SECS * 1000;
   } else {
     expiresAt = Date.now() + TIMER_SECS * 1000;
   }
@@ -401,15 +402,8 @@ async function onTimerVencido(orden, card) {
 async function cancelarOrden() {
   if (!ORDEN || !ORDEN.id) return;
   try {
-    await sb.from('ordenes').update({
-      estado:     'cancelado',
-      updated_at: new Date().toISOString()
-    }).eq('id', ORDEN.id);
-    // Restaurar stock
-    var r = await sb.from('gift_cards').select('cantidad').eq('id', ORDEN.gift_card_id).single();
-    if (r.data && r.data.cantidad != null) {
-      await sb.from('gift_cards').update({ cantidad: parseInt(r.data.cantidad) + 1 }).eq('id', ORDEN.gift_card_id);
-    }
+    // Usar función SQL atómica: cancela + restaura stock en una transacción
+    await sb.rpc('cancelar_orden', { p_orden_id: ORDEN.id });
   } catch(e) { console.warn('cancelar:', e); }
 }
 
@@ -436,42 +430,48 @@ async function confirmarPago() {
   btn.disabled = true;
   btn.textContent = 'Confirmando...';
 
+  if (!ORDEN || !ORDEN.id) {
+    btn.disabled = false; btn.textContent = 'Ya pagué — Confirmar →';
+    return;
+  }
+
+  // Verificar que la orden sigue en pendiente_pago (no expiró)
+  try {
+    var check = await sb.from('ordenes').select('estado, expires_at').eq('id', ORDEN.id).single();
+    if (!check.data || check.data.estado !== 'pendiente_pago') {
+      alert('Esta orden ya no está activa. Puede haber expirado.');
+      window.location.reload();
+      return;
+    }
+    // Verificar que no expiró
+    if (check.data.expires_at && new Date(check.data.expires_at) < new Date()) {
+      await sb.rpc('cancelar_orden', { p_orden_id: ORDEN.id });
+      alert('El tiempo de la orden venció. El stock fue liberado.');
+      window.location.reload();
+      return;
+    }
+  } catch(e) {}
+
   var selEl = document.querySelector('.net-method.selected');
   var red   = selEl ? selEl.dataset.net.toUpperCase() : 'TRC20';
 
-  // Cambiar estado a 'pagado' en la orden
-  if (ORDEN && ORDEN.id) {
-    try {
-      await sb.from('ordenes').update({
-        estado:         'pagado',
-        red:            red,
-        wallet_destino: WALLETS[red.toLowerCase()],
-        updated_at:     new Date().toISOString()
-      }).eq('id', ORDEN.id);
+  // Cambiar estado a 'pagado' — el stock ya estaba descontado al crear la orden
+  var upd = await sb.from('ordenes').update({
+    estado:     'pagado',
+    red:        red,
+    updated_at: new Date().toISOString()
+  }).eq('id', ORDEN.id).eq('estado', 'pendiente_pago'); // eq extra previene doble-click
 
-      // Descontar stock
-      try {
-        var sr = await sb.from('gift_cards').select('cantidad').eq('id', ORDEN.gift_card_id).single();
-        if (sr.data && sr.data.cantidad != null) {
-          var nuevaCant = Math.max(0, parseInt(sr.data.cantidad) - 1);
-          await sb.from('gift_cards').update({ cantidad: nuevaCant }).eq('id', ORDEN.gift_card_id);
-        }
-      } catch(e) { console.warn('stock:', e); }
-
-    } catch(e) {
-      console.error('confirmar:', e);
-    }
+  if (upd.error) {
+    console.error('confirmar pago:', upd.error);
+    btn.disabled = false; btn.textContent = 'Ya pagué — Confirmar →';
+    return;
   }
 
   btn.textContent = '✓ Pago confirmado';
-
-  // Redirigir a confirmacion
   setTimeout(function() {
-    var dest = 'confirmacion.html?orden_id=' + (ORDEN && ORDEN.id ? ORDEN.id : '') +
-               '&red=' + red +
-               '&monto=' + (ORDEN ? ORDEN.precio : 0);
-    window.location.href = dest;
-  }, 800);
+    window.location.href = 'confirmacion.html?orden_id=' + ORDEN.id + '&red=' + red + '&monto=' + ORDEN.precio;
+  }, 700);
 }
 
 // ── COPIAR DIRECCIÓN ──────────────────────────────────────────────────────
