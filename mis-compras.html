@@ -52,6 +52,9 @@
     .btn-action{display:inline-block;background:var(--verde);color:#000;border-radius:12px;padding:11px 22px;font-family:'Syne',sans-serif;font-weight:700;font-size:13px;text-decoration:none}
     .spinner{width:28px;height:28px;border:3px solid #222;border-top-color:var(--verde);border-radius:50%;animation:spin 0.8s linear infinite;margin:50px auto}
     @keyframes spin{to{transform:rotate(360deg)}}
+    .codigo-box{font-family:'Courier New',monospace;font-size:14px;background:rgba(0,200,83,0.07);border:1px solid rgba(0,200,83,0.25);border-radius:9px;padding:8px 14px;color:var(--verde);word-break:break-all;margin-top:6px;letter-spacing:1px}
+    .codigo-label{font-size:11px;color:var(--gris);margin-top:8px}
+    .msg-estado{font-size:12px;padding:6px 0;line-height:1.5}
   </style>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.js"></script>
   <script src="supabase.js"></script>
@@ -99,16 +102,25 @@ async function cargar() {
   list.innerHTML = '<div class="spinner"></div>';
 
   var res = await sb.from('ordenes')
-    .select('id, gift_card_id, precio, red, estado, created_at, expires_at, gift_cards(titulo, marca)')
+    .select('id, gift_card_id, precio, red, estado, created_at, expires_at, codigo_entregado')
     .eq('comprador_email', USER_EMAIL)
     .order('created_at', { ascending: false });
 
   if (res.error) {
-    list.innerHTML = '<div class="empty"><span class="empty-emoji">⚠️</span><div>' + res.error.message + '</div></div>';
+    list.innerHTML = '<div class="empty"><span class="empty-emoji">⚠️</span><div>Error: ' + res.error.message + '</div></div>';
     return;
   }
 
   var data = res.data || [];
+
+  var giftIds = data.map(function(o){ return o.gift_card_id; }).filter(Boolean);
+  var gcMap = {};
+  if (giftIds.length > 0) {
+    try {
+      var gcRes = await sb.from('gift_cards').select('id, titulo, marca').in('id', giftIds);
+      if (gcRes.data) { gcRes.data.forEach(function(g){ gcMap[g.id] = g; }); }
+    } catch(e) {}
+  }
 
   // Solo suma pagado o entregado — verificando y pendiente NO cuentan
   var pagadas    = data.filter(function(o){ return o.estado === 'pagado' || o.estado === 'entregado'; });
@@ -125,7 +137,7 @@ async function cargar() {
   }
 
   list.innerHTML = data.map(function(o) {
-    var gc     = o.gift_cards || {};
+    var gc     = gcMap[o.gift_card_id] || {};
     var titulo = gc.titulo || 'Gift card';
     var marca  = gc.marca  || '';
     var monto  = parseFloat(o.precio || 0).toFixed(2);
@@ -142,15 +154,24 @@ async function cargar() {
         : '<span class="expires-label">⏰ Expirada</span>';
     }
 
-    // Botones según estado
+    // Botones y mensajes según estado
     var botones = '';
     if (st === 'pendiente_pago') {
       botones = '<button class="btn-accion btn-pagar" onclick="irAPago(\'' + o.id + '\')">💳 Ver instrucciones de pago</button>' +
                 '<button class="btn-accion btn-cancelar" onclick="cancelar(\'' + o.id + '\', this)">Cancelar</button>';
+
     } else if (st === 'verificando') {
-      botones = '<div style="font-size:12px;color:#f3ba2f;padding:6px 0">🔍 Estamos verificando tu pago. Te avisamos cuando esté confirmado.</div>';
+      botones = '<div class="msg-estado" style="color:var(--amarillo)">🔍 Estamos verificando tu pago. Te avisamos cuando esté confirmado.</div>';
+
     } else if (st === 'pagado') {
-      botones = '<button class="btn-accion btn-entregar" onclick="confirmarEntrega(\'' + o.id + '\', this)">✓ Confirmar que lo recibí</button>';
+      botones = '<div class="msg-estado" style="color:var(--verde)">✅ Pago confirmado. Esperando entrega del vendedor.</div>' +
+                '<button class="btn-accion btn-entregar" onclick="confirmarEntrega(\'' + o.id + '\', this)">✓ Confirmar que lo recibí</button>';
+
+    } else if (st === 'entregado') {
+      var codigo = o.codigo_entregado || null;
+      botones = codigo
+        ? '<div><div class="codigo-label">🎁 Código entregado:</div><div class="codigo-box">' + codigo + '</div></div>'
+        : '<div class="msg-estado" style="color:var(--verde)">✓ Entregado. El código aparecerá acá en breve.</div>';
     }
 
     return '<div class="tx-card" id="orden-' + o.id + '">' +
