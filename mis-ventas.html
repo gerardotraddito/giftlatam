@@ -281,9 +281,7 @@ async function entregarManual(ordenId, btn) {
   var input = document.getElementById('codigo-' + ordenId);
   var codigo = input ? input.value.trim() : '';
   if (!codigo) { alert('Ingresá el código antes de enviar.'); input && input.focus(); return; }
-  if (!confirm('¿Confirmás que querés enviar este código al comprador?
-
-' + codigo)) return;
+  if (!confirm('¿Confirmás enviar este código?\n' + codigo)) return;
 
   btn.disabled = true;
   btn.textContent = 'Enviando...';
