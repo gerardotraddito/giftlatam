@@ -49,6 +49,10 @@
     .btn-action{display:inline-block;background:var(--verde);color:#000;border-radius:12px;padding:11px 22px;font-family:'Syne',sans-serif;font-weight:700;font-size:13px;text-decoration:none}
     .spinner{width:28px;height:28px;border:3px solid #222;border-top-color:var(--verde);border-radius:50%;animation:spin 0.8s linear infinite;margin:50px auto}
     @keyframes spin{to{transform:rotate(360deg)}}
+    .codigo-wrap{display:flex;gap:8px;margin-top:10px;align-items:center;flex-wrap:wrap}
+    .codigo-input{flex:1;min-width:160px;background:#0d0d0d;border:1px solid var(--borde);border-radius:9px;padding:7px 12px;color:var(--blanco);font-family:'Courier New',monospace;font-size:13px;letter-spacing:1px}
+    .codigo-input:focus{outline:none;border-color:var(--verde)}
+    .codigo-entregado{font-family:'Courier New',monospace;font-size:13px;background:rgba(0,200,83,0.07);border:1px solid rgba(0,200,83,0.2);border-radius:9px;padding:7px 12px;color:var(--verde);word-break:break-all;margin-top:8px}
   </style>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.js"></script>
   <script src="supabase.js"></script>
@@ -119,7 +123,7 @@ async function cargar() {
 
   // Solo traer verificando, pagado, entregado — NO pendiente_pago ni cancelado
   var res = await sb.from('ordenes')
-    .select('id, gift_card_id, comprador_email, precio, red, estado, created_at')
+    .select('id, gift_card_id, comprador_email, precio, red, estado, created_at, codigo_entregado')
     .eq('seller_id', SELLER_ID)
     .in('estado', ['verificando', 'pagado', 'entregado'])
     .order('created_at', { ascending: false });
@@ -136,7 +140,7 @@ async function cargar() {
   var giftIds = data.map(function(o){ return o.gift_card_id; }).filter(Boolean);
   if (giftIds.length > 0) {
     try {
-      var gcRes = await sb.from('gift_cards').select('id, titulo, marca').in('id', giftIds);
+      var gcRes = await sb.from('gift_cards').select('id, titulo, marca, entrega, codigo').in('id', giftIds);
       if (gcRes.data) { gcRes.data.forEach(function(g){ gcMap[g.id] = g; }); }
     } catch(e) {}
   }
@@ -191,16 +195,32 @@ async function cargar() {
     var comprador = o.comprador_email ? o.comprador_email.replace(/(.{2}).*@/, '$1***@') : '—';
 
     // ── Botones según estado ─────────────────────────────────────────
-    // verificando: el admin aprueba/rechaza. El vendedor no puede hacer nada.
-    // pagado: el vendedor puede marcar como entregado.
-    // entregado/cancelado: solo texto informativo.
+    var tipoEntrega = gc.entrega || 'manual'; // 'auto' o 'manual'
     var botones = '';
+
     if (st === 'verificando') {
+      // El admin aprueba — el vendedor no puede hacer nada todavía
       botones = '<div style="font-size:12px;color:var(--amarillo);padding:4px 0">🔍 En verificación — el admin debe aprobar este pago.</div>';
+
     } else if (st === 'pagado') {
-      botones = '<button class="btn-accion btn-verde" onclick="marcarEntregado(\'' + o.id + '\', this)">📦 Marcar como entregado</button>';
+      if (tipoEntrega === 'auto') {
+        // Entrega automática: toma el código de gift_cards.codigo
+        botones = '<button class="btn-accion btn-verde" onclick="entregarAuto(\'' + o.id + '\', \'' + o.gift_card_id + '\', this)">⚡ Entregar código automáticamente</button>';
+      } else {
+        // Entrega manual: el vendedor tipea el código
+        botones = '<div class="codigo-wrap">' +
+          '<input class="codigo-input" id="codigo-' + o.id + '" placeholder="Ingresá el código a entregar" />' +
+          '<button class="btn-accion btn-verde" onclick="entregarManual(\'' + o.id + '\', this)">📦 Enviar código</button>' +
+        '</div>';
+      }
+
     } else if (st === 'entregado') {
-      botones = '<span style="font-size:12px;color:var(--verde)">✓ Código entregado</span>';
+      // Mostrar el código que se entregó
+      var codigoMostrar = o.codigo_entregado || '—';
+      botones = '<div style="margin-top:4px">' +
+        '<div style="font-size:11px;color:var(--gris);margin-bottom:4px">Código entregado:</div>' +
+        '<div class="codigo-entregado">' + codigoMostrar + '</div>' +
+      '</div>';
     }
 
     return '<div class="tx-card">' +
@@ -221,38 +241,81 @@ async function cargar() {
   }).join('');
 }
 
-// ── Marcar entregado (vendedor) ──────────────────────────────────────────
-async function marcarEntregado(ordenId, btn) {
-  if (!confirm('¿Confirmás que enviaste el código al comprador?')) return;
-  btn.disabled = true;
-  btn.textContent = 'Marcando...';
+// ── Helpers de entrega ───────────────────────────────────────────────────
 
-  // Verificar que sigue en 'pagado' — no puede ser verificando ni otro
+// Verificar que la orden sigue en 'pagado' antes de entregar
+async function verificarPagado(ordenId) {
   var check = await sb.from('ordenes').select('estado').eq('id', ordenId).single();
   if (!check.data || check.data.estado !== 'pagado') {
     var est = check.data ? check.data.estado : '?';
     alert(est === 'verificando'
       ? 'El pago no fue aprobado aún por el admin.'
-      : 'Estado inválido para esta acción (' + est + ').');
-    btn.disabled = false;
-    btn.textContent = '📦 Marcar como entregado';
-    return;
+      : 'Estado inválido (' + est + '). Recargá la página.');
+    return false;
   }
+  return true;
+}
 
-  // Doble protección: .eq('estado','pagado') en el update
+// Guardar código y marcar entregado (reutilizado por auto y manual)
+async function guardarEntrega(ordenId, codigo, btn, btnText) {
   var upd = await sb.from('ordenes')
-    .update({ estado: 'entregado', updated_at: new Date().toISOString() })
+    .update({
+      estado:           'entregado',
+      codigo_entregado: codigo,
+      updated_at:       new Date().toISOString()
+    })
     .eq('id', ordenId)
-    .eq('estado', 'pagado');
+    .eq('estado', 'pagado'); // protección: solo actualiza si sigue en pagado
 
   if (upd.error) {
-    alert('Error: ' + upd.error.message);
+    alert('Error al guardar: ' + upd.error.message);
     btn.disabled = false;
-    btn.textContent = '📦 Marcar como entregado';
+    btn.textContent = btnText;
+    return false;
+  }
+  return true;
+}
+
+// ── Entrega MANUAL: el vendedor tipea el código ───────────────────────────
+async function entregarManual(ordenId, btn) {
+  var input = document.getElementById('codigo-' + ordenId);
+  var codigo = input ? input.value.trim() : '';
+  if (!codigo) { alert('Ingresá el código antes de enviar.'); input && input.focus(); return; }
+  if (!confirm('¿Confirmás que querés enviar este código al comprador?
+
+' + codigo)) return;
+
+  btn.disabled = true;
+  btn.textContent = 'Enviando...';
+
+  if (!await verificarPagado(ordenId)) { btn.disabled = false; btn.textContent = 'Enviar código'; return; }
+  if (!await guardarEntrega(ordenId, codigo, btn, 'Enviar código')) return;
+
+  cargar();
+}
+
+// ── Entrega AUTOMÁTICA: toma el código de gift_cards.codigo ──────────────
+async function entregarAuto(ordenId, giftCardId, btn) {
+  if (!confirm('¿Entregar el código automáticamente al comprador?')) return;
+
+  btn.disabled = true;
+  btn.textContent = 'Entregando...';
+
+  if (!await verificarPagado(ordenId)) { btn.disabled = false; btn.textContent = '⚡ Entregar código automáticamente'; return; }
+
+  // Leer el código desde gift_cards
+  var gcRes = await sb.from('gift_cards').select('codigo').eq('id', giftCardId).single();
+  if (gcRes.error || !gcRes.data || !gcRes.data.codigo) {
+    alert('No se encontró el código en el producto. Usá entrega manual.');
+    btn.disabled = false;
+    btn.textContent = '⚡ Entregar código automáticamente';
     return;
   }
 
-  cargar(); // recargar lista
+  var codigo = gcRes.data.codigo;
+  if (!await guardarEntrega(ordenId, codigo, btn, '⚡ Entregar código automáticamente')) return;
+
+  cargar();
 }
 </script>
 </body>
