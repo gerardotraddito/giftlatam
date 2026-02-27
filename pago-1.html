@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GiftLatam - Pagar</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --negro: #080808; --oscuro: #111; --card: #161616;
+      --borde: #222; --blanco: #F0F0F0; --gris: #888;
+      --verde: #00C853; --naranja: #FF6B35; --amarillo: #f3ba2f;
+    }
+    html, body { max-width: 100%; overflow-x: hidden; }
+    body { font-family: 'Inter', sans-serif; background: var(--negro); color: var(--blanco); padding-bottom: 60px; }
+
+    nav { display: flex; align-items: center; padding: 0 14px; height: 54px; border-bottom: 1px solid var(--borde); position: sticky; top: 0; z-index: 1000; background: rgba(8,8,8,0.97); backdrop-filter: blur(16px); gap: 10px; }
+    .logo { display: flex; align-items: center; gap: 7px; text-decoration: none; flex-shrink: 0; }
+    .logo-icon { width: 32px; height: 32px; background: var(--verde); border-radius: 9px; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+    .logo-text { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 18px; color: var(--blanco); }
+    .logo-text span { color: var(--verde); }
+    .nav-back { margin-left: auto; font-size: 13px; color: var(--gris); text-decoration: none; }
+    .nav-back:hover { color: var(--verde); }
+
+    .container { max-width: 860px; margin: 0 auto; padding: 20px 14px; }
+    .page-title { font-family: 'Syne', sans-serif; font-size: 22px; font-weight: 800; margin-bottom: 4px; }
+    .page-sub { font-size: 13px; color: var(--gris); margin-bottom: 24px; }
+
+    .grid { display: grid; grid-template-columns: 1fr; gap: 14px; }
+    @media(min-width: 700px) { .grid { grid-template-columns: 1fr 300px; } }
+
+    .card { background: var(--card); border: 1px solid var(--borde); border-radius: 18px; padding: 20px; }
+    .card-title { font-size: 14px; font-weight: 700; margin-bottom: 14px; color: var(--gris); text-transform: uppercase; letter-spacing: 0.5px; }
+
+    /* Timer */
+    .timer-wrap { text-align: center; padding: 16px 0 8px; }
+    .timer-label { font-size: 12px; color: var(--gris); margin-bottom: 6px; }
+    .timer-num { font-family: 'Syne', sans-serif; font-size: 48px; font-weight: 800; font-variant-numeric: tabular-nums; letter-spacing: 2px; transition: color 0.5s; color: var(--verde); }
+    .timer-num.warn { color: var(--amarillo); }
+    .timer-num.urgent { color: var(--naranja); }
+    .timer-bar-bg { background: #1a1a1a; border-radius: 99px; height: 4px; margin-top: 10px; overflow: hidden; }
+    .timer-bar-fill { height: 100%; background: var(--verde); border-radius: 99px; transition: width 1s linear, background 0.5s; width: 100%; }
+
+    /* Resumen */
+    .order-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--borde); font-size: 13px; }
+    .order-row:last-child { border: none; }
+    .order-label { color: var(--gris); }
+    .order-total { font-size: 20px; font-weight: 800; color: var(--verde); }
+
+    /* Métodos */
+    .net-method { display: flex; align-items: center; gap: 12px; background: var(--negro); border: 2px solid var(--borde); border-radius: 13px; padding: 13px 14px; cursor: pointer; transition: border-color 0.2s; margin-bottom: 8px; }
+    .net-method:hover { border-color: rgba(0,200,83,0.4); }
+    .net-method.selected { border-color: var(--verde); background: rgba(0,200,83,0.04); }
+    .net-icon { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 800; flex-shrink: 0; }
+    .net-icon.trc { background: rgba(230,57,70,0.14); color: #ff6b6b; }
+    .net-icon.bep { background: rgba(243,186,47,0.14); color: var(--amarillo); }
+    .net-info { flex: 1; }
+    .net-name { font-weight: 700; font-size: 14px; }
+    .net-sub { font-size: 11px; color: var(--gris); margin-top: 2px; }
+    .net-check { width: 20px; height: 20px; border: 2px solid var(--borde); border-radius: 50%; flex-shrink: 0; transition: all 0.2s; display: flex; align-items: center; justify-content: center; }
+    .net-method.selected .net-check { background: var(--verde); border-color: var(--verde); }
+    .net-check-dot { width: 6px; height: 6px; background: #000; border-radius: 50%; display: none; }
+    .net-method.selected .net-check-dot { display: block; }
+
+    /* Instrucciones */
+    .instr-wrap { margin-top: 14px; }
+    .net-badge { display: inline-flex; align-items: center; gap: 5px; border-radius: 20px; padding: 4px 12px; font-size: 11px; font-weight: 700; margin-bottom: 14px; }
+    .net-badge.trc { background: rgba(230,57,70,0.12); color: #ff6b6b; border: 1px solid rgba(230,57,70,0.3); }
+    .net-badge.bep { background: rgba(243,186,47,0.12); color: var(--amarillo); border: 1px solid rgba(243,186,47,0.3); }
+    .amount-box { background: rgba(0,200,83,0.06); border: 1px solid rgba(0,200,83,0.2); border-radius: 10px; padding: 10px 14px; margin-bottom: 14px; display: flex; justify-content: space-between; align-items: center; }
+    .amount-val { font-weight: 800; color: var(--verde); font-size: 18px; font-variant-numeric: tabular-nums; }
+    .qr-box { background: white; border-radius: 14px; padding: 14px; text-align: center; margin-bottom: 12px; }
+    .qr-box img { display: block; margin: 0 auto; border-radius: 4px; }
+    .qr-label { font-size: 11px; color: #777; margin-top: 8px; }
+    .addr-wrap { position: relative; margin-bottom: 12px; }
+    .addr-box { background: var(--negro); border: 1px solid var(--borde); border-radius: 10px; padding: 10px 44px 10px 12px; font-size: 11px; color: #bbb; word-break: break-all; line-height: 1.6; font-family: 'Courier New', monospace; }
+    .copy-btn { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: var(--gris); transition: color 0.2s; }
+    .copy-btn:hover, .copy-btn.ok { color: var(--verde); }
+    .warn-box { background: rgba(255,107,53,0.07); border: 1px solid rgba(255,107,53,0.2); border-radius: 10px; padding: 11px 13px; font-size: 11px; color: #bbb; line-height: 1.6; margin-bottom: 14px; }
+    .warn-box strong { color: var(--naranja); }
+    .escrow-box { background: rgba(0,200,83,0.06); border: 1px solid rgba(0,200,83,0.15); border-radius: 10px; padding: 12px 14px; font-size: 12px; color: #aaa; line-height: 1.6; margin-bottom: 16px; }
+
+    .btn-confirm { background: var(--verde); color: #000; border: none; border-radius: 14px; padding: 15px; font-family: 'Syne', sans-serif; font-weight: 800; font-size: 15px; cursor: pointer; width: 100%; transition: opacity 0.2s; }
+    .btn-confirm:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    /* Sidebar producto */
+    .prod-img { width: 100%; height: 140px; display: flex; align-items: center; justify-content: center; font-size: 56px; overflow: hidden; border-radius: 14px 14px 0 0; }
+    .prod-img img { width: 100%; height: 100%; object-fit: cover; }
+    .prod-body { padding: 16px; }
+    .prod-title { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
+    .prod-sub { font-size: 12px; color: var(--gris); margin-bottom: 10px; }
+    .prod-price { font-size: 22px; font-weight: 800; color: var(--verde); }
+
+    .step { display: flex; gap: 12px; align-items: flex-start; background: var(--negro); border: 1px solid var(--borde); border-radius: 12px; padding: 12px 14px; margin-bottom: 8px; }
+    .step-n { width: 26px; height: 26px; border-radius: 7px; flex-shrink: 0; background: rgba(0,200,83,0.1); border: 1px solid rgba(0,200,83,0.2); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 800; color: var(--verde); }
+    .step-t { font-size: 12px; color: #ccc; line-height: 1.5; }
+    .step-t strong { color: var(--blanco); }
+
+    /* Cancelado */
+    .cancelado-box { background: rgba(255,107,53,0.08); border: 1px solid rgba(255,107,53,0.3); border-radius: 16px; padding: 28px 20px; text-align: center; display: none; }
+    .cancelado-icon { font-size: 44px; margin-bottom: 12px; }
+    .cancelado-title { font-family: 'Syne', sans-serif; font-size: 20px; font-weight: 800; color: var(--naranja); margin-bottom: 8px; }
+    .cancelado-sub { font-size: 13px; color: #bbb; line-height: 1.6; margin-bottom: 20px; }
+
+    .spinner { width: 28px; height: 28px; border: 3px solid #333; border-top-color: var(--verde); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 60px auto; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.js"></script>
+  <script src="supabase.js"></script>
+  <script src="auth.js"></script>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="logo">
+    <div class="logo-icon">💎</div>
+    <span class="logo-text">Gift<span>Latam</span></span>
+  </a>
+  <a class="nav-back" id="backLink" href="explorar.html">← Volver</a>
+</nav>
+
+<div class="container" id="mainContent">
+  <div class="spinner"></div>
+</div>
+
+<script>
+// ── Wallets escrow — se cargan desde Supabase config_admin ───────────────
+var WALLETS = {
+  trc20: 'THGwQwMp4LTJoL7gm2Ro1zK6SF3wSQUff5',
+  bep20: '0x534822A13896B229855Fc0ACFA9F25664368a38C'
+};
+
+async function cargarWalletsAdmin() {
+  try {
+    var res = await sb.from('config_admin').select('clave,valor').in('clave',['wallet_trc20','wallet_bep20']);
+    if (res.data) {
+      res.data.forEach(function(r) {
+        if (r.clave === 'wallet_trc20') WALLETS.trc20 = r.valor;
+        if (r.clave === 'wallet_bep20') WALLETS.bep20 = r.valor;
+      });
+    }
+  } catch(e) { console.warn('No se pudieron cargar wallets del admin:', e); }
+}
+
+var TIMER_SECS = 10 * 60; // 10 minutos
+var timerInterval = null;
+var ORDEN = null; // datos de la orden actual
+
+// ── INIT ──────────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', async function() {
+  await cargarWalletsAdmin();
+  var params   = new URLSearchParams(window.location.search);
+  var ordenId  = params.get('orden_id');
+  var giftId   = params.get('gift_id');   // fallback sin orden
+  var main     = document.getElementById('mainContent');
+
+  if (!ordenId && !giftId) {
+    main.innerHTML = '<p style="text-align:center;padding:50px;color:var(--gris)">Sin datos de compra. <a href="explorar.html" style="color:var(--verde)">← Volver</a></p>';
+    return;
+  }
+
+  var orden = null;
+  var card  = null;
+
+  if (ordenId) {
+    // Cargar desde tabla ordenes
+    try {
+      var r = await sb.from('ordenes').select('*').eq('id', ordenId).single();
+      if (r.data) orden = r.data;
+    } catch(e) {}
+
+    if (orden && orden.gift_card_id) {
+      try {
+        var rc = await sb.from('gift_cards').select('*').eq('id', orden.gift_card_id).single();
+        if (rc.data) card = rc.data;
+      } catch(e) {}
+    }
+
+    if (!orden) {
+      main.innerHTML = '<p style="text-align:center;padding:50px;color:var(--gris)">Orden no encontrada. <a href="explorar.html" style="color:var(--verde)">← Volver</a></p>';
+      return;
+    }
+  } else {
+    // Fallback: cargar solo el gift_card
+    try {
+      var rc2 = await sb.from('gift_cards').select('*').eq('id', giftId).single();
+      if (rc2.data) card = rc2.data;
+    } catch(e) {}
+    if (card) {
+      orden = {
+        id:           null,
+        gift_card_id: card.id,
+        precio:       parseFloat(card.precio_venta) || 0,
+        moneda:       'USDT',
+        red:          'TRC20',
+        estado:       'pendiente_pago'
+      };
+    }
+  }
+
+  ORDEN = orden;
+
+  if (card) {
+    document.getElementById('backLink').href = 'detalle.html?id=' + card.id;
+  }
+
+  // Si la orden ya fue cancelada
+  if (orden.estado === 'cancelado') {
+    renderCancelado(card);
+    return;
+  }
+
+  // Calcular tiempo restante desde expires_at real de la orden
+  var expiresAt;
+  if (orden.expires_at) {
+    expiresAt = new Date(orden.expires_at).getTime();
+  } else if (orden.created_at) {
+    expiresAt = new Date(orden.created_at).getTime() + TIMER_SECS * 1000;
+  } else {
+    expiresAt = Date.now() + TIMER_SECS * 1000;
+  }
+
+  var restante = Math.max(0, Math.floor((expiresAt - Date.now()) / 1000));
+  if (restante === 0) {
+    await cancelarOrden();
+    renderCancelado(card);
+    return;
+  }
+
+  renderPago(orden, card, restante);
+  iniciarTimer(restante, expiresAt, orden, card);
+});
+
+// ── RENDER PAGO ───────────────────────────────────────────────────────────
+function renderPago(orden, card, restante) {
+  var precio  = parseFloat(orden.precio || 0);
+  var nominal = card ? parseFloat(card.valor_nominal || 0) : 0;
+  var pct     = (nominal > 0 && precio < nominal) ? Math.round((1 - precio/nominal)*100) : 0;
+  var titulo  = card ? (card.titulo || '') : 'Gift Card';
+  var marca   = card ? (card.marca || '') : '';
+  var region  = card ? (card.region || 'Global') : 'Global';
+  var desc    = card ? (card.descripcion || 'Gift card digital.') : '';
+
+  var imgBlock = '';
+  if (card && card.imagen_url) {
+    imgBlock = '<img src="' + card.imagen_url + '" style="width:100%;height:100%;object-fit:cover" alt="">';
+  } else {
+    imgBlock = '<span style="font-size:56px">🎁</span>';
+  }
+
+  document.getElementById('mainContent').innerHTML =
+    '<div class="page-title">🔒 Confirmar pago</div>' +
+    '<div class="page-sub">Elegí la red y enviá el monto exacto en USDT</div>' +
+
+    // Cancelado (oculto)
+    '<div class="cancelado-box" id="canceladoBox">' +
+      '<div class="cancelado-icon">⏰</div>' +
+      '<div class="cancelado-title">Tiempo agotado</div>' +
+      '<div class="cancelado-sub">El tiempo de reserva venció. La orden fue cancelada y el stock fue liberado.<br>Podés iniciar una nueva compra si el producto sigue disponible.</div>' +
+      '<a href="' + (card ? 'detalle.html?id=' + card.id : 'explorar.html') + '" style="display:inline-block;background:var(--verde);color:#000;border:none;border-radius:12px;padding:12px 28px;font-family:Syne,sans-serif;font-weight:800;font-size:14px;text-decoration:none">Volver al producto</a>' +
+    '</div>' +
+
+    '<div class="grid" id="pagoGrid">' +
+
+      // Columna izquierda
+      '<div style="display:flex;flex-direction:column;gap:14px">' +
+
+        // Timer
+        '<div class="card">' +
+          '<div class="timer-wrap">' +
+            '<div class="timer-label">⏳ Tiempo para completar el pago</div>' +
+            '<div class="timer-num ok" id="timerNum">' + formatTime(restante) + '</div>' +
+            '<div class="timer-bar-bg"><div class="timer-bar-fill" id="timerBar" style="width:' + (restante/TIMER_SECS*100) + '%"></div></div>' +
+          '</div>' +
+        '</div>' +
+
+        // Resumen
+        '<div class="card">' +
+          '<div class="card-title">Resumen del pedido</div>' +
+          '<div class="order-row"><span class="order-label">Producto</span><span style="font-weight:600;text-align:right;max-width:200px">' + titulo + '</span></div>' +
+          (marca ? '<div class="order-row"><span class="order-label">Marca</span><span>' + marca + '</span></div>' : '') +
+          '<div class="order-row"><span class="order-label">Región</span><span>' + region + '</span></div>' +
+          (nominal > 0 ? '<div class="order-row"><span class="order-label">Valor nominal</span><span style="text-decoration:line-through;color:var(--gris)">$' + nominal.toFixed(2) + '</span></div>' : '') +
+          (pct > 0 ? '<div class="order-row"><span class="order-label">Ahorrás</span><span style="color:var(--verde)">-' + pct + '%</span></div>' : '') +
+          '<div class="order-row"><span style="font-weight:700">Total</span><span class="order-total">$' + precio.toFixed(2) + ' USDT</span></div>' +
+          (orden.id ? '<div class="order-row"><span class="order-label">Orden #</span><span style="font-family:monospace;font-size:11px;color:#888">' + orden.id.substring(0,8).toUpperCase() + '...</span></div>' : '') +
+        '</div>' +
+
+        // Selección de red
+        '<div class="card">' +
+          '<div class="card-title">Método de pago</div>' +
+          '<div id="netMethods">' +
+            '<div class="net-method selected" data-net="trc20" onclick="selectNet(this)">' +
+              '<div class="net-icon trc">₮</div>' +
+              '<div class="net-info"><div class="net-name">USDT · TRC20</div><div class="net-sub">Red TRON · comisiones bajas</div></div>' +
+              '<div class="net-check"><div class="net-check-dot"></div></div>' +
+            '</div>' +
+            '<div class="net-method" data-net="bep20" onclick="selectNet(this)">' +
+              '<div class="net-icon bep">₮</div>' +
+              '<div class="net-info"><div class="net-name">USDT · BEP20</div><div class="net-sub">BNB Smart Chain · rápido</div></div>' +
+              '<div class="net-check"><div class="net-check-dot"></div></div>' +
+            '</div>' +
+          '</div>' +
+          '<div id="instrucciones"></div>' +
+          '<div class="escrow-box">🔒 Tu pago está protegido por escrow. El código se libera al confirmar el depósito. Si hay algún problema podés abrir una disputa.</div>' +
+          '<button class="btn-confirm" id="btnConfirmar" onclick="confirmarPago()">Ya pagué — Confirmar →</button>' +
+        '</div>' +
+
+      '</div>' +
+
+      // Columna derecha (producto)
+      '<div>' +
+        '<div class="card" style="padding:0;overflow:hidden">' +
+          '<div class="prod-img" style="background:rgba(0,200,83,0.08)">' + imgBlock + '</div>' +
+          '<div class="prod-body">' +
+            '<div class="prod-title">' + titulo + '</div>' +
+            '<div class="prod-sub">' + desc + '</div>' +
+            '<div class="prod-price">$' + precio.toFixed(2) + ' USDT</div>' +
+          '</div>' +
+        '</div>' +
+        '<div style="margin-top:14px">' +
+          '<div style="font-size:13px;font-weight:700;margin-bottom:8px">¿Cómo funciona?</div>' +
+          '<div class="step"><div class="step-n">1</div><div class="step-t"><strong>Elegí la red</strong> — TRC20 o BEP20, ambas son USDT válido.</div></div>' +
+          '<div class="step"><div class="step-n">2</div><div class="step-t"><strong>Enviá exactamente</strong> $' + precio.toFixed(2) + ' USDT a la dirección de escrow.</div></div>' +
+          '<div class="step"><div class="step-n">3</div><div class="step-t"><strong>Confirmá</strong> con el botón. Verificamos en la blockchain.</div></div>' +
+          '<div class="step"><div class="step-n">4</div><div class="step-t"><strong>Recibís el código</strong> en tu panel en minutos.</div></div>' +
+        '</div>' +
+      '</div>' +
+
+    '</div>';
+
+  // Render instrucciones inicial
+  renderInstrucciones('trc20', precio);
+}
+
+// ── INSTRUCCIONES DE PAGO ─────────────────────────────────────────────────
+function renderInstrucciones(net, precio) {
+  var addr  = WALLETS[net];
+  var isTrc = net === 'trc20';
+  var label = isTrc ? 'TRC20 (TRON)' : 'BEP20 (BNB Chain)';
+  var cls   = isTrc ? 'trc' : 'bep';
+  var qrUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=' + encodeURIComponent(addr);
+
+  document.getElementById('instrucciones').innerHTML =
+    '<span class="net-badge ' + cls + '">● Red ' + label + '</span>' +
+    '<div class="amount-box"><span style="color:var(--gris);font-size:12px">Monto exacto</span><span class="amount-val">$' + precio.toFixed(2) + ' USDT</span></div>' +
+    '<div class="qr-box"><img src="' + qrUrl + '" width="180" height="180" alt="QR"><div class="qr-label">Escaneá con tu wallet · Red ' + label + '</div></div>' +
+    '<div class="addr-wrap">' +
+      '<div class="addr-box" id="addrText">' + addr + '</div>' +
+      '<button class="copy-btn" id="copyBtn" onclick="copyAddr(\'' + addr + '\')" title="Copiar">' +
+        '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>' +
+      '</button>' +
+    '</div>' +
+    '<div class="warn-box">⚠️ <strong>Importante:</strong> Enviá <strong>solo USDT por red ' + label + '</strong>. Otro token o red = pago perdido. Enviá el monto exacto.</div>';
+}
+
+function selectNet(el) {
+  document.querySelectorAll('.net-method').forEach(function(e){ e.classList.remove('selected'); });
+  el.classList.add('selected');
+  var net    = el.dataset.net;
+  var precio = ORDEN ? parseFloat(ORDEN.precio || 0) : 0;
+  renderInstrucciones(net, precio);
+  // Actualizar red en la orden
+  if (ORDEN && ORDEN.id) {
+    sb.from('ordenes').update({ red: net.toUpperCase(), wallet_destino: WALLETS[net] }).eq('id', ORDEN.id).then(function(){});
+  }
+}
+
+// ── TIMER ─────────────────────────────────────────────────────────────────
+function formatTime(secs) {
+  var m = Math.floor(secs / 60);
+  var s = secs % 60;
+  return String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
+}
+
+function iniciarTimer(restante, expiresAt, orden, card) {
+  var total = TIMER_SECS;
+
+  function tick() {
+    var now  = Date.now();
+    var left = Math.max(0, Math.floor((expiresAt - now) / 1000));
+    var pct  = (left / total) * 100;
+    var el   = document.getElementById('timerNum');
+    var bar  = document.getElementById('timerBar');
+    if (!el) { clearInterval(timerInterval); return; }
+
+    el.textContent = formatTime(left);
+    if (bar) bar.style.width = pct + '%';
+
+    if (left <= 60) {
+      el.className = 'timer-num urgent';
+      if (bar) bar.style.background = 'var(--naranja)';
+    } else if (left <= 180) {
+      el.className = 'timer-num warn';
+      if (bar) bar.style.background = 'var(--amarillo)';
+    }
+
+    if (left === 0) {
+      clearInterval(timerInterval);
+      onTimerVencido(orden, card);
+    }
+  }
+
+  tick();
+  timerInterval = setInterval(tick, 1000);
+}
+
+async function onTimerVencido(orden, card) {
+  await cancelarOrden();
+  renderCancelado(card);
+}
+
+async function cancelarOrden() {
+  if (!ORDEN || !ORDEN.id) return;
+  try {
+    // Verificar que sigue pendiente antes de cancelar
+    var check = await sb.from('ordenes').select('estado, gift_card_id').eq('id', ORDEN.id).single();
+    if (!check.data || check.data.estado !== 'pendiente_pago') return; // ya cancelada o pagada
+
+    // Cancelar la orden
+    await sb.from('ordenes').update({
+      estado:     'cancelado',
+      updated_at: new Date().toISOString()
+    }).eq('id', ORDEN.id).eq('estado', 'pendiente_pago');
+
+    // Restaurar stock
+    var giftId = check.data.gift_card_id || (ORDEN && ORDEN.gift_card_id);
+    if (giftId) {
+      var sr = await sb.from('gift_cards').select('cantidad').eq('id', giftId).single();
+      if (sr.data && sr.data.cantidad != null) {
+        await sb.from('gift_cards').update({ cantidad: parseInt(sr.data.cantidad) + 1 }).eq('id', giftId);
+      }
+    }
+  } catch(e) { console.warn('cancelar:', e); }
+}
+
+function renderCancelado(card) {
+  var grid = document.getElementById('pagoGrid');
+  var box  = document.getElementById('canceladoBox');
+  if (grid) grid.style.display = 'none';
+  if (box)  box.style.display  = 'block';
+  // Si aún no se renderizó la página (llegó cancelada)
+  if (!box) {
+    document.getElementById('mainContent').innerHTML =
+      '<div class="cancelado-box" style="display:block">' +
+        '<div class="cancelado-icon">⏰</div>' +
+        '<div class="cancelado-title">Orden cancelada</div>' +
+        '<div class="cancelado-sub">El tiempo venció o la orden fue cancelada. El stock fue liberado.</div>' +
+        '<a href="' + (card ? 'detalle.html?id=' + card.id : 'explorar.html') + '" style="display:inline-block;background:var(--verde);color:#000;border-radius:12px;padding:12px 28px;font-family:Syne,sans-serif;font-weight:800;font-size:14px;text-decoration:none">Volver al producto</a>' +
+      '</div>';
+  }
+}
+
+// ── CONFIRMAR PAGO ────────────────────────────────────────────────────────
+async function confirmarPago() {
+  var btn = document.getElementById('btnConfirmar');
+  btn.disabled = true;
+  btn.textContent = 'Confirmando...';
+
+  if (!ORDEN || !ORDEN.id) {
+    btn.disabled = false;
+    btn.textContent = 'Ya pagué — Confirmar →';
+    return;
+  }
+
+  // 1. Verificar estado actual de la orden en la DB
+  var check = null;
+  try {
+    var r = await sb.from('ordenes').select('estado, expires_at').eq('id', ORDEN.id).single();
+    check = r.data;
+  } catch(e) {}
+
+  if (!check) {
+    alert('No se pudo verificar el estado de la orden. Intentá de nuevo.');
+    btn.disabled = false; btn.textContent = 'Ya pagué — Confirmar →';
+    return;
+  }
+
+  if (check.estado !== 'pendiente_pago') {
+    alert('Esta orden ya no está activa (estado: ' + check.estado + ').');
+    window.location.reload();
+    return;
+  }
+
+  // 2. Verificar que no expiró
+  if (check.expires_at && new Date(check.expires_at) < new Date()) {
+    await cancelarOrden();
+    alert('El tiempo de la orden venció. El stock fue liberado. Podés iniciar una nueva compra.');
+    renderCancelado(null);
+    return;
+  }
+
+  // 3. Cambiar a 'verificando' — el comprador avisa que pagó
+  //    Solo admin/webhook puede pasar a 'pagado'. Nunca el JS del cliente.
+  var selEl = document.querySelector('.net-method.selected');
+  var red   = selEl ? selEl.dataset.net.toUpperCase() : 'TRC20';
+
+  var upd = await sb.from('ordenes').update({
+    estado:     'verificando',
+    red:        red,
+    updated_at: new Date().toISOString()
+  }).eq('id', ORDEN.id).eq('estado', 'pendiente_pago'); // previene doble ejecución
+
+  if (upd.error) {
+    console.error('[confirmarPago]', upd.error);
+    alert('Error al enviar aviso: ' + upd.error.message);
+    btn.disabled = false; btn.textContent = 'Ya pagué — Confirmar →';
+    return;
+  }
+
+  btn.textContent = '✓ Aviso enviado';
+  clearInterval(timerInterval); // detener el timer
+
+  setTimeout(function() {
+    window.location.href = 'confirmacion.html?orden_id=' + ORDEN.id + '&red=' + red + '&monto=' + ORDEN.precio;
+  }, 700);
+}
+
+// ── COPIAR DIRECCIÓN ──────────────────────────────────────────────────────
+function copyAddr(addr) {
+  var btn = document.getElementById('copyBtn');
+  function ok() {
+    btn.classList.add('ok');
+    btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>';
+    setTimeout(function(){
+      btn.classList.remove('ok');
+      btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>';
+    }, 2000);
+  }
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(addr).then(ok).catch(function(){
+      var ta=document.createElement('textarea'); ta.value=addr; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta); ok();
+    });
+  } else {
+    var ta=document.createElement('textarea'); ta.value=addr; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta); ok();
+  }
+}
+</script>
+</body>
+</html>

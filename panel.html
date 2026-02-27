@@ -586,33 +586,78 @@ async function logout() {
 
 <script>
 // ── Modal wallet ──
+// Wallets del admin — se cargan desde Supabase al abrir el modal
+var _adminWallets = {
+  trc20: 'THGwQwMp4LTJoL7gm2Ro1zK6SF3wSQUff5',
+  bep20: '0x534822A13896B229855Fc0ACFA9F25664368a38C'
+};
+async function cargarWalletsAdmin() {
+  try {
+    var res = await sb.from('config_admin').select('clave,valor').in('clave',['wallet_trc20','wallet_bep20']);
+    if (res.data) res.data.forEach(function(r) {
+      if (r.clave==='wallet_trc20') _adminWallets.trc20 = r.valor;
+      if (r.clave==='wallet_bep20') _adminWallets.bep20 = r.valor;
+    });
+  } catch(e) {}
+}
+cargarWalletsAdmin();
+
+function copiarDeposito(wallet, btn) {
+  navigator.clipboard.writeText(wallet).then(function() {
+    var orig = btn.textContent; btn.textContent = '✅ Copiado';
+    setTimeout(function(){ btn.textContent = orig; }, 2000);
+  });
+}
+
 function showWalletModal(tipo) {
   if (tipo === 'depositar') {
-    const modal = document.createElement('div');
-    modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px';
-    modal.innerHTML = `
-      <div style="background:#161616;border:1px solid #333;border-radius:20px;padding:28px;max-width:340px;width:100%">
-        <div style="font-size:18px;font-weight:800;margin-bottom:10px">⬇️ Depositar USDT</div>
-        <div style="font-size:13px;color:#888;line-height:1.6;margin-bottom:24px">
-          Tu saldo se acredita automáticamente cada vez que vendés una gift card y el pago es aprobado. No necesitás depositar manualmente.
-        </div>
-        <button onclick="this.closest('div[style*=fixed]').remove()"
-          style="width:100%;background:var(--verde);color:#000;border:none;border-radius:12px;padding:12px;font-weight:700;font-size:15px;cursor:pointer;font-family:Inter,sans-serif">
-          Entendido
-        </button>
-      </div>`;
+    var trc = _adminWallets.trc20;
+    var bep = _adminWallets.bep20;
+    var modal = document.createElement('div');
+    modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px';
+
+    function mkBloque(label, addr, color, borderColor) {
+      var b = document.createElement('div');
+      b.style.cssText = 'background:#111;border:1px solid #222;border-radius:12px;padding:14px;margin-bottom:10px';
+      b.innerHTML = '<div style="font-size:12px;font-weight:700;color:'+color+';margin-bottom:6px">'+label+'</div>' +
+        '<div style="font-family:monospace;font-size:11px;color:#ccc;word-break:break-all;margin-bottom:10px">'+addr+'</div>';
+      var btn = document.createElement('button');
+      btn.style.cssText = 'width:100%;background:transparent;border:1px solid '+borderColor+';color:'+color+';border-radius:8px;padding:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:Inter,sans-serif';
+      btn.textContent = '📋 Copiar dirección';
+      btn.onclick = function() {
+        navigator.clipboard.writeText(addr).then(function(){
+          btn.textContent = '✅ Copiado!';
+          setTimeout(function(){ btn.textContent = '📋 Copiar dirección'; }, 2000);
+        });
+      };
+      b.appendChild(btn);
+      return b;
+    }
+
+    var box = document.createElement('div');
+    box.style.cssText = 'background:#161616;border:1px solid #2a2a2a;border-radius:20px;padding:24px;max-width:380px;width:100%';
+    box.innerHTML = '<div style="font-size:18px;font-weight:800;margin-bottom:4px">⬇️ Depositar USDT</div><div style="font-size:12px;color:#888;margin-bottom:20px">Enviá USDT a cualquiera de estas direcciones. Tu saldo se acreditará manualmente.</div>';
+    box.appendChild(mkBloque('TRC20 (TRON) — fee ~$1', trc, '#F3BA2F', 'rgba(243,186,47,0.4)'));
+    box.appendChild(mkBloque('BEP20 (BNB Chain) — fee ~$0.20', bep, '#3B82F6', 'rgba(59,130,246,0.4)'));
+    var warn = document.createElement('div');
+    warn.style.cssText = 'font-size:11px;color:#555;text-align:center;margin-bottom:16px';
+    warn.textContent = '⚠️ Solo enviá USDT. Cualquier otro token se perderá.';
+    var cerrar = document.createElement('button');
+    cerrar.style.cssText = 'width:100%;background:transparent;border:1px solid #333;color:#888;border-radius:12px;padding:11px;font-weight:600;cursor:pointer;font-family:Inter,sans-serif';
+    cerrar.textContent = 'Cerrar';
+    cerrar.onclick = function(){ modal.remove(); };
+    box.appendChild(warn); box.appendChild(cerrar);
+    modal.appendChild(box);
     document.body.appendChild(modal);
-    modal.addEventListener('click', e => { if(e.target === modal) modal.remove(); });
+    modal.addEventListener('click', function(e){ if(e.target===modal) modal.remove(); });
     return;
   }
 
-  // Modal de retiro real
-  const walletGuardada = window._sellerWallet || '';
   const balanceEl = document.getElementById('walletAmount');
   const balanceActual = balanceEl ? balanceEl.textContent.replace('$','').trim() : '0';
 
-  const modal = document.createElement('div');
-  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px';
+  var modalRetiro = document.createElement('div');
+  modalRetiro.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px';
   modal.innerHTML = `
     <div style="background:#161616;border:1px solid #333;border-radius:20px;padding:24px;max-width:360px;width:100%">
       <div style="font-size:18px;font-weight:800;margin-bottom:4px">⬆️ Solicitar retiro</div>

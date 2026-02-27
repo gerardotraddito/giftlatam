@@ -120,6 +120,7 @@
   <div class="tabs">
     <button class="tab activo" onclick="showTab('ordenes',this)">📋 Órdenes <span class="tab-badge" id="tBadgeO" style="display:none">0</span></button>
     <button class="tab" onclick="showTab('retiros',this)">💸 Retiros <span class="tab-badge" id="tBadgeR" style="background:var(--azul);display:none">0</span></button>
+    <button class="tab" onclick="showTab('config',this)">⚙️ Mis wallets</button>
   </div>
 
   <div class="msg" id="msgGlobal"></div>
@@ -177,6 +178,42 @@
     </div>
   </div>
 
+  <!-- CONFIGURACIÓN WALLETS -->
+  <div id="secConfig" class="panel-sec">
+    <div class="sec-header">
+      <div>
+        <div class="sec-title">⚙️ Mis wallets de cobro</div>
+        <div class="sec-sub">Estas son las direcciones donde los compradores envían los pagos. Cambiá una y se actualiza en todo el sistema.</div>
+      </div>
+      <button class="btn-reload" onclick="cargarConfigWallets()">↻ Recargar</button>
+    </div>
+    <div class="msg" id="msgConfig"></div>
+    <div style="max-width:520px">
+      <div style="margin-bottom:16px">
+        <div style="font-size:11px;color:var(--gris);font-weight:700;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px">Wallet TRC20 (TRON)</div>
+        <div style="display:flex;gap:8px">
+          <input id="cfgTRC20" type="text" placeholder="THG..."
+            style="flex:1;background:var(--card);border:1px solid var(--borde2);border-radius:10px;padding:11px 14px;color:var(--blanco);font-size:13px;outline:none;font-family:monospace">
+          <button class="btn-ok" onclick="guardarWallet('wallet_trc20','cfgTRC20')">Guardar</button>
+        </div>
+      </div>
+      <div style="margin-bottom:24px">
+        <div style="font-size:11px;color:var(--gris);font-weight:700;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px">Wallet BEP20 (BNB Chain)</div>
+        <div style="display:flex;gap:8px">
+          <input id="cfgBEP20" type="text" placeholder="0x..."
+            style="flex:1;background:var(--card);border:1px solid var(--borde2);border-radius:10px;padding:11px 14px;color:var(--blanco);font-size:13px;outline:none;font-family:monospace">
+          <button class="btn-ok" onclick="guardarWallet('wallet_bep20','cfgBEP20')">Guardar</button>
+        </div>
+      </div>
+      <div style="background:var(--card);border:1px solid var(--borde);border-radius:12px;padding:14px">
+        <div style="font-size:12px;color:var(--gris);line-height:1.7">
+          ⚠️ <strong>Al cambiar una wallet</strong>, todos los pagos nuevos irán a la dirección nueva. Los pagos en curso no se modifican.<br>
+          ✅ El cambio se refleja automáticamente en el formulario de pago y en el panel de depósitos de vendedores.
+        </div>
+      </div>
+    </div>
+  </div>
+
 </div>
 
 <script>
@@ -198,6 +235,7 @@ document.addEventListener('DOMContentLoaded', async function() {
   document.getElementById('navUser').textContent = sess.data.session.user.email;
   cargarOrdenes();
   cargarRetiros();
+  cargarConfigWallets();
 });
 
 function showTab(tab, btn) {
@@ -345,6 +383,31 @@ function copiar(texto, btn) {
 }
 
 async function logout() { await sb.auth.signOut(); window.location.href = 'login.html'; }
+
+// ── CONFIG WALLETS ─────────────────────────────────────────────────────────
+async function cargarConfigWallets() {
+  try {
+    var res = await sb.from('config_admin').select('clave,valor').in('clave',['wallet_trc20','wallet_bep20']);
+    if (res.data) res.data.forEach(function(r) {
+      if (r.clave==='wallet_trc20') { var el=document.getElementById('cfgTRC20'); if(el) el.value=r.valor; }
+      if (r.clave==='wallet_bep20') { var el=document.getElementById('cfgBEP20'); if(el) el.value=r.valor; }
+    });
+  } catch(e) { console.warn('Error cargando wallets:', e); }
+}
+
+async function guardarWallet(clave, inputId) {
+  var valor = document.getElementById(inputId).value.trim();
+  if (!valor || valor.length < 10) { msgConfig('⚠️ Ingresá una dirección válida.','err'); return; }
+  var res = await sb.from('config_admin').upsert({clave:clave,valor:valor,updated_at:new Date().toISOString()},{onConflict:'clave'});
+  if (res.error) { msgConfig('Error: '+res.error.message,'err'); return; }
+  msgConfig('✅ Wallet guardada correctamente. Se actualiza en todo el sistema.','ok');
+}
+
+function msgConfig(texto, tipo) {
+  var el = document.getElementById('msgConfig');
+  el.textContent=texto; el.className='msg '+tipo; el.style.display='block';
+  setTimeout(function(){el.style.display='none';},5000);
+}
 </script>
 </body>
 </html>

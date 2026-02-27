@@ -263,24 +263,15 @@ async function irAPago() {
   var btn = document.getElementById('btnComprar');
   if (btn) { btn.disabled = true; btn.textContent = '⏳ Creando orden...'; }
 
-  var WALLET_TRC20 = 'TXnbM7ZGpRZbhCBCm7UwJZWcRMbB5L9Kzt';
-
-  // Verificar que haya stock antes de crear la orden
-  try {
-    var stockCheck = await sb.from('gift_cards').select('cantidad').eq('id', c.id).single();
-    var cantidad = stockCheck.data ? parseInt(stockCheck.data.cantidad) : 0;
-    if (cantidad <= 0) {
-      alert('Lo sentimos, este producto ya no tiene stock disponible.');
-      if (btn) { btn.disabled = false; btn.textContent = '😔 Sin stock'; }
-      return;
-    }
-  } catch(e) {}
-
-  // Obtener email del usuario
+  // 1. Verificar sesión — requerida para comprar
   var email = '';
+  var userId = null;
   try {
     var sess = await sb.auth.getSession();
-    if (sess.data && sess.data.session) email = sess.data.session.user.email || '';
+    if (sess.data && sess.data.session) {
+      email  = sess.data.session.user.email || '';
+      userId = sess.data.session.user.id;
+    }
   } catch(e) {}
 
   if (!email) {
@@ -288,40 +279,86 @@ async function irAPago() {
     return;
   }
 
-  // Primero expirar órdenes vencidas (libera stock de otros)
-  try { await sb.rpc('expirar_ordenes_vencidas'); } catch(e) {}
-
-  // Crear orden con función atómica (valida stock + descuenta en una transacción)
+  // 2. Verificar stock en tiempo real
+  var stockActual = 0;
   try {
-    var res = await sb.rpc('crear_orden', {
-      p_gift_card_id:    c.id,
-      p_seller_id:       c.seller_id || null,
-      p_comprador_email: email,
-      p_precio:          parseFloat(c.precio_venta) || 0,
-      p_red:             'TRC20',
-      p_wallet:          WALLET_TRC20
-    });
+    var sr = await sb.from('gift_cards').select('cantidad').eq('id', c.id).single();
+    stockActual = sr.data && sr.data.cantidad != null ? parseInt(sr.data.cantidad) : 0;
+  } catch(e) {}
 
-    if (res.error) {
-      alert('Error al crear la orden: ' + res.error.message);
-      if (btn) { btn.disabled = false; btn.textContent = '🔒 Comprar'; }
-      return;
-    }
-
-    var fila = res.data && res.data[0];
-    if (!fila || fila.error) {
-      alert(fila ? fila.error : 'No se pudo crear la orden. Verificá el stock.');
-      if (btn) { btn.disabled = false; btn.textContent = '🔒 Comprar'; }
-      return;
-    }
-
-    location.href = 'pago.html?orden_id=' + fila.orden_id;
-
-  } catch(e) {
-    console.error('[comprar]', e);
-    alert('Error inesperado. Intentá de nuevo.');
-    if (btn) { btn.disabled = false; btn.textContent = '🔒 Comprar'; }
+  if (stockActual <= 0) {
+    alert('Sin stock disponible. Este producto ya no está disponible.');
+    if (btn) { btn.disabled = false; btn.textContent = '😔 Sin stock'; }
+    location.reload();
+    return;
   }
+
+  // 3. Limpiar órdenes expiradas de este producto (restaura stock de compras abandonadas)
+  try {
+    var hace10 = new Date(Date.now() - 10 * 60 * 1000).toISOString();
+    var vencidas = await sb.from('ordenes')
+      .select('id')
+      .eq('gift_card_id', c.id)
+      .eq('estado', 'pendiente_pago')
+      .lt('expires_at', new Date().toISOString());
+    if (vencidas.data && vencidas.data.length > 0) {
+      for (var i = 0; i < vencidas.data.length; i++) {
+        await sb.from('ordenes').update({ estado: 'cancelado', updated_at: new Date().toISOString() }).eq('id', vencidas.data[i].id);
+        stockActual++;
+      }
+      // Restaurar stock acumulado
+      await sb.from('gift_cards').update({ cantidad: stockActual }).eq('id', c.id);
+    }
+  } catch(e) { console.warn('limpieza expiradas:', e); }
+
+  // 4. Descontar stock (optimista — antes de crear la orden)
+  try {
+    var nuevoStock = Math.max(0, stockActual - 1);
+    await sb.from('gift_cards').update({ cantidad: nuevoStock }).eq('id', c.id);
+  } catch(e) {
+    alert('Error al reservar el stock. Intentá de nuevo.');
+    if (btn) { btn.disabled = false; btn.textContent = '🔒 Comprar por $' + parseFloat(c.precio_venta).toFixed(2) + ' USDT'; }
+    return;
+  }
+
+  // 5. Crear la orden con estado pendiente_pago y expiración de 10 minutos
+  var expiresAt = new Date(Date.now() + 10 * 60 * 1000).toISOString();
+  var ordenId = null;
+  try {
+    var ins = await sb.from('ordenes').insert({
+      gift_card_id:    c.id,
+      seller_id:       c.seller_id || null,
+      comprador_email: email,
+      precio:          parseFloat(c.precio_venta) || 0,
+      moneda:          'USDT',
+      red:             'TRC20',
+      wallet_destino:  'THGwQwMp4LTJoL7gm2Ro1zK6SF3wSQUff5',
+      estado:          'pendiente_pago',
+      expires_at:      expiresAt,
+      created_at:      new Date().toISOString(),
+      updated_at:      new Date().toISOString()
+    }).select('id').single();
+
+    if (ins.error || !ins.data) {
+      // Revertir stock si falla la inserción
+      await sb.from('gift_cards').update({ cantidad: stockActual }).eq('id', c.id);
+      alert('No se pudo crear la orden: ' + (ins.error ? ins.error.message : 'error desconocido'));
+      if (btn) { btn.disabled = false; btn.textContent = '🔒 Comprar por $' + parseFloat(c.precio_venta).toFixed(2) + ' USDT'; }
+      return;
+    }
+
+    ordenId = ins.data.id;
+  } catch(e) {
+    console.error('[crear orden]', e);
+    // Revertir stock
+    try { await sb.from('gift_cards').update({ cantidad: stockActual }).eq('id', c.id); } catch(e2) {}
+    alert('Error inesperado. Intentá de nuevo.');
+    if (btn) { btn.disabled = false; btn.textContent = '🔒 Comprar por $' + parseFloat(c.precio_venta).toFixed(2) + ' USDT'; }
+    return;
+  }
+
+  // 6. Redirigir a la página de pago
+  location.href = 'pago.html?orden_id=' + ordenId;
 }
 
 // ── Vendedor ────────────────────────────────────────────────────────────────
