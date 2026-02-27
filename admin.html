@@ -121,6 +121,7 @@
     <button class="tab activo" onclick="showTab('ordenes',this)">📋 Órdenes <span class="tab-badge" id="tBadgeO" style="display:none">0</span></button>
     <button class="tab" onclick="showTab('retiros',this)">💸 Retiros <span class="tab-badge" id="tBadgeR" style="background:var(--azul);display:none">0</span></button>
     <button class="tab" onclick="showTab('config',this)">⚙️ Mis wallets</button>
+    <button class="tab" onclick="showTab('depositos',this)">💵 Depósitos <span class="tab-badge" id="tBadgeD" style="background:#a855f7;display:none">0</span></button>
   </div>
 
   <div class="msg" id="msgGlobal"></div>
@@ -174,6 +175,27 @@
           </tr>
         </thead>
         <tbody id="tbRetiros"><tr><td colspan="8"><div class="spinner"></div></td></tr></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- DEPÓSITOS PENDIENTES -->
+  <div id="secDepositos" class="panel-sec">
+    <div class="sec-header">
+      <div>
+        <div class="sec-title">💵 Depósitos pendientes</div>
+        <div class="sec-sub">El vendedor envió USDT y lo notificó. Verificá en tu wallet y aprobá para acreditarle el saldo.</div>
+      </div>
+      <button class="btn-reload" onclick="cargarDepositos()">↻ Recargar</button>
+    </div>
+    <div class="tabla-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Vendedor</th><th>Monto</th><th>Red</th><th>Fecha</th><th>Acción</th>
+          </tr>
+        </thead>
+        <tbody id="tbDepositos"><tr><td colspan="5"><div class="spinner"></div></td></tr></tbody>
       </table>
     </div>
   </div>
@@ -236,6 +258,7 @@ document.addEventListener('DOMContentLoaded', async function() {
   cargarOrdenes();
   cargarRetiros();
   cargarConfigWallets();
+  cargarDepositos();
 });
 
 function showTab(tab, btn) {
@@ -383,6 +406,50 @@ function copiar(texto, btn) {
 }
 
 async function logout() { await sb.auth.signOut(); window.location.href = 'login.html'; }
+
+// ── DEPÓSITOS ──────────────────────────────────────────────────────────────
+async function cargarDepositos() {
+  var tb = document.getElementById('tbDepositos');
+  tb.innerHTML = '<tr><td colspan="5"><div class="spinner"></div></td></tr>';
+  var res = await sb.from('depositos').select('id,seller_id,monto,red,estado,created_at').eq('estado','pendiente').order('created_at',{ascending:true});
+  if (res.error) { tb.innerHTML = '<tr><td colspan="5"><div class="empty">Error: '+res.error.message+'</div></td></tr>'; return; }
+  var data = res.data || [];
+  var badge = document.getElementById('tBadgeD');
+  badge.textContent = data.length; badge.style.display = data.length > 0 ? 'inline-flex' : 'none';
+  if (data.length === 0) { tb.innerHTML = '<tr><td colspan="5"><div class="empty">✅ Sin depósitos pendientes.</div></td></tr>'; return; }
+  tb.innerHTML = data.map(function(d) {
+    var fecha  = d.created_at ? new Date(d.created_at).toLocaleDateString('es',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}) : '—';
+    var seller = d.seller_id ? d.seller_id.substring(0,12)+'…' : '—';
+    return '<tr>'+
+      '<td style="font-size:11px;color:var(--gris);font-family:monospace">'+seller+'</td>'+
+      '<td class="monto" style="color:var(--verde);font-size:15px">$'+parseFloat(d.monto).toFixed(2)+' USDT</td>'+
+      '<td><span class="badge b-verificando">'+d.red+'</span></td>'+
+      '<td style="font-size:11px;color:var(--gris);white-space:nowrap">'+fecha+'</td>'+
+      '<td><div class="acc">'+
+        '<button class="btn-ok" data-id="'+d.id+'" onclick="aprobarDeposito(this.dataset.id,this)">✅ Aprobar</button>'+
+        '<button class="btn-no" data-id="'+d.id+'" onclick="rechazarDeposito(this.dataset.id,this)">❌ Rechazar</button>'+
+      '</div></td>'+
+    '</tr>';
+  }).join('');
+}
+
+async function aprobarDeposito(id, btn) {
+  if (!confirm('¿Confirmar que recibiste este depósito y acreditar el saldo?')) return;
+  bloquear(btn); btn.textContent = '...';
+  var r = await sb.rpc('admin_aprobar_deposito', {p_deposito_id: id});
+  if (r.error||r.data!=='ok') { msg('Error: '+(r.error?r.error.message:r.data),'err'); desbloquear(btn,'✅ Aprobar'); return; }
+  msg('✅ Saldo acreditado correctamente.','ok');
+  cargarDepositos();
+}
+
+async function rechazarDeposito(id, btn) {
+  if (!confirm('¿Rechazar este depósito? El vendedor NO recibirá el saldo.')) return;
+  bloquear(btn); btn.textContent = '...';
+  var r = await sb.rpc('admin_rechazar_deposito', {p_deposito_id: id});
+  if (r.error||r.data!=='ok') { msg('Error: '+(r.error?r.error.message:r.data),'err'); desbloquear(btn,'❌ Rechazar'); return; }
+  msg('Depósito rechazado.','ok');
+  cargarDepositos();
+}
 
 // ── CONFIG WALLETS ─────────────────────────────────────────────────────────
 async function cargarConfigWallets() {
