@@ -656,12 +656,21 @@ function selRedPanel(red) {
   var btnBEP = document.getElementById('panelBtnBEP20');
   var input  = document.getElementById('panelWalletInput');
   if (!btnTRC || !btnBEP) return;
-  btnTRC.style.cssText = 'flex:1;padding:8px;border-radius:10px;border:1px solid #333;background:transparent;color:#888;font-weight:700;font-size:12px;cursor:pointer;font-family:Inter,sans-serif';
-  btnBEP.style.cssText = 'flex:1;padding:8px;border-radius:10px;border:1px solid #333;background:transparent;color:#888;font-weight:700;font-size:12px;cursor:pointer;font-family:Inter,sans-serif';
+
+  // Resetear los dos individualmente
+  btnTRC.style.border = '1px solid #333';
+  btnTRC.style.color = '#888';
+  btnTRC.style.background = 'transparent';
+  btnBEP.style.border = '1px solid #333';
+  btnBEP.style.color = '#888';
+  btnBEP.style.background = 'transparent';
+
+  // Activar el seleccionado
   var activo = red === 'TRC20' ? btnTRC : btnBEP;
   activo.style.border = '2px solid #00C853';
   activo.style.color = '#00C853';
   activo.style.background = 'rgba(0,200,83,0.1)';
+
   if (input) input.placeholder = red === 'TRC20' ? 'T...' : '0x...';
 }
 
