@@ -404,11 +404,21 @@ footer {
 
     <!-- Wallet de cobro -->
     <div style="margin-bottom:14px">
-      <div style="font-size:11px;color:#888;font-weight:600;margin-bottom:6px">💳 TU WALLET DE COBRO (USDT)</div>
+      <div style="font-size:11px;color:#888;font-weight:600;margin-bottom:8px">💳 TU WALLET DE COBRO (USDT)</div>
+      <div style="display:flex;gap:6px;margin-bottom:8px">
+        <button id="panelBtnTRC20" onclick="selRedPanel('TRC20')"
+          style="flex:1;padding:8px;border-radius:10px;border:2px solid #00C853;background:rgba(0,200,83,0.1);color:#00C853;font-weight:700;font-size:12px;cursor:pointer;font-family:Inter,sans-serif">
+          TRC20<br><span style="font-size:10px;font-weight:400">T...</span>
+        </button>
+        <button id="panelBtnBEP20" onclick="selRedPanel('BEP20')"
+          style="flex:1;padding:8px;border-radius:10px;border:1px solid #333;background:transparent;color:#888;font-weight:700;font-size:12px;cursor:pointer;font-family:Inter,sans-serif">
+          BEP20<br><span style="font-size:10px;font-weight:400">0x...</span>
+        </button>
+      </div>
       <div style="display:flex;gap:8px;align-items:center">
-        <input id="panelWalletInput" type="text" placeholder="T... (TRC20) o 0x... (BEP20)"
+        <input id="panelWalletInput" type="text" placeholder="T..."
           style="flex:1;background:#111;border:1px solid #2a2a2a;border-radius:10px;padding:10px 12px;color:#f0f0f0;font-size:12px;outline:none;font-family:monospace"
-          oninput="document.getElementById('btnGuardarWallet').style.display='block'">
+          oninput="document.getElementById('btnGuardarWallet').style.display='inline-block'">
         <button id="btnGuardarWallet" onclick="guardarWalletPanel()" 
           style="display:none;background:var(--verde);color:#000;border:none;border-radius:10px;padding:10px 14px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;font-family:Inter,sans-serif">
           Guardar
@@ -522,6 +532,10 @@ async function loadPanelData(session) {
   const panelWalletInput = document.getElementById('panelWalletInput');
   if (panelWalletInput) panelWalletInput.value = walletGuardada;
   window._sellerWallet = walletGuardada;
+  // Detectar red y activar botón correspondiente
+  var redDetectada = walletGuardada.startsWith('0x') ? 'BEP20' : 'TRC20';
+  window._panelRed = redDetectada;
+  setTimeout(function() { selRedPanel(redDetectada); }, 50);
 
   // Saldo real desde tabla saldos
   const balance = parseFloat(saldoData.balance || 0);
@@ -636,6 +650,21 @@ function showWalletModal(tipo) {
   window._retiroFee = 1.00;
 }
 
+function selRedPanel(red) {
+  window._panelRed = red;
+  var btnTRC = document.getElementById('panelBtnTRC20');
+  var btnBEP = document.getElementById('panelBtnBEP20');
+  var input  = document.getElementById('panelWalletInput');
+  if (!btnTRC || !btnBEP) return;
+  btnTRC.style.cssText = 'flex:1;padding:8px;border-radius:10px;border:1px solid #333;background:transparent;color:#888;font-weight:700;font-size:12px;cursor:pointer;font-family:Inter,sans-serif';
+  btnBEP.style.cssText = 'flex:1;padding:8px;border-radius:10px;border:1px solid #333;background:transparent;color:#888;font-weight:700;font-size:12px;cursor:pointer;font-family:Inter,sans-serif';
+  var activo = red === 'TRC20' ? btnTRC : btnBEP;
+  activo.style.border = '2px solid #00C853';
+  activo.style.color = '#00C853';
+  activo.style.background = 'rgba(0,200,83,0.1)';
+  if (input) input.placeholder = red === 'TRC20' ? 'T...' : '0x...';
+}
+
 async function guardarWalletPanel() {
   var input = document.getElementById('panelWalletInput');
   var msg   = document.getElementById('walletPanelMsg');
@@ -656,7 +685,7 @@ async function guardarWalletPanel() {
   try {
     var sess = await sb.auth.getSession();
     var uid  = sess.data.session.user.id;
-    var upd  = await sb.from('profiles').upsert({ id: uid, wallet_usdt: wallet, updated_at: new Date().toISOString() }, { onConflict: 'id' });
+    var upd  = await sb.from('profiles').upsert({ id: uid, wallet_usdt: wallet, wallet_red: window._panelRed || 'TRC20', updated_at: new Date().toISOString() }, { onConflict: 'id' });
     if (upd.error) {
       msg.textContent = '❌ Error: ' + upd.error.message;
       msg.style.color = '#FF4444';

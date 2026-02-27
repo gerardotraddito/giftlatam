@@ -120,9 +120,13 @@ document.addEventListener('DOMContentLoaded', async function() {
   try {
     var pr = await sb.from('profiles').select('wallet_usdt').eq('id', currentUser.id).single();
     currentUser._walletUsdt = (pr.data && pr.data.wallet_usdt) ? pr.data.wallet_usdt : '';
+  // Detectar red automáticamente desde la wallet guardada
+  var w = currentUser._walletUsdt || '';
+  currentUser._walletRed = w.startsWith('0x') ? 'BEP20' : 'TRC20';
   } catch(e) { currentUser._walletUsdt = ''; }
 
   renderConfig();
+  setTimeout(function() { selRedCfg(currentUser._walletRed || 'TRC20', true); }, 50);
 });
 
 function renderConfig() {
@@ -191,15 +195,19 @@ function renderConfig() {
 
     // ── Pago y wallet ──
     '<div class="section-label">Wallet y pagos</div>' +
-    '<div class="menu-group">' +
-      '<div class="menu-row" style="cursor:default">' +
-        '<span class="menu-row-icon">💎</span>' +
-        '<div class="menu-row-body"><div class="menu-row-title">Red</div><div class="menu-row-sub">Solo aceptamos USDT TRC20</div></div>' +
-        '<div class="menu-row-right"><span class="value-tag">TRC20</span></div>' +
+    '<div style="margin-bottom:4px">' +
+      '<div style="font-size:11px;color:#888;font-weight:600;padding:0 4px 6px">RED DE TU WALLET</div>' +
+      '<div style="display:flex;gap:8px;padding:0 0 12px">' +
+        '<button id="cfgBtnTRC20" onclick="selRedCfg(&quot;TRC20&quot;)" style="flex:1;padding:10px;border-radius:10px;border:2px solid #00C853;background:rgba(0,200,83,0.1);color:#00C853;font-weight:700;font-size:13px;cursor:pointer;font-family:Inter,sans-serif">' +
+          'TRC20<br><span style="font-size:10px;font-weight:400">Empieza con T...</span>' +
+        '</button>' +
+        '<button id="cfgBtnBEP20" onclick="selRedCfg(&quot;BEP20&quot;)" style="flex:1;padding:10px;border-radius:10px;border:1px solid #333;background:transparent;color:#888;font-weight:700;font-size:13px;cursor:pointer;font-family:Inter,sans-serif">' +
+          'BEP20<br><span style="font-size:10px;font-weight:400">Empieza con 0x...</span>' +
+        '</button>' +
       '</div>' +
     '</div>' +
     '<div class="input-row" style="margin-bottom:4px">' +
-      '<div class="input-label-row"><span class="input-label">💳 TU WALLET USDT TRC20 (para recibir pagos)</span></div>' +
+      '<div class="input-label-row"><span class="input-label" id="walletInputLabel">💳 TU WALLET USDT TRC20 (para recibir pagos)</span></div>' +
       '<input class="input-field" id="inputWallet" value="' + esc(currentUser._walletUsdt || '') + '" placeholder="T..." oninput="markChanged()" style="font-family:monospace;font-size:13px">' +
     '</div>' +
     '<div style="font-size:11px;color:#555;padding:0 4px 12px">Esta wallet es donde GiftLatam te enviará tus ganancias descontada la comisión del 3%.</div>' +
@@ -234,6 +242,29 @@ function menuToggle(icon, title, sub, id, checked, disabled) {
 
 function esc(str) {
   return (str || '').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+
+function selRedCfg(red, silencioso) {
+  window._cfgRed = red;
+  var btnTRC = document.getElementById('cfgBtnTRC20');
+  var btnBEP = document.getElementById('cfgBtnBEP20');
+  var label  = document.getElementById('walletInputLabel');
+  var input  = document.getElementById('inputWallet');
+  if (!btnTRC || !btnBEP) return;
+
+  // Resetear ambos
+  btnTRC.style.cssText = 'flex:1;padding:10px;border-radius:10px;border:1px solid #333;background:transparent;color:#888;font-weight:700;font-size:13px;cursor:pointer;font-family:Inter,sans-serif';
+  btnBEP.style.cssText = 'flex:1;padding:10px;border-radius:10px;border:1px solid #333;background:transparent;color:#888;font-weight:700;font-size:13px;cursor:pointer;font-family:Inter,sans-serif';
+
+  var activo = red === 'TRC20' ? btnTRC : btnBEP;
+  activo.style.border = '2px solid #00C853';
+  activo.style.color = '#00C853';
+  activo.style.background = 'rgba(0,200,83,0.1)';
+
+  if (label) label.textContent = '💳 TU WALLET USDT ' + red + ' (para recibir pagos)';
+  if (input) input.placeholder = red === 'TRC20' ? 'T...' : '0x...';
+
+  if (!silencioso) markChanged();
 }
 
 function markChanged() {
@@ -274,6 +305,7 @@ async function guardarPerfil() {
     var upd = await sb.from('profiles').upsert({
       id: currentUser.id,
       wallet_usdt: wallet,
+      wallet_red: window._cfgRed || 'TRC20',
       updated_at: new Date().toISOString()
     }, { onConflict: 'id' });
     if (upd.error) {
