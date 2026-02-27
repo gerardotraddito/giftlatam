@@ -4,81 +4,92 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Admin — GiftLatam</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Syne:wght@700;800&display=swap" rel="stylesheet">
   <style>
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-    :root{--negro:#080808;--card:#161616;--borde:#222;--blanco:#F0F0F0;--gris:#888;--verde:#00C853;--rojo:#FF4444;--amarillo:#f3ba2f}
-    body{font-family:'Inter',sans-serif;background:var(--negro);color:var(--blanco);min-height:100vh;padding-bottom:60px}
+    :root{
+      --bg:#080808;--card:#111;--card2:#161616;--borde:#1e1e1e;--borde2:#2a2a2a;
+      --blanco:#f0f0f0;--gris:#666;--gris2:#444;
+      --verde:#00C853;--rojo:#FF4444;--amarillo:#F3BA2F;--azul:#3B82F6;
+    }
+    body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--blanco);min-height:100vh;padding-bottom:60px}
 
-    nav{display:flex;align-items:center;justify-content:space-between;padding:0 20px;height:52px;border-bottom:1px solid var(--borde);background:rgba(8,8,8,0.97);position:sticky;top:0;z-index:100}
-    .nav-title{font-family:'Syne',sans-serif;font-weight:800;font-size:16px}
-    .nav-user{font-size:12px;color:var(--gris)}
-    .btn-logout{background:transparent;border:1px solid var(--borde);color:var(--gris);border-radius:8px;padding:5px 12px;font-size:12px;cursor:pointer;font-family:inherit}
+    nav{display:flex;align-items:center;justify-content:space-between;padding:0 24px;height:56px;background:rgba(8,8,8,0.95);border-bottom:1px solid var(--borde);position:sticky;top:0;z-index:100;backdrop-filter:blur(12px)}
+    .nav-logo{font-family:'Syne',sans-serif;font-weight:800;font-size:15px}
+    .nav-logo span{color:var(--verde)}
+    .nav-right{display:flex;align-items:center;gap:12px}
+    .nav-user{font-size:12px;color:var(--gris);max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .btn-logout{background:transparent;border:1px solid var(--borde2);color:var(--gris);border-radius:8px;padding:5px 12px;font-size:12px;cursor:pointer;font-family:inherit;transition:all 0.15s}
     .btn-logout:hover{color:var(--blanco);border-color:#555}
 
-    .container{padding:20px;max-width:1100px;margin:0 auto}
+    .wrap{max-width:1200px;margin:0 auto;padding:24px 20px}
 
-    .page-title{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;margin-bottom:6px}
-    .page-sub{font-size:13px;color:var(--gris);margin-bottom:24px}
+    .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:28px}
+    .stat{background:var(--card);border:1px solid var(--borde);border-radius:14px;padding:16px}
+    .stat-n{font-size:26px;font-weight:800;line-height:1;font-variant-numeric:tabular-nums}
+    .stat-l{font-size:11px;color:var(--gris);margin-top:5px;font-weight:500}
 
-    /* Filtros */
-    .filtros{display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap;align-items:center}
-    .filtro-btn{background:var(--card);border:1px solid var(--borde);color:var(--gris);border-radius:8px;padding:6px 14px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;transition:all 0.15s}
-    .filtro-btn:hover{border-color:#555;color:var(--blanco)}
-    .filtro-btn.activo{border-color:var(--verde);color:var(--verde);background:rgba(0,200,83,0.08)}
-    .filtro-count{font-size:10px;background:#2a2a2a;border-radius:10px;padding:1px 6px;margin-left:4px}
+    .tabs{display:flex;gap:4px;margin-bottom:20px;background:var(--card);border:1px solid var(--borde);border-radius:12px;padding:4px;width:fit-content}
+    .tab{padding:8px 18px;border-radius:9px;font-size:13px;font-weight:600;cursor:pointer;border:none;background:transparent;color:var(--gris);font-family:inherit;transition:all 0.15s;white-space:nowrap}
+    .tab.activo{background:var(--card2);color:var(--blanco);box-shadow:0 1px 4px rgba(0,0,0,0.4)}
+    .tab-badge{display:inline-flex;align-items:center;justify-content:center;border-radius:10px;font-size:10px;font-weight:800;padding:1px 6px;margin-left:5px;min-width:18px;background:var(--amarillo);color:#000}
 
-    /* Mensaje de estado */
-    .msg{padding:10px 16px;border-radius:10px;font-size:13px;font-weight:600;margin-bottom:16px;display:none}
-    .msg.ok{background:rgba(0,200,83,0.1);border:1px solid rgba(0,200,83,0.3);color:var(--verde)}
-    .msg.err{background:rgba(255,68,68,0.1);border:1px solid rgba(255,68,68,0.3);color:var(--rojo)}
+    .filtros{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px}
+    .filtro{background:var(--card);border:1px solid var(--borde);color:var(--gris);border-radius:8px;padding:5px 12px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;transition:all 0.12s}
+    .filtro:hover{border-color:#444;color:var(--blanco)}
+    .filtro.on{border-color:var(--verde);color:var(--verde);background:rgba(0,200,83,0.07)}
+    .filtro-n{font-size:10px;background:var(--borde2);border-radius:8px;padding:1px 5px;margin-left:3px}
 
-    /* Tabla */
-    .tabla-wrap{overflow-x:auto;border-radius:12px;border:1px solid var(--borde)}
-    table{width:100%;border-collapse:collapse;font-size:13px}
-    thead tr{background:#111;border-bottom:1px solid var(--borde)}
-    th{padding:10px 14px;text-align:left;font-size:11px;font-weight:700;color:var(--gris);text-transform:uppercase;letter-spacing:0.5px;white-space:nowrap}
-    tbody tr{border-bottom:1px solid #1a1a1a;transition:background 0.1s}
+    .tabla-wrap{border:1px solid var(--borde);border-radius:14px;overflow:hidden;overflow-x:auto}
+    table{width:100%;border-collapse:collapse;font-size:13px;min-width:680px}
+    thead tr{background:#0d0d0d}
+    th{padding:11px 14px;text-align:left;font-size:10px;font-weight:700;color:var(--gris);text-transform:uppercase;letter-spacing:0.6px;white-space:nowrap;border-bottom:1px solid var(--borde)}
+    tbody tr{border-bottom:1px solid var(--borde);transition:background 0.1s}
     tbody tr:last-child{border-bottom:none}
-    tbody tr:hover{background:#111}
-    td{padding:10px 14px;vertical-align:middle}
+    tbody tr:hover{background:rgba(255,255,255,0.02)}
+    td{padding:11px 14px;vertical-align:middle}
 
-    .orden-id{font-family:'Courier New',monospace;font-size:11px;color:var(--gris)}
-    .email-cell{font-size:12px}
-    .precio-cell{font-weight:700;color:var(--verde);white-space:nowrap}
-    .fecha-cell{font-size:11px;color:var(--gris);white-space:nowrap}
-
-    /* Badges de estado */
     .badge{display:inline-flex;align-items:center;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:700;white-space:nowrap}
-    .badge-verificando{background:rgba(243,186,47,0.12);color:var(--amarillo);border:1px solid rgba(243,186,47,0.3)}
-    .badge-pendiente_pago{background:rgba(136,136,136,0.1);color:var(--gris);border:1px solid #333}
-    .badge-pagado{background:rgba(0,200,83,0.1);color:var(--verde);border:1px solid rgba(0,200,83,0.2)}
-    .badge-entregado{background:rgba(0,200,83,0.15);color:var(--verde);border:1px solid rgba(0,200,83,0.3)}
-    .badge-completado{background:rgba(0,200,83,0.2);color:var(--verde);border:1px solid rgba(0,200,83,0.4);font-weight:800}
-    .badge-cancelado{background:rgba(136,136,136,0.1);color:#555;border:1px solid #2a2a2a}
+    .b-pendiente{background:rgba(102,102,102,0.1);color:#555;border:1px solid #222}
+    .b-verificando{background:rgba(243,186,47,0.1);color:var(--amarillo);border:1px solid rgba(243,186,47,0.25)}
+    .b-pagado{background:rgba(0,200,83,0.08);color:var(--verde);border:1px solid rgba(0,200,83,0.2)}
+    .b-entregado{background:rgba(0,200,83,0.12);color:var(--verde);border:1px solid rgba(0,200,83,0.3)}
+    .b-completado{background:rgba(0,200,83,0.18);color:var(--verde);border:1px solid rgba(0,200,83,0.4)}
+    .b-cancelado{background:rgba(255,68,68,0.07);color:#555;border:1px solid #222}
 
-    /* Botones de acción */
-    .acciones{display:flex;gap:6px;flex-wrap:nowrap}
-    .btn-aprobar{background:rgba(0,200,83,0.15);color:var(--verde);border:1px solid rgba(0,200,83,0.35);border-radius:8px;padding:5px 12px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;transition:all 0.15s}
-    .btn-aprobar:hover{background:rgba(0,200,83,0.25)}
-    .btn-rechazar{background:rgba(255,68,68,0.1);color:var(--rojo);border:1px solid rgba(255,68,68,0.3);border-radius:8px;padding:5px 12px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;transition:all 0.15s}
-    .btn-rechazar:hover{background:rgba(255,68,68,0.2)}
-    .btn-aprobar:disabled,.btn-rechazar:disabled{opacity:0.4;cursor:not-allowed}
-    .sin-accion{font-size:11px;color:#444}
+    .acc{display:flex;gap:6px}
+    .btn-ok{background:rgba(0,200,83,0.12);color:var(--verde);border:1px solid rgba(0,200,83,0.3);border-radius:8px;padding:5px 12px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;transition:all 0.12s}
+    .btn-ok:hover{background:rgba(0,200,83,0.22)}
+    .btn-ok:disabled{opacity:0.35;cursor:not-allowed}
+    .btn-no{background:rgba(255,68,68,0.09);color:var(--rojo);border:1px solid rgba(255,68,68,0.25);border-radius:8px;padding:5px 12px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;transition:all 0.12s}
+    .btn-no:hover{background:rgba(255,68,68,0.18)}
+    .btn-no:disabled{opacity:0.35;cursor:not-allowed}
+    .btn-send{background:rgba(59,130,246,0.1);color:var(--azul);border:1px solid rgba(59,130,246,0.25);border-radius:8px;padding:5px 12px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;transition:all 0.12s}
+    .btn-send:hover{background:rgba(59,130,246,0.2)}
+    .btn-send:disabled{opacity:0.35;cursor:not-allowed}
 
-    /* Stats rápidas */
-    .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:24px}
-    .stat-box{background:var(--card);border:1px solid var(--borde);border-radius:12px;padding:14px 16px}
-    .stat-num{font-size:22px;font-weight:800;font-variant-numeric:tabular-nums;line-height:1}
-    .stat-label{font-size:11px;color:var(--gris);margin-top:4px}
+    .wallet-cell{font-family:'Courier New',monospace;font-size:11px;color:#aaa;max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:inline-block;vertical-align:middle}
+    .btn-copy{background:transparent;border:none;color:var(--gris);cursor:pointer;font-size:12px;padding:2px 4px}
+    .btn-copy:hover{color:var(--blanco)}
 
-    .spinner{width:24px;height:24px;border:3px solid #222;border-top-color:var(--verde);border-radius:50%;animation:spin 0.8s linear infinite;margin:40px auto}
+    .msg{padding:10px 16px;border-radius:10px;font-size:13px;font-weight:600;margin-bottom:14px;display:none}
+    .msg.ok{background:rgba(0,200,83,0.08);border:1px solid rgba(0,200,83,0.25);color:var(--verde)}
+    .msg.err{background:rgba(255,68,68,0.08);border:1px solid rgba(255,68,68,0.25);color:var(--rojo)}
+
+    .spinner{width:22px;height:22px;border:2px solid #1e1e1e;border-top-color:var(--verde);border-radius:50%;animation:spin 0.7s linear infinite;margin:36px auto}
     @keyframes spin{to{transform:rotate(360deg)}}
-
     .empty{text-align:center;padding:40px;color:var(--gris);font-size:13px}
 
-    .reload-btn{background:var(--card);border:1px solid var(--borde);color:var(--blanco);border-radius:8px;padding:6px 14px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;margin-left:auto}
-    .reload-btn:hover{border-color:#555}
+    .sec-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px;gap:10px;flex-wrap:wrap}
+    .sec-title{font-family:'Syne',sans-serif;font-size:17px;font-weight:800}
+    .sec-sub{font-size:12px;color:var(--gris);margin-top:3px}
+    .btn-reload{background:var(--card);border:1px solid var(--borde2);color:var(--gris);border-radius:8px;padding:6px 14px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit}
+    .btn-reload:hover{color:var(--blanco);border-color:#555}
+
+    .panel-sec{display:none}
+    .panel-sec.visible{display:block}
+    .id-cell{font-family:'Courier New',monospace;font-size:11px;color:var(--gris);cursor:help}
+    .monto{font-weight:700;white-space:nowrap}
   </style>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.js"></script>
   <script src="supabase.js"></script>
@@ -86,399 +97,254 @@
 <body>
 
 <nav>
-  <div class="nav-title">⚙️ Admin Panel — GiftLatam</div>
-  <div style="display:flex;align-items:center;gap:12px">
+  <div class="nav-logo">Gift<span>Latam</span> &nbsp;<span style="font-size:11px;color:var(--gris);font-family:Inter,sans-serif;font-weight:500">Admin</span></div>
+  <div class="nav-right">
     <span class="nav-user" id="navUser"></span>
-    <button class="btn-logout" onclick="logout()">Cerrar sesión</button>
+    <button class="btn-logout" onclick="logout()">Salir</button>
   </div>
 </nav>
 
-<div class="container">
-  <div class="page-title">Panel de administración</div>
-  <div class="page-sub">Gestión de órdenes del marketplace. Solo usuarios autorizados.</div>
+<div class="wrap">
 
-  <!-- Stats -->
+  <!-- STATS -->
   <div class="stats">
-    <div class="stat-box"><div class="stat-num" id="statTotal">—</div><div class="stat-label">Total órdenes</div></div>
-    <div class="stat-box"><div class="stat-num" style="color:var(--amarillo)" id="statVerificando">—</div><div class="stat-label">En verificación</div></div>
-    <div class="stat-box"><div class="stat-num" style="color:var(--verde)" id="statPagado">—</div><div class="stat-label">Pagadas</div></div>
-    <div class="stat-box"><div class="stat-num" style="color:var(--verde)" id="statCompletado">—</div><div class="stat-label">Completadas</div></div>
-    <div class="stat-box"><div class="stat-num" style="color:#555" id="statCancelado">—</div><div class="stat-label">Canceladas</div></div>
+    <div class="stat"><div class="stat-n" id="sTotal">—</div><div class="stat-l">Total órdenes</div></div>
+    <div class="stat"><div class="stat-n" style="color:var(--amarillo)" id="sVerif">—</div><div class="stat-l">Verificando</div></div>
+    <div class="stat"><div class="stat-n" style="color:var(--verde)" id="sPagado">—</div><div class="stat-l">Pagadas</div></div>
+    <div class="stat"><div class="stat-n" style="color:var(--verde)" id="sComp">—</div><div class="stat-l">Completadas</div></div>
+    <div class="stat"><div class="stat-n" style="color:var(--gris2)" id="sCanc">—</div><div class="stat-l">Canceladas</div></div>
+    <div class="stat"><div class="stat-n" style="color:var(--azul)" id="sRetiros">—</div><div class="stat-l">Retiros pendientes</div></div>
   </div>
 
-  <!-- Mensaje éxito/error -->
-  <div class="msg" id="msgBox"></div>
-
-  <!-- Filtros + botón recargar -->
-  <div class="filtros">
-    <button class="filtro-btn activo" onclick="setFiltro('todos', this)">Todos <span class="filtro-count" id="cntTodos">0</span></button>
-    <button class="filtro-btn" onclick="setFiltro('verificando', this)">🔍 Verificando <span class="filtro-count" id="cntVerificando">0</span></button>
-    <button class="filtro-btn" onclick="setFiltro('pendiente_pago', this)">⏳ Pendiente <span class="filtro-count" id="cntPendiente">0</span></button>
-    <button class="filtro-btn" onclick="setFiltro('pagado', this)">💰 Pagado <span class="filtro-count" id="cntPagado">0</span></button>
-    <button class="filtro-btn" onclick="setFiltro('entregado', this)">📦 Entregado <span class="filtro-count" id="cntEntregado">0</span></button>
-    <button class="filtro-btn" onclick="setFiltro('completado', this)">✅ Completado <span class="filtro-count" id="cntCompletado">0</span></button>
-    <button class="filtro-btn" onclick="setFiltro('cancelado', this)">✗ Cancelado <span class="filtro-count" id="cntCancelado">0</span></button>
-    <button class="reload-btn" onclick="cargar()">↻ Recargar</button>
+  <!-- TABS -->
+  <div class="tabs">
+    <button class="tab activo" onclick="showTab('ordenes',this)">📋 Órdenes <span class="tab-badge" id="tBadgeO" style="display:none">0</span></button>
+    <button class="tab" onclick="showTab('retiros',this)">💸 Retiros <span class="tab-badge" id="tBadgeR" style="background:var(--azul);display:none">0</span></button>
   </div>
 
-  <!-- Sección retiros -->
-  <div style="margin-bottom:32px">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+  <div class="msg" id="msgGlobal"></div>
+
+  <!-- ÓRDENES -->
+  <div class="panel-sec visible" id="secOrdenes">
+    <div class="sec-header">
       <div>
-        <div style="font-family:'Syne',sans-serif;font-size:18px;font-weight:800">💸 Retiros pendientes</div>
-        <div style="font-size:12px;color:var(--gris);margin-top:2px">Vendedores que solicitaron retirar su saldo</div>
+        <div class="sec-title">Órdenes</div>
+        <div class="sec-sub">Más recientes primero. Aprobá o rechazá los pagos en verificación.</div>
       </div>
-      <button class="reload-btn" onclick="cargarRetiros()">↻ Recargar</button>
+      <button class="btn-reload" onclick="cargarOrdenes()">↻ Recargar</button>
     </div>
-    <div id="msgRetiros" class="msg"></div>
+    <div class="filtros">
+      <button class="filtro on" onclick="setFiltro('todos',this)">Todos <span class="filtro-n" id="fTodos">0</span></button>
+      <button class="filtro" onclick="setFiltro('verificando',this)">🔍 Verificando <span class="filtro-n" id="fVerif">0</span></button>
+      <button class="filtro" onclick="setFiltro('pendiente_pago',this)">⏳ Pendiente <span class="filtro-n" id="fPend">0</span></button>
+      <button class="filtro" onclick="setFiltro('pagado',this)">💰 Pagado <span class="filtro-n" id="fPag">0</span></button>
+      <button class="filtro" onclick="setFiltro('entregado',this)">📦 Entregado <span class="filtro-n" id="fEntr">0</span></button>
+      <button class="filtro" onclick="setFiltro('completado',this)">✅ Completado <span class="filtro-n" id="fComp">0</span></button>
+      <button class="filtro" onclick="setFiltro('cancelado',this)">✗ Cancelado <span class="filtro-n" id="fCanc">0</span></button>
+    </div>
     <div class="tabla-wrap">
       <table>
         <thead>
           <tr>
-            <th>Vendedor</th>
-            <th>Monto solicitado</th>
-            <th>Fee red</th>
-            <th>A enviar</th>
-            <th>Red</th>
-            <th>Wallet destino</th>
-            <th>Fecha</th>
-            <th>Acción</th>
+            <th># Orden</th><th>Estado</th><th>Comprador</th>
+            <th>Precio</th><th>Vendedor recibe</th><th>Red</th><th>Fecha</th><th>Acción</th>
           </tr>
         </thead>
-        <tbody id="retiroBody">
-          <tr><td colspan="8"><div class="spinner"></div></td></tr>
-        </tbody>
+        <tbody id="tbOrdenes"><tr><td colspan="8"><div class="spinner"></div></td></tr></tbody>
       </table>
     </div>
   </div>
 
-  <hr style="border:none;border-top:1px solid var(--borde);margin-bottom:32px">
-
-  <!-- Tabla órdenes -->
-  <div class="tabla-wrap">
-    <table>
-      <thead>
-        <tr>
-          <th>Orden ID</th>
-          <th>Estado</th>
-          <th>Comprador</th>
-          <th>Precio</th>
-          <th>Comisión 3%</th>
-          <th>A pagar vendedor</th>
-          <th>Wallet vendedor</th>
-          <th>Red</th>
-          <th>Fecha</th>
-          <th>Acciones</th>
-        </tr>
-      </thead>
-      <tbody id="tablaBody">
-        <tr><td colspan="7"><div class="spinner"></div></td></tr>
-      </tbody>
-    </table>
+  <!-- RETIROS -->
+  <div class="panel-sec" id="secRetiros">
+    <div class="sec-header">
+      <div>
+        <div class="sec-title">Retiros pendientes</div>
+        <div class="sec-sub">Vendedores esperando cobro. Copiá la wallet, enviá desde tu billetera y marcá enviado.</div>
+      </div>
+      <button class="btn-reload" onclick="cargarRetiros()">↻ Recargar</button>
+    </div>
+    <div class="tabla-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Vendedor</th><th>Pidió retirar</th><th>Fee red</th>
+            <th>Vos enviás</th><th>Red</th><th>Wallet destino</th><th>Fecha</th><th>Acción</th>
+          </tr>
+        </thead>
+        <tbody id="tbRetiros"><tr><td colspan="8"><div class="spinner"></div></td></tr></tbody>
+      </table>
+    </div>
   </div>
+
 </div>
 
 <script>
-var TODAS_LAS_ORDENES = [];
-var FILTRO_ACTUAL = 'todos';
+var ORDENES = [];
+var FILTRO  = 'todos';
 
-var ST_BADGE = {
-  pendiente_pago: '<span class="badge badge-pendiente_pago">⏳ Pendiente pago</span>',
-  verificando:    '<span class="badge badge-verificando">🔍 Verificando</span>',
-  pagado:         '<span class="badge badge-pagado">💰 Pagado</span>',
-  entregado:      '<span class="badge badge-entregado">📦 Entregado</span>',
-  completado:     '<span class="badge badge-completado">✅ Completado</span>',
-  cancelado:      '<span class="badge badge-cancelado">✗ Cancelado</span>'
+var BADGE = {
+  pendiente_pago: '<span class="badge b-pendiente">⏳ Pendiente</span>',
+  verificando:    '<span class="badge b-verificando">🔍 Verificando</span>',
+  pagado:         '<span class="badge b-pagado">💰 Pagado</span>',
+  entregado:      '<span class="badge b-entregado">📦 Entregado</span>',
+  completado:     '<span class="badge b-completado">✅ Completado</span>',
+  cancelado:      '<span class="badge b-cancelado">✗ Cancelado</span>'
 };
 
-// ── Init: verificar sesión ────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', async function() {
   var sess = await sb.auth.getSession();
-  if (!sess.data || !sess.data.session) {
-    window.location.href = 'login.html';
-    return;
-  }
-  var email = sess.data.session.user.email || '';
-  document.getElementById('navUser').textContent = email;
-  cargar();
+  if (!sess.data || !sess.data.session) { window.location.href = 'login.html'; return; }
+  document.getElementById('navUser').textContent = sess.data.session.user.email;
+  cargarOrdenes();
   cargarRetiros();
 });
 
-// ── Cargar todas las órdenes ─────────────────────────────────────────────
-async function cargar() {
-  var tbody = document.getElementById('tablaBody');
-  tbody.innerHTML = '<tr><td colspan="7"><div class="spinner"></div></td></tr>';
-  ocultarMsg();
-
-  try {
-    var res = await sb.from('ordenes')
-      .select('id, estado, comprador_email, seller_id, precio, red, created_at, profiles:seller_id(wallet_usdt)')
-      .order('created_at', { ascending: false });
-
-    if (res.error) {
-      tbody.innerHTML = '<tr><td colspan="7"><div class="empty">Error al cargar: ' + res.error.message + '</div></td></tr>';
-      return;
-    }
-
-    TODAS_LAS_ORDENES = res.data || [];
-    actualizarStats();
-    actualizarContadores();
-    renderTabla();
-
-  } catch(e) {
-    tbody.innerHTML = '<tr><td colspan="7"><div class="empty">Error inesperado: ' + e.message + '</div></td></tr>';
-  }
-}
-
-// ── Actualizar stats superiores ──────────────────────────────────────────
-function actualizarStats() {
-  var d = TODAS_LAS_ORDENES;
-  document.getElementById('statTotal').textContent      = d.length;
-  document.getElementById('statVerificando').textContent = d.filter(function(o){ return o.estado === 'verificando'; }).length;
-  document.getElementById('statPagado').textContent     = d.filter(function(o){ return o.estado === 'pagado'; }).length;
-  document.getElementById('statCompletado').textContent = d.filter(function(o){ return o.estado === 'completado'; }).length;
-  document.getElementById('statCancelado').textContent  = d.filter(function(o){ return o.estado === 'cancelado'; }).length;
-}
-
-// ── Actualizar contadores de filtros ─────────────────────────────────────
-function actualizarContadores() {
-  var d = TODAS_LAS_ORDENES;
-  document.getElementById('cntTodos').textContent       = d.length;
-  document.getElementById('cntVerificando').textContent = d.filter(function(o){ return o.estado === 'verificando'; }).length;
-  document.getElementById('cntPendiente').textContent   = d.filter(function(o){ return o.estado === 'pendiente_pago'; }).length;
-  document.getElementById('cntPagado').textContent      = d.filter(function(o){ return o.estado === 'pagado'; }).length;
-  document.getElementById('cntEntregado').textContent   = d.filter(function(o){ return o.estado === 'entregado'; }).length;
-  document.getElementById('cntCompletado').textContent  = d.filter(function(o){ return o.estado === 'completado'; }).length;
-  document.getElementById('cntCancelado').textContent   = d.filter(function(o){ return o.estado === 'cancelado'; }).length;
-}
-
-// ── Filtrar y renderizar tabla ────────────────────────────────────────────
-function setFiltro(filtro, btn) {
-  FILTRO_ACTUAL = filtro;
-  // Actualizar botones activos
-  document.querySelectorAll('.filtro-btn').forEach(function(b){ b.classList.remove('activo'); });
+function showTab(tab, btn) {
+  document.querySelectorAll('.panel-sec').forEach(function(s){ s.classList.remove('visible'); });
+  document.querySelectorAll('.tab').forEach(function(t){ t.classList.remove('activo'); });
+  document.getElementById('sec' + tab.charAt(0).toUpperCase() + tab.slice(1)).classList.add('visible');
   btn.classList.add('activo');
-  renderTabla();
 }
 
-function renderTabla() {
-  var datos = FILTRO_ACTUAL === 'todos'
-    ? TODAS_LAS_ORDENES
-    : TODAS_LAS_ORDENES.filter(function(o){ return o.estado === FILTRO_ACTUAL; });
+async function cargarOrdenes() {
+  var tb = document.getElementById('tbOrdenes');
+  tb.innerHTML = '<tr><td colspan="8"><div class="spinner"></div></td></tr>';
+  var res = await sb.from('ordenes').select('id,estado,comprador_email,seller_id,precio,red,created_at').order('created_at',{ascending:false});
+  if (res.error) { tb.innerHTML = '<tr><td colspan="8"><div class="empty">Error: ' + res.error.message + '</div></td></tr>'; return; }
+  ORDENES = res.data || [];
+  actualizarStats();
+  actualizarFiltros();
+  renderOrdenes();
+}
 
-  var tbody = document.getElementById('tablaBody');
+function actualizarStats() {
+  var d = ORDENES;
+  document.getElementById('sTotal').textContent  = d.length;
+  document.getElementById('sVerif').textContent  = d.filter(function(o){return o.estado==='verificando';}).length;
+  document.getElementById('sPagado').textContent = d.filter(function(o){return o.estado==='pagado';}).length;
+  document.getElementById('sComp').textContent   = d.filter(function(o){return o.estado==='completado';}).length;
+  document.getElementById('sCanc').textContent   = d.filter(function(o){return o.estado==='cancelado';}).length;
+  var nV = d.filter(function(o){return o.estado==='verificando';}).length;
+  var badgeO = document.getElementById('tBadgeO');
+  badgeO.textContent = nV; badgeO.style.display = nV > 0 ? 'inline-flex' : 'none';
+}
 
-  if (datos.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="7"><div class="empty">No hay órdenes en este estado.</div></td></tr>';
-    return;
-  }
+function actualizarFiltros() {
+  var d = ORDENES;
+  document.getElementById('fTodos').textContent = d.length;
+  document.getElementById('fVerif').textContent = d.filter(function(o){return o.estado==='verificando';}).length;
+  document.getElementById('fPend').textContent  = d.filter(function(o){return o.estado==='pendiente_pago';}).length;
+  document.getElementById('fPag').textContent   = d.filter(function(o){return o.estado==='pagado';}).length;
+  document.getElementById('fEntr').textContent  = d.filter(function(o){return o.estado==='entregado';}).length;
+  document.getElementById('fComp').textContent  = d.filter(function(o){return o.estado==='completado';}).length;
+  document.getElementById('fCanc').textContent  = d.filter(function(o){return o.estado==='cancelado';}).length;
+}
 
-  tbody.innerHTML = datos.map(function(o) {
-    var ref   = o.id ? o.id.substring(0, 8).toUpperCase() : '—';
-    var full  = o.id || '—';
-    var badge = ST_BADGE[o.estado] || ('<span class="badge">' + o.estado + '</span>');
-    var precio = o.precio ? parseFloat(o.precio) : 0;
-    var comision = precio > 0 ? (precio * 0.03).toFixed(2) : '—';
-    var neto     = precio > 0 ? (precio * 0.97).toFixed(2) : '—';
-    var montoStr = precio > 0 ? '$' + precio.toFixed(2) + ' USDT' : '—';
-    var red   = o.red || '—';
-    var fecha = o.created_at
-      ? new Date(o.created_at).toLocaleDateString('es', {day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit'})
-      : '—';
-    var email   = o.comprador_email || '—';
+function setFiltro(f, btn) {
+  FILTRO = f;
+  document.querySelectorAll('.filtro').forEach(function(b){b.classList.remove('on');});
+  btn.classList.add('on');
+  renderOrdenes();
+}
 
-    // Wallet del vendedor desde join con profiles
-    var walletVendedor = (o.profiles && o.profiles.wallet_usdt) ? o.profiles.wallet_usdt : null;
-    var walletCell = walletVendedor
-      ? '<span style="font-family:monospace;font-size:11px;color:#ccc">' + walletVendedor + '</span>' +
-        '<button onclick="copiar(\'' + walletVendedor + '\', this)" style="background:transparent;border:none;color:var(--gris);cursor:pointer;font-size:11px;margin-left:4px" title="Copiar">📋</button>'
-      : '<span style="color:#555;font-size:11px">⚠️ Sin wallet</span>';
-
-    // Acciones: solo si está en 'verificando'
-    var acciones = '';
-    if (o.estado === 'verificando') {
-      acciones = '<div class="acciones">' +
-        '<button class="btn-aprobar" onclick="aprobar(\'' + full + '\', this)" title="Aprobar pago — cambia a pagado">✅ Aprobar</button>' +
-        '<button class="btn-rechazar" onclick="rechazar(\'' + full + '\', this)" title="Rechazar — cancela y restaura stock">❌ No Payment</button>' +
-      '</div>';
-    } else {
-      acciones = '<span class="sin-accion">—</span>';
-    }
-
-    return '<tr>' +
-      '<td><span class="orden-id" title="' + full + '">#' + ref + '</span></td>' +
-      '<td>' + badge + '</td>' +
-      '<td class="email-cell">' + email + '</td>' +
-      '<td class="precio-cell">' + montoStr + '</td>' +
-      '<td style="font-size:12px;color:var(--rojo)">-$' + comision + '</td>' +
-      '<td style="font-size:13px;font-weight:700;color:var(--verde)">$' + neto + ' USDT</td>' +
-      '<td>' + walletCell + '</td>' +
-      '<td style="font-size:12px;color:var(--gris)">' + red + '</td>' +
-      '<td class="fecha-cell">' + fecha + '</td>' +
-      '<td>' + acciones + '</td>' +
+function renderOrdenes() {
+  var datos = FILTRO === 'todos' ? ORDENES : ORDENES.filter(function(o){return o.estado===FILTRO;});
+  var tb = document.getElementById('tbOrdenes');
+  if (datos.length === 0) { tb.innerHTML = '<tr><td colspan="8"><div class="empty">Sin órdenes en este estado.</div></td></tr>'; return; }
+  tb.innerHTML = datos.map(function(o) {
+    var ref   = '#' + (o.id||'').substring(0,8).toUpperCase();
+    var badge = BADGE[o.estado] || o.estado;
+    var precio = parseFloat(o.precio||0);
+    var neto   = precio > 0 ? '$'+(precio*0.97).toFixed(2)+' USDT' : '—';
+    var monto  = precio > 0 ? '$'+precio.toFixed(2)+' USDT' : '—';
+    var fecha  = o.created_at ? new Date(o.created_at).toLocaleDateString('es',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}) : '—';
+    var accion = o.estado === 'verificando'
+      ? '<div class="acc"><button class="btn-ok" onclick="aprobar(\''+o.id+'\',this)">✅ Aprobar</button><button class="btn-no" onclick="rechazar(\''+o.id+'\',this)">❌ Rechazar</button></div>'
+      : '<span style="color:var(--gris2);font-size:11px">—</span>';
+    return '<tr>'+
+      '<td><span class="id-cell" title="'+o.id+'">'+ref+'</span></td>'+
+      '<td>'+badge+'</td>'+
+      '<td style="font-size:12px">'+(o.comprador_email||'—')+'</td>'+
+      '<td class="monto">'+monto+'</td>'+
+      '<td class="monto" style="color:var(--verde)">'+neto+'</td>'+
+      '<td style="font-size:12px;color:var(--gris)">'+(o.red||'—')+'</td>'+
+      '<td style="font-size:11px;color:var(--gris);white-space:nowrap">'+fecha+'</td>'+
+      '<td>'+accion+'</td>'+
     '</tr>';
   }).join('');
 }
 
-// ── Aprobar pago ─────────────────────────────────────────────────────────
-async function aprobar(ordenId, btn) {
-  var ref = ordenId.substring(0, 8).toUpperCase();
-  if (!confirm('¿Confirmar APROBACIÓN del pago?\nOrden: #' + ref + '\n\nEsto cambiará el estado a "pagado" y el vendedor podrá entregar el código.')) return;
-
-  btn.disabled = true;
-  btn.textContent = 'Aprobando...';
-  // Deshabilitar botón gemelo
-  var fila = btn.closest('tr');
-  if (fila) fila.querySelectorAll('button').forEach(function(b){ b.disabled = true; });
-
-  try {
-    var r = await sb.rpc('admin_aprobar_pago', { p_orden_id: ordenId });
-    if (r.error) {
-      mostrarMsg('Error al aprobar: ' + r.error.message, 'err');
-      btn.disabled = false; btn.textContent = '✅ Aprobar';
-      if (fila) fila.querySelectorAll('button').forEach(function(b){ b.disabled = false; });
-      return;
-    }
-    mostrarMsg('✅ Pago aprobado correctamente. Orden #' + ref + ' pasó a estado "pagado".', 'ok');
-    await cargar();
-  } catch(e) {
-    mostrarMsg('Error inesperado: ' + e.message, 'err');
-    btn.disabled = false; btn.textContent = '✅ Aprobar';
-  }
+async function aprobar(id, btn) {
+  if (!confirm('Aprobar pago de orden #'+id.substring(0,8).toUpperCase()+'?\nEl saldo del vendedor sube automáticamente.')) return;
+  bloquear(btn); btn.textContent = '...';
+  var r = await sb.rpc('admin_aprobar_pago',{p_orden_id:id});
+  if (r.error||r.data!=='ok') { msg('Error: '+(r.error?r.error.message:r.data),'err'); desbloquear(btn,'✅ Aprobar'); return; }
+  msg('✅ Pago aprobado','ok'); cargarOrdenes();
 }
 
-// ── Rechazar pago ────────────────────────────────────────────────────────
-async function rechazar(ordenId, btn) {
-  var ref = ordenId.substring(0, 8).toUpperCase();
-  if (!confirm('¿Confirmar RECHAZO del pago?\nOrden: #' + ref + '\n\nEsto cancelará la orden y restaurará el stock del producto.')) return;
-
-  btn.disabled = true;
-  btn.textContent = 'Rechazando...';
-  var fila = btn.closest('tr');
-  if (fila) fila.querySelectorAll('button').forEach(function(b){ b.disabled = true; });
-
-  try {
-    var r = await sb.rpc('admin_rechazar_pago', { p_orden_id: ordenId });
-    if (r.error) {
-      mostrarMsg('Error al rechazar: ' + r.error.message, 'err');
-      btn.disabled = false; btn.textContent = '❌ No Payment';
-      if (fila) fila.querySelectorAll('button').forEach(function(b){ b.disabled = false; });
-      return;
-    }
-    mostrarMsg('❌ Pago rechazado. Orden #' + ref + ' cancelada y stock restaurado.', 'ok');
-    await cargar();
-  } catch(e) {
-    mostrarMsg('Error inesperado: ' + e.message, 'err');
-    btn.disabled = false; btn.textContent = '❌ No Payment';
-  }
+async function rechazar(id, btn) {
+  if (!confirm('Rechazar pago de orden #'+id.substring(0,8).toUpperCase()+'?\nSe cancela y restaura el stock.')) return;
+  bloquear(btn); btn.textContent = '...';
+  var r = await sb.rpc('admin_rechazar_pago',{p_orden_id:id});
+  if (r.error||r.data!=='ok') { msg('Error: '+(r.error?r.error.message:r.data),'err'); desbloquear(btn,'❌ Rechazar'); return; }
+  msg('Pago rechazado','ok'); cargarOrdenes();
 }
 
-// ── Helpers de UI ────────────────────────────────────────────────────────
-function mostrarMsg(texto, tipo) {
-  var el = document.getElementById('msgBox');
-  el.textContent = texto;
-  el.className = 'msg ' + tipo;
-  el.style.display = 'block';
-  // Auto-ocultar después de 6 segundos
-  setTimeout(function(){ el.style.display = 'none'; }, 6000);
-}
-
-function ocultarMsg() {
-  document.getElementById('msgBox').style.display = 'none';
-}
-
-// ── Retiros ─────────────────────────────────────────────────────────────
 async function cargarRetiros() {
-  var tbody = document.getElementById('retiroBody');
-  tbody.innerHTML = '<tr><td colspan="8"><div class="spinner"></div></td></tr>';
-
-  try {
-    var res = await sb.from('retiros')
-      .select('id, seller_id, monto_bruto, comision_red, monto_neto, red, wallet, estado, created_at, profiles:seller_id(wallet_usdt), auth_users:seller_id(email)')
-      .eq('estado', 'pendiente')
-      .order('created_at', { ascending: true });
-
-    // Si el join con auth.users falla, hacemos query separada de emails
-    var data = res.data || [];
-
-    if (data.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="8"><div class="empty">✅ No hay retiros pendientes.</div></td></tr>';
-      return;
-    }
-
-    tbody.innerHTML = data.map(function(r) {
-      var id       = r.id;
-      var fecha    = r.created_at ? new Date(r.created_at).toLocaleDateString('es', {day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}) : '—';
-      var email    = (r.auth_users && r.auth_users.email) ? r.auth_users.email : r.seller_id.substring(0,8) + '…';
-      var bruto    = '$' + parseFloat(r.monto_bruto).toFixed(2);
-      var fee      = '-$' + parseFloat(r.comision_red).toFixed(2);
-      var neto     = '$' + parseFloat(r.monto_neto).toFixed(2);
-      var wallet   = r.wallet || '—';
-
-      return '<tr>' +
-        '<td style="font-size:12px">' + email + '</td>' +
-        '<td style="font-weight:700">' + bruto + ' USDT</td>' +
-        '<td style="color:var(--rojo);font-size:12px">' + fee + '</td>' +
-        '<td style="color:var(--verde);font-weight:800">' + neto + ' USDT</td>' +
-        '<td><span class="badge badge-verificando">' + r.red + '</span></td>' +
-        '<td><span style="font-family:monospace;font-size:11px">' + wallet + '</span>' +
-          '<button onclick="copiar(\'' + wallet + '\', this)" style="background:transparent;border:none;color:var(--gris);cursor:pointer;font-size:11px;margin-left:4px" title="Copiar">📋</button></td>' +
-        '<td class="fecha-cell">' + fecha + '</td>' +
-        '<td><button class="btn-aprobar" onclick="marcarEnviado(\'' + id + '\', this)">✅ Marcar enviado</button></td>' +
-      '</tr>';
-    }).join('');
-
-  } catch(e) {
-    tbody.innerHTML = '<tr><td colspan="8"><div class="empty">Error: ' + e.message + '</div></td></tr>';
-  }
+  var tb = document.getElementById('tbRetiros');
+  tb.innerHTML = '<tr><td colspan="8"><div class="spinner"></div></td></tr>';
+  var res = await sb.from('retiros').select('id,seller_id,monto_bruto,comision_red,monto_neto,red,wallet,estado,created_at').eq('estado','pendiente').order('created_at',{ascending:true});
+  if (res.error) { tb.innerHTML = '<tr><td colspan="8"><div class="empty">Error: '+res.error.message+'</div></td></tr>'; return; }
+  var data = res.data || [];
+  document.getElementById('sRetiros').textContent = data.length;
+  var badgeR = document.getElementById('tBadgeR');
+  badgeR.textContent = data.length; badgeR.style.display = data.length > 0 ? 'inline-flex' : 'none';
+  if (data.length === 0) { tb.innerHTML = '<tr><td colspan="8"><div class="empty">✅ Sin retiros pendientes.</div></td></tr>'; return; }
+  tb.innerHTML = data.map(function(r) {
+    var fecha  = r.created_at ? new Date(r.created_at).toLocaleDateString('es',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}) : '—';
+    var seller = r.seller_id ? r.seller_id.substring(0,12)+'…' : '—';
+    var wallet = r.wallet || '—';
+    return '<tr>'+
+      '<td style="font-size:11px;color:var(--gris);font-family:monospace">'+seller+'</td>'+
+      '<td class="monto">$'+parseFloat(r.monto_bruto).toFixed(2)+' USDT</td>'+
+      '<td class="monto" style="color:var(--rojo)">-$'+parseFloat(r.comision_red).toFixed(2)+'</td>'+
+      '<td class="monto" style="color:var(--verde);font-size:15px">$'+parseFloat(r.monto_neto).toFixed(2)+' USDT</td>'+
+      '<td><span class="badge b-verificando">'+r.red+'</span></td>'+
+      '<td><span class="wallet-cell" title="'+wallet+'">'+wallet+'</span>'+
+        '<button class="btn-copy" onclick="copiar(\''+wallet+'\',this)">📋</button></td>'+
+      '<td style="font-size:11px;color:var(--gris);white-space:nowrap">'+fecha+'</td>'+
+      '<td><button class="btn-send" onclick="marcarEnviado(\''+r.id+'\',this)">✅ Marcar enviado</button></td>'+
+    '</tr>';
+  }).join('');
 }
 
 async function marcarEnviado(retiroId, btn) {
-  var txHash = prompt('(Opcional) Ingresá el hash de la transacción:\nDejá en blanco si no tenés todavía.');
-  if (txHash === null) return; // canceló el prompt
-
-  btn.disabled = true;
-  btn.textContent = 'Procesando...';
-
-  try {
-    var r = await sb.rpc('admin_marcar_enviado', {
-      p_retiro_id: retiroId,
-      p_tx_hash:   txHash || null
-    });
-
-    if (r.error || r.data !== 'ok') {
-      mostrarMsgRetiro('Error: ' + (r.error ? r.error.message : r.data), 'err');
-      btn.disabled = false; btn.textContent = '✅ Marcar enviado';
-      return;
-    }
-    mostrarMsgRetiro('✅ Retiro marcado como enviado.', 'ok');
-    await cargarRetiros();
-  } catch(e) {
-    mostrarMsgRetiro('Error inesperado: ' + e.message, 'err');
-    btn.disabled = false; btn.textContent = '✅ Marcar enviado';
-  }
+  var tx = prompt('Hash de la transacción (opcional):');
+  if (tx === null) return;
+  bloquear(btn); btn.textContent = '...';
+  var r = await sb.rpc('admin_marcar_enviado',{p_retiro_id:retiroId,p_tx_hash:tx||null});
+  if (r.error||r.data!=='ok') { msg('Error: '+(r.error?r.error.message:r.data),'err'); desbloquear(btn,'✅ Marcar enviado'); return; }
+  msg('✅ Retiro marcado como enviado','ok'); cargarRetiros();
 }
 
-function mostrarMsgRetiro(texto, tipo) {
-  var el = document.getElementById('msgRetiros');
-  el.textContent = texto;
-  el.className = 'msg ' + tipo;
-  el.style.display = 'block';
-  setTimeout(function(){ el.style.display = 'none'; }, 6000);
+function bloquear(btn) { var f=btn.closest('tr'); if(f) f.querySelectorAll('button').forEach(function(b){b.disabled=true;}); }
+function desbloquear(btn,t) { var f=btn.closest('tr'); if(f) f.querySelectorAll('button').forEach(function(b){b.disabled=false;}); btn.textContent=t; }
+
+function msg(texto, tipo) {
+  var el = document.getElementById('msgGlobal');
+  el.textContent = texto; el.className = 'msg '+tipo; el.style.display = 'block';
+  setTimeout(function(){el.style.display='none';}, 5000);
 }
 
 function copiar(texto, btn) {
-  navigator.clipboard.writeText(texto).then(function() {
-    var orig = btn.textContent;
-    btn.textContent = '✅';
-    setTimeout(function(){ btn.textContent = orig; }, 1500);
+  navigator.clipboard.writeText(texto).then(function(){
+    var o = btn.textContent; btn.textContent = '✅';
+    setTimeout(function(){btn.textContent=o;}, 1500);
   });
 }
 
-async function logout() {
-  await sb.auth.signOut();
-  window.location.href = 'login.html';
-}
+async function logout() { await sb.auth.signOut(); window.location.href = 'login.html'; }
 </script>
 </body>
 </html>

@@ -777,11 +777,28 @@ async function confirmarRetiro() {
       return;
     }
 
+    // Guardar wallet en perfil para que quede registrada
+    var sess = await sb.auth.getSession();
+    if (sess.data && sess.data.session) {
+      var uid = sess.data.session.user.id;
+      await sb.from('profiles').upsert({
+        id: uid,
+        wallet_usdt: wallet,
+        wallet_red: red,
+        updated_at: new Date().toISOString()
+      }, { onConflict: 'id' });
+      // Actualizar también el input del panel y la variable global
+      window._sellerWallet = wallet;
+      window._panelRed = red;
+      var panelInput = document.getElementById('panelWalletInput');
+      if (panelInput) panelInput.value = wallet;
+      var selectRed = document.getElementById('selectRed');
+      if (selectRed) selectRed.value = red;
+    }
+
     // Cerrar modal y recargar saldo
     document.querySelector('div[style*="fixed"][style*="9999"]').remove();
 
-    // Recargar datos del panel
-    var sess = await sb.auth.getSession();
     if (sess.data && sess.data.session) loadPanelData(sess.data.session);
 
   } catch(e) {
