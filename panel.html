@@ -423,14 +423,7 @@ footer {
     <!-- Wallet de cobro -->
     <div style="margin-bottom:14px">
       <div style="font-size:11px;color:#888;font-weight:600;margin-bottom:8px">💳 TU WALLET DE COBRO (USDT)</div>
-      <div style="display:flex;gap:6px;margin-bottom:8px">
-        <button id="panelBtnTRC20" onclick="selRedPanel('TRC20')" class="red-btn red-btn-activo">
-          TRC20<br><span style="font-size:10px;font-weight:400">T...</span>
-        </button>
-        <button id="panelBtnBEP20" onclick="selRedPanel('BEP20')" class="red-btn">
-          BEP20<br><span style="font-size:10px;font-weight:400">0x...</span>
-        </button>
-      </div>
+      <div id="redSelectorWrap" style="display:flex;gap:6px;margin-bottom:8px"></div>
       <div style="display:flex;gap:8px;align-items:center">
         <input id="panelWalletInput" type="text" placeholder="T..."
           style="flex:1;background:#111;border:1px solid #2a2a2a;border-radius:10px;padding:10px 12px;color:#f0f0f0;font-size:12px;outline:none;font-family:monospace"
@@ -672,9 +665,24 @@ function showWalletModal(tipo) {
 
 function selRedPanel(red) {
   window._panelRed = red;
+  var wrap = document.getElementById('redSelectorWrap');
+  var input = document.getElementById('panelWalletInput');
+
+  // Crear botones si no existen todavía
+  if (wrap && !document.getElementById('panelBtnTRC20')) {
+    var b1 = document.createElement('button');
+    b1.id = 'panelBtnTRC20'; b1.className = 'red-btn';
+    b1.innerHTML = 'TRC20<br><span style="font-size:10px;font-weight:400">T...</span>';
+    b1.onclick = function() { selRedPanel('TRC20'); };
+    var b2 = document.createElement('button');
+    b2.id = 'panelBtnBEP20'; b2.className = 'red-btn';
+    b2.innerHTML = 'BEP20<br><span style="font-size:10px;font-weight:400">0x...</span>';
+    b2.onclick = function() { selRedPanel('BEP20'); };
+    wrap.appendChild(b1); wrap.appendChild(b2);
+  }
+
   var btnTRC = document.getElementById('panelBtnTRC20');
   var btnBEP = document.getElementById('panelBtnBEP20');
-  var input  = document.getElementById('panelWalletInput');
   if (!btnTRC || !btnBEP) return;
 
   btnTRC.classList.toggle('red-btn-activo', red === 'TRC20');
