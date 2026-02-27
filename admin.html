@@ -121,7 +121,40 @@
     <button class="reload-btn" onclick="cargar()">↻ Recargar</button>
   </div>
 
-  <!-- Tabla -->
+  <!-- Sección retiros -->
+  <div style="margin-bottom:32px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+      <div>
+        <div style="font-family:'Syne',sans-serif;font-size:18px;font-weight:800">💸 Retiros pendientes</div>
+        <div style="font-size:12px;color:var(--gris);margin-top:2px">Vendedores que solicitaron retirar su saldo</div>
+      </div>
+      <button class="reload-btn" onclick="cargarRetiros()">↻ Recargar</button>
+    </div>
+    <div id="msgRetiros" class="msg"></div>
+    <div class="tabla-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Vendedor</th>
+            <th>Monto solicitado</th>
+            <th>Fee red</th>
+            <th>A enviar</th>
+            <th>Red</th>
+            <th>Wallet destino</th>
+            <th>Fecha</th>
+            <th>Acción</th>
+          </tr>
+        </thead>
+        <tbody id="retiroBody">
+          <tr><td colspan="8"><div class="spinner"></div></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <hr style="border:none;border-top:1px solid var(--borde);margin-bottom:32px">
+
+  <!-- Tabla órdenes -->
   <div class="tabla-wrap">
     <table>
       <thead>
@@ -130,6 +163,9 @@
           <th>Estado</th>
           <th>Comprador</th>
           <th>Precio</th>
+          <th>Comisión 3%</th>
+          <th>A pagar vendedor</th>
+          <th>Wallet vendedor</th>
           <th>Red</th>
           <th>Fecha</th>
           <th>Acciones</th>
@@ -165,6 +201,7 @@ document.addEventListener('DOMContentLoaded', async function() {
   var email = sess.data.session.user.email || '';
   document.getElementById('navUser').textContent = email;
   cargar();
+  cargarRetiros();
 });
 
 // ── Cargar todas las órdenes ─────────────────────────────────────────────
@@ -175,7 +212,7 @@ async function cargar() {
 
   try {
     var res = await sb.from('ordenes')
-      .select('id, estado, comprador_email, seller_id, precio, red, created_at')
+      .select('id, estado, comprador_email, seller_id, precio, red, created_at, profiles:seller_id(wallet_usdt)')
       .order('created_at', { ascending: false });
 
     if (res.error) {
@@ -240,13 +277,22 @@ function renderTabla() {
     var ref   = o.id ? o.id.substring(0, 8).toUpperCase() : '—';
     var full  = o.id || '—';
     var badge = ST_BADGE[o.estado] || ('<span class="badge">' + o.estado + '</span>');
-    var monto = o.precio ? '$' + parseFloat(o.precio).toFixed(2) + ' USDT' : '—';
+    var precio = o.precio ? parseFloat(o.precio) : 0;
+    var comision = precio > 0 ? (precio * 0.03).toFixed(2) : '—';
+    var neto     = precio > 0 ? (precio * 0.97).toFixed(2) : '—';
+    var montoStr = precio > 0 ? '$' + precio.toFixed(2) + ' USDT' : '—';
     var red   = o.red || '—';
     var fecha = o.created_at
       ? new Date(o.created_at).toLocaleDateString('es', {day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit'})
       : '—';
     var email   = o.comprador_email || '—';
-    var seller  = o.seller_id ? o.seller_id.substring(0, 8) + '…' : '—';
+
+    // Wallet del vendedor desde join con profiles
+    var walletVendedor = (o.profiles && o.profiles.wallet_usdt) ? o.profiles.wallet_usdt : null;
+    var walletCell = walletVendedor
+      ? '<span style="font-family:monospace;font-size:11px;color:#ccc">' + walletVendedor + '</span>' +
+        '<button onclick="copiar(\'' + walletVendedor + '\', this)" style="background:transparent;border:none;color:var(--gris);cursor:pointer;font-size:11px;margin-left:4px" title="Copiar">📋</button>'
+      : '<span style="color:#555;font-size:11px">⚠️ Sin wallet</span>';
 
     // Acciones: solo si está en 'verificando'
     var acciones = '';
@@ -263,7 +309,10 @@ function renderTabla() {
       '<td><span class="orden-id" title="' + full + '">#' + ref + '</span></td>' +
       '<td>' + badge + '</td>' +
       '<td class="email-cell">' + email + '</td>' +
-      '<td class="precio-cell">' + monto + '</td>' +
+      '<td class="precio-cell">' + montoStr + '</td>' +
+      '<td style="font-size:12px;color:var(--rojo)">-$' + comision + '</td>' +
+      '<td style="font-size:13px;font-weight:700;color:var(--verde)">$' + neto + ' USDT</td>' +
+      '<td>' + walletCell + '</td>' +
       '<td style="font-size:12px;color:var(--gris)">' + red + '</td>' +
       '<td class="fecha-cell">' + fecha + '</td>' +
       '<td>' + acciones + '</td>' +
@@ -336,6 +385,94 @@ function mostrarMsg(texto, tipo) {
 
 function ocultarMsg() {
   document.getElementById('msgBox').style.display = 'none';
+}
+
+// ── Retiros ─────────────────────────────────────────────────────────────
+async function cargarRetiros() {
+  var tbody = document.getElementById('retiroBody');
+  tbody.innerHTML = '<tr><td colspan="8"><div class="spinner"></div></td></tr>';
+
+  try {
+    var res = await sb.from('retiros')
+      .select('id, seller_id, monto_bruto, comision_red, monto_neto, red, wallet, estado, created_at, profiles:seller_id(wallet_usdt), auth_users:seller_id(email)')
+      .eq('estado', 'pendiente')
+      .order('created_at', { ascending: true });
+
+    // Si el join con auth.users falla, hacemos query separada de emails
+    var data = res.data || [];
+
+    if (data.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="8"><div class="empty">✅ No hay retiros pendientes.</div></td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = data.map(function(r) {
+      var id       = r.id;
+      var fecha    = r.created_at ? new Date(r.created_at).toLocaleDateString('es', {day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}) : '—';
+      var email    = (r.auth_users && r.auth_users.email) ? r.auth_users.email : r.seller_id.substring(0,8) + '…';
+      var bruto    = '$' + parseFloat(r.monto_bruto).toFixed(2);
+      var fee      = '-$' + parseFloat(r.comision_red).toFixed(2);
+      var neto     = '$' + parseFloat(r.monto_neto).toFixed(2);
+      var wallet   = r.wallet || '—';
+
+      return '<tr>' +
+        '<td style="font-size:12px">' + email + '</td>' +
+        '<td style="font-weight:700">' + bruto + ' USDT</td>' +
+        '<td style="color:var(--rojo);font-size:12px">' + fee + '</td>' +
+        '<td style="color:var(--verde);font-weight:800">' + neto + ' USDT</td>' +
+        '<td><span class="badge badge-verificando">' + r.red + '</span></td>' +
+        '<td><span style="font-family:monospace;font-size:11px">' + wallet + '</span>' +
+          '<button onclick="copiar(\'' + wallet + '\', this)" style="background:transparent;border:none;color:var(--gris);cursor:pointer;font-size:11px;margin-left:4px" title="Copiar">📋</button></td>' +
+        '<td class="fecha-cell">' + fecha + '</td>' +
+        '<td><button class="btn-aprobar" onclick="marcarEnviado(\'' + id + '\', this)">✅ Marcar enviado</button></td>' +
+      '</tr>';
+    }).join('');
+
+  } catch(e) {
+    tbody.innerHTML = '<tr><td colspan="8"><div class="empty">Error: ' + e.message + '</div></td></tr>';
+  }
+}
+
+async function marcarEnviado(retiroId, btn) {
+  var txHash = prompt('(Opcional) Ingresá el hash de la transacción:\nDejá en blanco si no tenés todavía.');
+  if (txHash === null) return; // canceló el prompt
+
+  btn.disabled = true;
+  btn.textContent = 'Procesando...';
+
+  try {
+    var r = await sb.rpc('admin_marcar_enviado', {
+      p_retiro_id: retiroId,
+      p_tx_hash:   txHash || null
+    });
+
+    if (r.error || r.data !== 'ok') {
+      mostrarMsgRetiro('Error: ' + (r.error ? r.error.message : r.data), 'err');
+      btn.disabled = false; btn.textContent = '✅ Marcar enviado';
+      return;
+    }
+    mostrarMsgRetiro('✅ Retiro marcado como enviado.', 'ok');
+    await cargarRetiros();
+  } catch(e) {
+    mostrarMsgRetiro('Error inesperado: ' + e.message, 'err');
+    btn.disabled = false; btn.textContent = '✅ Marcar enviado';
+  }
+}
+
+function mostrarMsgRetiro(texto, tipo) {
+  var el = document.getElementById('msgRetiros');
+  el.textContent = texto;
+  el.className = 'msg ' + tipo;
+  el.style.display = 'block';
+  setTimeout(function(){ el.style.display = 'none'; }, 6000);
+}
+
+function copiar(texto, btn) {
+  navigator.clipboard.writeText(texto).then(function() {
+    var orig = btn.textContent;
+    btn.textContent = '✅';
+    setTimeout(function(){ btn.textContent = orig; }, 1500);
+  });
 }
 
 async function logout() {

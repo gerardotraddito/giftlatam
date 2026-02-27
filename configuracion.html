@@ -115,6 +115,13 @@ document.addEventListener('DOMContentLoaded', async function() {
     return;
   }
   currentUser = res.data.session.user;
+
+  // Cargar wallet_usdt desde profiles
+  try {
+    var pr = await sb.from('profiles').select('wallet_usdt').eq('id', currentUser.id).single();
+    currentUser._walletUsdt = (pr.data && pr.data.wallet_usdt) ? pr.data.wallet_usdt : '';
+  } catch(e) { currentUser._walletUsdt = ''; }
+
   renderConfig();
 });
 
@@ -185,17 +192,17 @@ function renderConfig() {
     // ── Pago y wallet ──
     '<div class="section-label">Wallet y pagos</div>' +
     '<div class="menu-group">' +
-      '<div class="menu-row" onclick="showComingSoon(\'Red de pago\')">' +
+      '<div class="menu-row" style="cursor:default">' +
         '<span class="menu-row-icon">💎</span>' +
-        '<div class="menu-row-body"><div class="menu-row-title">Red preferida</div><div class="menu-row-sub">Para recibir USDT</div></div>' +
-        '<div class="menu-row-right"><span class="value-tag">TRC20</span><span class="arrow">›</span></div>' +
-      '</div>' +
-      '<div class="menu-row" onclick="showComingSoon(\'Wallet externa\')">' +
-        '<span class="menu-row-icon">🔗</span>' +
-        '<div class="menu-row-body"><div class="menu-row-title">Wallet externa</div><div class="menu-row-sub">Para retiros automáticos</div></div>' +
-        '<div class="menu-row-right"><span class="value-tag" style="color:#555">Sin configurar</span><span class="arrow">›</span></div>' +
+        '<div class="menu-row-body"><div class="menu-row-title">Red</div><div class="menu-row-sub">Solo aceptamos USDT TRC20</div></div>' +
+        '<div class="menu-row-right"><span class="value-tag">TRC20</span></div>' +
       '</div>' +
     '</div>' +
+    '<div class="input-row" style="margin-bottom:4px">' +
+      '<div class="input-label-row"><span class="input-label">💳 TU WALLET USDT TRC20 (para recibir pagos)</span></div>' +
+      '<input class="input-field" id="inputWallet" value="' + esc(currentUser._walletUsdt || '') + '" placeholder="T..." oninput="markChanged()" style="font-family:monospace;font-size:13px">' +
+    '</div>' +
+    '<div style="font-size:11px;color:#555;padding:0 4px 12px">Esta wallet es donde GiftLatam te enviará tus ganancias descontada la comisión del 3%.</div>' +
 
     // ── Soporte ──
     '<div class="section-label">Soporte</div>' +
@@ -248,18 +255,39 @@ async function guardarPerfil() {
   var nombre  = document.getElementById('inputNombre').value.trim();
   var usuario = document.getElementById('inputUsuario').value.trim();
   var bio     = document.getElementById('inputBio').value.trim();
+  var wallet  = (document.getElementById('inputWallet') ? document.getElementById('inputWallet').value.trim() : '');
 
+  // Guardar nombre/usuario/bio en auth metadata
   var res = await sb.auth.updateUser({
     data: { nombre: nombre, usuario: usuario, bio: bio }
   });
 
-  if (!res.error) {
-    showToast('✅ Cambios guardados');
-    hasChanges = false;
-    document.getElementById('saveBar').classList.remove('visible');
-  } else {
+  if (res.error) {
     showToast('❌ Error: ' + res.error.message);
+    btn.textContent = 'Guardar cambios';
+    btn.disabled = false;
+    return;
   }
+
+  // Guardar wallet en profiles
+  if (wallet !== undefined) {
+    var upd = await sb.from('profiles').upsert({
+      id: currentUser.id,
+      wallet_usdt: wallet,
+      updated_at: new Date().toISOString()
+    }, { onConflict: 'id' });
+    if (upd.error) {
+      showToast('❌ Error al guardar wallet: ' + upd.error.message);
+      btn.textContent = 'Guardar cambios';
+      btn.disabled = false;
+      return;
+    }
+    currentUser._walletUsdt = wallet;
+  }
+
+  showToast('✅ Cambios guardados');
+  hasChanges = false;
+  document.getElementById('saveBar').classList.remove('visible');
   btn.textContent = 'Guardar cambios';
   btn.disabled = false;
 }
