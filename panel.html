@@ -394,24 +394,40 @@ footer {
     </div>
   </div>
 
+  <div class="wallet-card" style="margin-bottom:16px;background:linear-gradient(135deg,rgba(0,200,83,0.08),rgba(0,200,83,0.03));border:1px solid rgba(0,200,83,0.25)">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+      <span class="wallet-label" style="font-size:13px;font-weight:700;color:var(--verde)">💎 Saldo disponible</span>
+      <span style="font-size:11px;color:var(--gris)">USDT · TRC20 / BEP20</span>
+    </div>
+    <div class="wallet-amount" id="walletAmount" style="font-size:36px;font-weight:800;color:#00C853;letter-spacing:-1px;line-height:1.1">Cargando...</div>
+    <div class="wallet-usd" id="walletUsd" style="font-size:12px;color:var(--gris);margin-top:4px;margin-bottom:14px"> </div>
+
+    <!-- Wallet de cobro -->
+    <div style="margin-bottom:14px">
+      <div style="font-size:11px;color:#888;font-weight:600;margin-bottom:6px">💳 TU WALLET DE COBRO (USDT)</div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <input id="panelWalletInput" type="text" placeholder="T... (TRC20) o 0x... (BEP20)"
+          style="flex:1;background:#111;border:1px solid #2a2a2a;border-radius:10px;padding:10px 12px;color:#f0f0f0;font-size:12px;outline:none;font-family:monospace"
+          oninput="document.getElementById('btnGuardarWallet').style.display='block'">
+        <button id="btnGuardarWallet" onclick="guardarWalletPanel()" 
+          style="display:none;background:var(--verde);color:#000;border:none;border-radius:10px;padding:10px 14px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;font-family:Inter,sans-serif">
+          Guardar
+        </button>
+      </div>
+      <div id="walletPanelMsg" style="font-size:11px;margin-top:5px;display:none"></div>
+    </div>
+
+    <div class="wallet-btns">
+      <button class="btn-wallet btn-depositar" onclick="showWalletModal('depositar')">⬇️ Depositar</button>
+      <button class="btn-wallet btn-retirar" style="border:1px solid rgba(0,200,83,0.4);color:var(--verde)" onclick="showWalletModal('retirar')">⬆️ Retirar</button>
+    </div>
+  </div>
+
   <div class="panel-stats">
     <div class="panel-stat"><span class="panel-stat-icon">🛒</span><span class="panel-stat-num" id="statCompras">-</span><span class="panel-stat-label">Compras totales</span><span class="panel-stat-sub" id="statComprasSub"></span></div>
     <div class="panel-stat"><span class="panel-stat-icon">💰</span><span class="panel-stat-num" id="statVentas">-</span><span class="panel-stat-label">Ventas totales</span><span class="panel-stat-sub" id="statListings"></span></div>
     <div class="panel-stat"><span class="panel-stat-icon">⭐</span><span class="panel-stat-num" id="statRep">—</span><span class="panel-stat-label">Reputación</span><span class="panel-stat-sub" id="statRepSub">cargando...</span></div>
     <div class="panel-stat"><span class="panel-stat-icon">🏷️</span><span class="panel-stat-num" id="statListingsNum">—</span><span class="panel-stat-label">Listings activos</span><span class="panel-stat-sub" id="statListingsSub">cargando...</span></div>
-  </div>
-
-  <div class="wallet-card">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
-      <span class="wallet-label">💎 Mi wallet</span>
-      <span style="font-size:11px;color:var(--gris)">USDT · TRC20</span>
-    </div>
-    <div class="wallet-amount" id="walletAmount" style="font-size:24px;color:#555">Cargando...</div>
-    <div class="wallet-usd" id="walletUsd"> </div>
-    <div class="wallet-btns">
-      <button class="btn-wallet btn-depositar" onclick="showWalletModal('depositar')">⬇️ Depositar</button>
-      <button class="btn-wallet btn-retirar" style="border:1px solid var(--borde)" onclick="showWalletModal('retirar')">⬆️ Retirar</button>
-    </div>
   </div>
 
   <div class="panel-menu">
@@ -501,6 +517,12 @@ async function loadPanelData(session) {
   if (el('statRepSub')) el('statRepSub').textContent = resenas > 0 ? resenas + ' reseñas positivas' : 'sin reseñas aún';
 
   // ── Wallet ──
+  // Mostrar wallet guardada en el input del panel
+  const walletGuardada = profile.wallet_usdt || '';
+  const panelWalletInput = document.getElementById('panelWalletInput');
+  if (panelWalletInput) panelWalletInput.value = walletGuardada;
+  window._sellerWallet = walletGuardada;
+
   // Saldo real desde tabla saldos
   const balance = parseFloat(saldoData.balance || 0);
   const totalGanado = parseFloat(saldoData.total_ganado || 0);
@@ -614,19 +636,61 @@ function showWalletModal(tipo) {
   window._retiroFee = 1.00;
 }
 
+async function guardarWalletPanel() {
+  var input = document.getElementById('panelWalletInput');
+  var msg   = document.getElementById('walletPanelMsg');
+  var btn   = document.getElementById('btnGuardarWallet');
+  if (!input) return;
+
+  var wallet = input.value.trim();
+  if (!wallet || wallet.length < 10) {
+    msg.textContent = '⚠️ Ingresá una wallet válida.';
+    msg.style.color = '#FF4444';
+    msg.style.display = 'block';
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = 'Guardando...';
+
+  try {
+    var sess = await sb.auth.getSession();
+    var uid  = sess.data.session.user.id;
+    var upd  = await sb.from('profiles').upsert({ id: uid, wallet_usdt: wallet, updated_at: new Date().toISOString() }, { onConflict: 'id' });
+    if (upd.error) {
+      msg.textContent = '❌ Error: ' + upd.error.message;
+      msg.style.color = '#FF4444';
+    } else {
+      window._sellerWallet = wallet;
+      msg.textContent = '✅ Wallet guardada correctamente.';
+      msg.style.color = '#00C853';
+      btn.style.display = 'none';
+    }
+  } catch(e) {
+    msg.textContent = '❌ Error inesperado.';
+    msg.style.color = '#FF4444';
+  }
+
+  msg.style.display = 'block';
+  btn.disabled = false;
+  btn.textContent = 'Guardar';
+}
+
 function selectRed(red) {
   window._retiroRed = red;
   window._retiroFee = red === 'TRC20' ? 1.00 : 0.20;
-  var btnTRC = document.getElementById('btnTRC20');
-  var btnBEP = document.getElementById('btnBEP20');
+  // Buscar botones dentro del modal activo
+  var btnTRC = document.querySelector('#btnTRC20');
+  var btnBEP = document.querySelector('#btnBEP20');
   if (!btnTRC || !btnBEP) return;
-  if (red === 'TRC20') {
-    btnTRC.style.border = '2px solid #00C853'; btnTRC.style.color = '#00C853'; btnTRC.style.background = 'rgba(0,200,83,0.1)';
-    btnBEP.style.border = '1px solid #333';     btnBEP.style.color = '#888';    btnBEP.style.background = 'transparent';
-  } else {
-    btnBEP.style.border = '2px solid #00C853'; btnBEP.style.color = '#00C853'; btnBEP.style.background = 'rgba(0,200,83,0.1)';
-    btnTRC.style.border = '1px solid #333';     btnTRC.style.color = '#888';    btnTRC.style.background = 'transparent';
-  }
+  // Resetear ambos
+  btnTRC.style.cssText = 'flex:1;padding:10px;border-radius:10px;cursor:pointer;font-family:Inter,sans-serif;font-weight:700;font-size:13px;border:1px solid #333;background:transparent;color:#888';
+  btnBEP.style.cssText = 'flex:1;padding:10px;border-radius:10px;cursor:pointer;font-family:Inter,sans-serif;font-weight:700;font-size:13px;border:1px solid #333;background:transparent;color:#888';
+  // Marcar el activo
+  var btnActivo = red === 'TRC20' ? btnTRC : btnBEP;
+  btnActivo.style.border = '2px solid #00C853';
+  btnActivo.style.color = '#00C853';
+  btnActivo.style.background = 'rgba(0,200,83,0.1)';
   calcRetiro();
 }
 
