@@ -533,9 +533,13 @@ async function loadPanelData(session) {
   if (panelWalletInput) panelWalletInput.value = walletGuardada;
   window._sellerWallet = walletGuardada;
   // Detectar red y activar botón correspondiente
-  var redDetectada = walletGuardada.startsWith('0x') ? 'BEP20' : 'TRC20';
-  window._panelRed = redDetectada;
-  setTimeout(function() { selRedPanel(redDetectada); }, 50);
+  // Solo setear la red al cargar por primera vez, no en cada refresh de auth
+  if (!window._panelRedInit) {
+    var redDetectada = walletGuardada.startsWith('0x') ? 'BEP20' : 'TRC20';
+    window._panelRed = redDetectada;
+    window._panelRedInit = true;
+    setTimeout(function() { selRedPanel(redDetectada); }, 50);
+  }
 
   // Saldo real desde tabla saldos
   const balance = parseFloat(saldoData.balance || 0);
@@ -657,19 +661,11 @@ function selRedPanel(red) {
   var input  = document.getElementById('panelWalletInput');
   if (!btnTRC || !btnBEP) return;
 
-  // Resetear los dos individualmente
-  btnTRC.style.border = '1px solid #333';
-  btnTRC.style.color = '#888';
-  btnTRC.style.background = 'transparent';
-  btnBEP.style.border = '1px solid #333';
-  btnBEP.style.color = '#888';
-  btnBEP.style.background = 'transparent';
+  var estiloInactivo = 'flex:1;padding:8px;border-radius:10px;border:1px solid #333;background:transparent;color:#888;font-weight:700;font-size:12px;cursor:pointer;font-family:Inter,sans-serif';
+  var estiloActivo   = 'flex:1;padding:8px;border-radius:10px;border:2px solid #00C853;background:rgba(0,200,83,0.1);color:#00C853;font-weight:700;font-size:12px;cursor:pointer;font-family:Inter,sans-serif';
 
-  // Activar el seleccionado
-  var activo = red === 'TRC20' ? btnTRC : btnBEP;
-  activo.style.border = '2px solid #00C853';
-  activo.style.color = '#00C853';
-  activo.style.background = 'rgba(0,200,83,0.1)';
+  btnTRC.setAttribute('style', red === 'TRC20' ? estiloActivo : estiloInactivo);
+  btnBEP.setAttribute('style', red === 'BEP20' ? estiloActivo : estiloInactivo);
 
   if (input) input.placeholder = red === 'TRC20' ? 'T...' : '0x...';
 }
