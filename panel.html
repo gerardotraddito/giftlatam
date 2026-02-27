@@ -367,7 +367,25 @@ footer {
   .menu-icon { font-size: 18px; width: 24px; text-align: center; flex-shrink: 0; }
   .menu-arrow { margin-left: auto; color: var(--gris); }
   .online-dot { width: 8px; height: 8px; background: var(--verde); border-radius: 50%; display: inline-block; margin-right: 4px; }
-</style>
+    .red-btn {
+      flex: 1;
+      padding: 8px;
+      border-radius: 10px;
+      border: 1px solid #333;
+      background: transparent;
+      color: #888;
+      font-weight: 700;
+      font-size: 12px;
+      cursor: pointer;
+      font-family: Inter, sans-serif;
+      transition: all 0.15s;
+    }
+    .red-btn-activo {
+      border: 2px solid #00C853 !important;
+      background: rgba(0,200,83,0.1) !important;
+      color: #00C853 !important;
+    }
+  </style>
   <!-- GiftLatam core -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.js"></script>
   <script src="supabase.js"></script>
@@ -406,12 +424,10 @@ footer {
     <div style="margin-bottom:14px">
       <div style="font-size:11px;color:#888;font-weight:600;margin-bottom:8px">💳 TU WALLET DE COBRO (USDT)</div>
       <div style="display:flex;gap:6px;margin-bottom:8px">
-        <button id="panelBtnTRC20" onclick="selRedPanel('TRC20')"
-          style="flex:1;padding:8px;border-radius:10px;border:2px solid #00C853;background:rgba(0,200,83,0.1);color:#00C853;font-weight:700;font-size:12px;cursor:pointer;font-family:Inter,sans-serif">
+        <button id="panelBtnTRC20" onclick="selRedPanel('TRC20')" class="red-btn red-btn-activo">
           TRC20<br><span style="font-size:10px;font-weight:400">T...</span>
         </button>
-        <button id="panelBtnBEP20" onclick="selRedPanel('BEP20')"
-          style="flex:1;padding:8px;border-radius:10px;border:1px solid #333;background:transparent;color:#888;font-weight:700;font-size:12px;cursor:pointer;font-family:Inter,sans-serif">
+        <button id="panelBtnBEP20" onclick="selRedPanel('BEP20')" class="red-btn">
           BEP20<br><span style="font-size:10px;font-weight:400">0x...</span>
         </button>
       </div>
@@ -661,11 +677,8 @@ function selRedPanel(red) {
   var input  = document.getElementById('panelWalletInput');
   if (!btnTRC || !btnBEP) return;
 
-  var estiloInactivo = 'flex:1;padding:8px;border-radius:10px;border:1px solid #333;background:transparent;color:#888;font-weight:700;font-size:12px;cursor:pointer;font-family:Inter,sans-serif';
-  var estiloActivo   = 'flex:1;padding:8px;border-radius:10px;border:2px solid #00C853;background:rgba(0,200,83,0.1);color:#00C853;font-weight:700;font-size:12px;cursor:pointer;font-family:Inter,sans-serif';
-
-  btnTRC.setAttribute('style', red === 'TRC20' ? estiloActivo : estiloInactivo);
-  btnBEP.setAttribute('style', red === 'BEP20' ? estiloActivo : estiloInactivo);
+  btnTRC.classList.toggle('red-btn-activo', red === 'TRC20');
+  btnBEP.classList.toggle('red-btn-activo', red === 'BEP20');
 
   if (input) input.placeholder = red === 'TRC20' ? 'T...' : '0x...';
 }
