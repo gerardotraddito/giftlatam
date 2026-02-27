@@ -423,10 +423,11 @@ footer {
     <!-- Wallet de cobro -->
     <div style="margin-bottom:14px">
       <div style="font-size:11px;color:#888;font-weight:600;margin-bottom:8px">💳 TU WALLET DE COBRO (USDT)</div>
-      <div style="display:flex;gap:6px;margin-bottom:8px">
-        <button id="panelBtnTRC20" class="red-btn red-btn-activo" onclick="selRedPanel('TRC20')">TRC20<br><span style="font-size:10px;font-weight:400">T...</span></button>
-        <button id="panelBtnBEP20" class="red-btn" onclick="selRedPanel('BEP20')">BEP20<br><span style="font-size:10px;font-weight:400">0x...</span></button>
-      </div>
+      <select id="selectRed" onchange="selRedPanel(this.value)"
+        style="width:100%;background:#111;border:1px solid #2a2a2a;border-radius:10px;padding:10px 12px;color:#f0f0f0;font-size:13px;font-weight:600;margin-bottom:8px;outline:none;cursor:pointer;font-family:Inter,sans-serif;appearance:auto">
+        <option value="TRC20">TRC20 — empieza con T... (fee $1.00)</option>
+        <option value="BEP20">BEP20 — empieza con 0x... (fee $0.20)</option>
+      </select>
       <div style="display:flex;gap:8px;align-items:center">
         <input id="panelWalletInput" type="text" placeholder="T..."
           style="flex:1;background:#111;border:1px solid #2a2a2a;border-radius:10px;padding:10px 12px;color:#f0f0f0;font-size:12px;outline:none;font-family:monospace"
@@ -668,12 +669,9 @@ function showWalletModal(tipo) {
 
 function selRedPanel(red) {
   window._panelRed = red;
-  var btnTRC = document.getElementById('panelBtnTRC20');
-  var btnBEP = document.getElementById('panelBtnBEP20');
-  var input  = document.getElementById('panelWalletInput');
-  if (!btnTRC || !btnBEP) return;
-  btnTRC.className = red === 'TRC20' ? 'red-btn red-btn-activo' : 'red-btn';
-  btnBEP.className = red === 'BEP20' ? 'red-btn red-btn-activo' : 'red-btn';
+  var sel   = document.getElementById('selectRed');
+  var input = document.getElementById('panelWalletInput');
+  if (sel && sel.value !== red) sel.value = red;
   if (input) input.placeholder = red === 'TRC20' ? 'T...' : '0x...';
 }
 
