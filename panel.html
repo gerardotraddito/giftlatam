@@ -441,8 +441,8 @@ footer {
     </div>
 
     <div class="wallet-btns">
-      <button class="btn-wallet btn-depositar" onclick="showWalletModal('depositar')">⬇️ Depositar</button>
-      <button class="btn-wallet btn-retirar" style="border:1px solid rgba(0,200,83,0.4);color:var(--verde)" onclick="showWalletModal('retirar')">⬆️ Retirar</button>
+      <button class="btn-wallet btn-depositar" onclick="abrirDepositar()">⬇️ Depositar</button>
+      <button class="btn-wallet btn-retirar" style="border:1px solid rgba(0,200,83,0.4);color:var(--verde)" onclick="abrirRetirar()">⬆️ Retirar</button>
     </div>
   </div>
 
@@ -585,8 +585,7 @@ async function logout() {
 
 
 <script>
-// ── Modal wallet ──
-// Wallets del admin — se cargan desde Supabase al abrir el modal
+// ── Wallets admin ──────────────────────────────────────────────────────────
 var _adminWallets = {
   trc20: 'THGwQwMp4LTJoL7gm2Ro1zK6SF3wSQUff5',
   bep20: '0x534822A13896B229855Fc0ACFA9F25664368a38C'
@@ -602,137 +601,88 @@ async function cargarWalletsAdmin() {
 }
 cargarWalletsAdmin();
 
-function copiarDeposito(wallet, btn) {
-  navigator.clipboard.writeText(wallet).then(function() {
-    var orig = btn.textContent; btn.textContent = '✅ Copiado';
-    setTimeout(function(){ btn.textContent = orig; }, 2000);
-  });
+// ── Modal overlay helper ───────────────────────────────────────────────────
+function cerrarModal() {
+  var m = document.getElementById('modalOverlay');
+  if (m) m.remove();
 }
 
-function showWalletModal(tipo) {
+// ── MODAL DEPOSITAR ────────────────────────────────────────────────────────
+function abrirDepositar() {
+  window._depRed = 'TRC20';
+  renderModalDepositar();
+}
+
+function renderModalDepositar() {
+  var trc   = _adminWallets.trc20;
+  var bep   = _adminWallets.bep20;
+  var red   = window._depRed || 'TRC20';
+  var addr  = red === 'TRC20' ? trc : bep;
+  var color = red === 'TRC20' ? '#F3BA2F' : '#3B82F6';
+  var qr    = 'https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=' + encodeURIComponent(addr);
+
+  var old = document.getElementById('modalOverlay');
+  if (old) old.remove();
+
   var overlay = document.createElement('div');
+  overlay.id = 'modalOverlay';
   overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px';
+  overlay.onclick = function(e){ if(e.target===overlay) cerrarModal(); };
 
-  function cerrar() { overlay.remove(); }
-  overlay.addEventListener('click', function(e){ if(e.target===overlay) cerrar(); });
-
-  if (tipo === 'depositar') {
-    var trc = _adminWallets.trc20;
-    var bep = _adminWallets.bep20;
-    var redSel = 'TRC20';
-    var qrBase = 'https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=';
-
-    var box = document.createElement('div');
-    box.style.cssText = 'background:#161616;border:1px solid #2a2a2a;border-radius:20px;padding:24px;max-width:400px;width:100%;max-height:90vh;overflow-y:auto';
-
-    function renderDeposito() {
-      var addr = redSel === 'TRC20' ? trc : bep;
-      var color = redSel === 'TRC20' ? '#F3BA2F' : '#3B82F6';
-      box.innerHTML =
-        '<div style="font-size:18px;font-weight:800;margin-bottom:4px">⬇️ Depositar USDT</div>' +
-        '<div style="font-size:12px;color:#888;margin-bottom:16px">Elegí la red, escaneá el QR o copiá la dirección, luego indicá cuánto enviaste.</div>' +
-
-        // Selector de red
-        '<div style="display:flex;gap:8px;margin-bottom:16px">' +
-          '<button id="depBtnTRC" onclick="window._depRed='TRC20';renderDeposito()" style="flex:1;padding:9px;border-radius:10px;border:' + (redSel==='TRC20' ? '2px solid #F3BA2F;background:rgba(243,186,47,0.1);color:#F3BA2F' : '1px solid #333;background:transparent;color:#666') + ';font-weight:700;font-size:13px;cursor:pointer;font-family:Inter,sans-serif">TRC20<br><span style='font-size:10px;font-weight:400'>fee ~$1</span></button>' +
-          '<button id="depBtnBEP" onclick="window._depRed='BEP20';renderDeposito()" style="flex:1;padding:9px;border-radius:10px;border:' + (redSel==='BEP20' ? '2px solid #3B82F6;background:rgba(59,130,246,0.1);color:#3B82F6' : '1px solid #333;background:transparent;color:#666') + ';font-weight:700;font-size:13px;cursor:pointer;font-family:Inter,sans-serif">BEP20<br><span style='font-size:10px;font-weight:400'>fee ~$0.20</span></button>' +
-        '</div>' +
-
-        // QR
-        '<div style="text-align:center;margin-bottom:14px">' +
-          '<img src="' + qrBase + encodeURIComponent(addr) + '" style="border-radius:12px;border:1px solid #2a2a2a;width:160px;height:160px">' +
-        '</div>' +
-
-        // Dirección
-        '<div style="background:#111;border:1px solid #222;border-radius:10px;padding:12px;margin-bottom:14px">' +
-          '<div style="font-size:10px;color:'+color+';font-weight:700;margin-bottom:5px">DIRECCIÓN ' + redSel + '</div>' +
-          '<div id="depAddr" style="font-family:monospace;font-size:11px;color:#ccc;word-break:break-all;margin-bottom:8px">' + addr + '</div>' +
-          '<button onclick="navigator.clipboard.writeText(''+addr+'').then(function(){var b=document.getElementById('btnCopiarAddr');b.textContent='✅ Copiado';setTimeout(function(){b.textContent='📋 Copiar dirección';},2000)})" id="btnCopiarAddr" style="width:100%;background:transparent;border:1px solid '+color+'33;color:'+color+';border-radius:8px;padding:7px;font-size:12px;font-weight:700;cursor:pointer;font-family:Inter,sans-serif">📋 Copiar dirección</button>' +
-        '</div>' +
-
-        // Monto
-        '<div style="font-size:11px;color:#888;font-weight:600;margin-bottom:5px">¿CUÁNTO VAS A ENVIAR? (USDT)</div>' +
-        '<input id="depMonto" type="number" min="1" step="0.01" placeholder="Ej: 20.00"' +
-        '  style="width:100%;background:#111;border:1px solid #333;border-radius:10px;padding:11px 14px;color:#f0f0f0;font-size:15px;margin-bottom:16px;outline:none;font-family:Inter,sans-serif">' +
-
-        '<div id="depError" style="color:#FF4444;font-size:12px;margin-bottom:10px;display:none"></div>' +
-
-        '<div style="display:flex;gap:8px">' +
-          '<button onclick="cerrar()" style="flex:1;background:transparent;border:1px solid #333;color:#888;border-radius:12px;padding:12px;font-weight:600;cursor:pointer;font-family:Inter,sans-serif">Cancelar</button>' +
-          '<button onclick="confirmarDeposito()" style="flex:2;background:#00C853;color:#000;border:none;border-radius:12px;padding:12px;font-weight:800;font-size:14px;cursor:pointer;font-family:Inter,sans-serif">Notificar depósito</button>' +
-        '</div>' +
-        '<div style="font-size:11px;color:#555;text-align:center;margin-top:12px">⚠️ Solo enviá USDT. El admin verificará y acreditará tu saldo.</div>';
-    }
-
-    window._depRed = 'TRC20';
-    window.renderDeposito = function() {
-      redSel = window._depRed;
-      renderDeposito();
-    };
-
-    renderDeposito();
-    overlay.appendChild(box);
-    document.body.appendChild(overlay);
-    return;
-  }
-
-  // ── MODAL RETIRO ──
-  var walletGuardada = window._sellerWallet || '';
-  var balanceEl = document.getElementById('walletAmount');
-  var balanceActual = balanceEl ? balanceEl.textContent.replace('$','').trim() : '0';
+  var btnTRCstyle = red==='TRC20'
+    ? 'flex:1;padding:9px;border-radius:10px;border:2px solid #F3BA2F;background:rgba(243,186,47,0.1);color:#F3BA2F;font-weight:700;font-size:13px;cursor:pointer;font-family:Inter,sans-serif'
+    : 'flex:1;padding:9px;border-radius:10px;border:1px solid #333;background:transparent;color:#666;font-weight:700;font-size:13px;cursor:pointer;font-family:Inter,sans-serif';
+  var btnBEPstyle = red==='BEP20'
+    ? 'flex:1;padding:9px;border-radius:10px;border:2px solid #3B82F6;background:rgba(59,130,246,0.1);color:#3B82F6;font-weight:700;font-size:13px;cursor:pointer;font-family:Inter,sans-serif'
+    : 'flex:1;padding:9px;border-radius:10px;border:1px solid #333;background:transparent;color:#666;font-weight:700;font-size:13px;cursor:pointer;font-family:Inter,sans-serif';
 
   var box = document.createElement('div');
-  box.style.cssText = 'background:#161616;border:1px solid #333;border-radius:20px;padding:24px;max-width:360px;width:100%;max-height:90vh;overflow-y:auto';
-
+  box.style.cssText = 'background:#161616;border:1px solid #2a2a2a;border-radius:20px;padding:24px;max-width:400px;width:100%;max-height:90vh;overflow-y:auto';
   box.innerHTML =
-    '<div style="font-size:18px;font-weight:800;margin-bottom:4px">⬆️ Solicitar retiro</div>' +
-    '<div style="font-size:12px;color:#888;margin-bottom:16px">Saldo disponible: <strong style="color:#00C853">$' + balanceActual + ' USDT</strong></div>' +
-
-    '<div style="font-size:11px;color:#888;font-weight:600;margin-bottom:5px">MONTO A RETIRAR (USDT)</div>' +
-    '<input id="retiroMonto" type="number" min="0.01" step="0.01" placeholder="Ej: 10.00"' +
-    '  style="width:100%;background:#111;border:1px solid #333;border-radius:10px;padding:11px 14px;color:#f0f0f0;font-size:15px;margin-bottom:14px;outline:none;font-family:Inter,sans-serif"' +
-    '  oninput="calcRetiro()">' +
-
-    '<div style="font-size:11px;color:#888;font-weight:600;margin-bottom:6px">RED DE ENVÍO</div>' +
-    '<select id="retiroRedSelect" onchange="cambiarRedRetiro(this.value)"' +
-    '  style="width:100%;background:#111;border:1px solid #333;border-radius:10px;padding:11px 14px;color:#f0f0f0;font-size:13px;margin-bottom:14px;outline:none;font-family:Inter,sans-serif">' +
-    '  <option value="TRC20">TRC20 — fee $1.00</option>' +
-    '  <option value="BEP20">BEP20 — fee $0.20</option>' +
-    '</select>' +
-
-    '<div style="font-size:11px;color:#888;font-weight:600;margin-bottom:5px">TU WALLET DESTINO</div>' +
-    '<input id="retiroWallet" type="text" placeholder="T... o 0x..."' +
-    '  style="width:100%;background:#111;border:1px solid #333;border-radius:10px;padding:11px 14px;color:#f0f0f0;font-size:13px;margin-bottom:14px;outline:none;font-family:monospace">' +
-
-    '<div id="retiroResumen" style="background:#111;border:1px solid #222;border-radius:10px;padding:12px;font-size:12px;margin-bottom:14px;display:none">' +
-    '  <div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="color:#888">Retiro</span><span id="resMonto">—</span></div>' +
-    '  <div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="color:#888">Fee red</span><span id="resFee" style="color:#FF4444">—</span></div>' +
-    '  <div style="display:flex;justify-content:space-between;font-weight:700"><span>Recibís</span><span id="resNeto" style="color:#00C853">—</span></div>' +
+    '<div style="font-size:18px;font-weight:800;margin-bottom:4px">⬇️ Depositar USDT</div>' +
+    '<div style="font-size:12px;color:#888;margin-bottom:16px">Elegí la red, copiá la dirección o escaneá el QR, e indicá cuánto vas a enviar.</div>' +
+    '<div style="display:flex;gap:8px;margin-bottom:16px">' +
+      '<button style="'+btnTRCstyle+'" onclick="window._depRed='TRC20';renderModalDepositar()">TRC20<br><span style="font-size:10px;font-weight:400">fee ~$1</span></button>' +
+      '<button style="'+btnBEPstyle+'" onclick="window._depRed='BEP20';renderModalDepositar()">BEP20<br><span style="font-size:10px;font-weight:400">fee ~$0.20</span></button>' +
     '</div>' +
-
-    '<div id="retiroError" style="color:#FF4444;font-size:12px;margin-bottom:10px;display:none"></div>' +
-
+    '<div style="text-align:center;margin-bottom:14px"><img src="'+qr+'" style="border-radius:12px;border:1px solid #2a2a2a;width:160px;height:160px"></div>' +
+    '<div style="background:#111;border:1px solid #222;border-radius:10px;padding:12px;margin-bottom:14px">' +
+      '<div style="font-size:10px;color:'+color+';font-weight:700;margin-bottom:5px">DIRECCIÓN '+red+'</div>' +
+      '<div style="font-family:monospace;font-size:11px;color:#ccc;word-break:break-all;margin-bottom:8px" id="depAddrTxt">'+addr+'</div>' +
+      '<button id="btnCopyAddr" onclick="copiarAddr()" style="width:100%;background:transparent;border:1px solid '+color+'44;color:'+color+';border-radius:8px;padding:7px;font-size:12px;font-weight:700;cursor:pointer;font-family:Inter,sans-serif">📋 Copiar dirección</button>' +
+    '</div>' +
+    '<div style="font-size:11px;color:#888;font-weight:600;margin-bottom:5px">¿CUÁNTO VAS A ENVIAR? (USDT)</div>' +
+    '<input id="depMonto" type="number" min="1" step="0.01" placeholder="Ej: 20.00" style="width:100%;background:#111;border:1px solid #333;border-radius:10px;padding:11px 14px;color:#f0f0f0;font-size:15px;margin-bottom:14px;outline:none;font-family:Inter,sans-serif">' +
+    '<div id="depError" style="color:#FF4444;font-size:12px;margin-bottom:10px;display:none"></div>' +
     '<div style="display:flex;gap:8px">' +
-    '  <button onclick="cerrarModalRetiro()" style="flex:1;background:transparent;border:1px solid #333;color:#888;border-radius:12px;padding:12px;font-weight:600;cursor:pointer;font-family:Inter,sans-serif">Cancelar</button>' +
-    '  <button id="btnConfirmarRetiro" onclick="confirmarRetiro()" style="flex:2;background:#00C853;color:#000;border:none;border-radius:12px;padding:12px;font-weight:800;font-size:14px;cursor:pointer;font-family:Inter,sans-serif">Solicitar retiro</button>' +
-    '</div>';
+      '<button onclick="cerrarModal()" style="flex:1;background:transparent;border:1px solid #333;color:#888;border-radius:12px;padding:12px;font-weight:600;cursor:pointer;font-family:Inter,sans-serif">Cancelar</button>' +
+      '<button onclick="confirmarDeposito()" style="flex:2;background:#00C853;color:#000;border:none;border-radius:12px;padding:12px;font-weight:800;font-size:14px;cursor:pointer;font-family:Inter,sans-serif">Notificar depósito</button>' +
+    '</div>' +
+    '<div style="font-size:11px;color:#555;text-align:center;margin-top:12px">⚠️ Solo enviá USDT. El admin verificará y acreditará tu saldo.</div>';
 
   overlay.appendChild(box);
   document.body.appendChild(overlay);
+}
 
-  // Precargar wallet guardada y red
-  var retiroWalletInput = document.getElementById('retiroWallet');
-  if (retiroWalletInput && walletGuardada) retiroWalletInput.value = walletGuardada;
-
-  window._retiroRed = 'TRC20';
-  window._retiroFee = 1.00;
+function copiarAddr() {
+  var el = document.getElementById('depAddrTxt');
+  var btn = document.getElementById('btnCopyAddr');
+  if (!el || !btn) return;
+  navigator.clipboard.writeText(el.textContent).then(function(){
+    btn.textContent = '✅ Copiado';
+    setTimeout(function(){ btn.textContent = '📋 Copiar dirección'; }, 2000);
+  });
 }
 
 async function confirmarDeposito() {
-  var monto = parseFloat(document.getElementById('depMonto') ? document.getElementById('depMonto').value : 0);
-  var errEl = document.getElementById('depError');
-  if (!monto || monto <= 0) { errEl.textContent = 'Ingresá un monto válido.'; errEl.style.display = 'block'; return; }
-
+  var montoEl = document.getElementById('depMonto');
+  var errEl   = document.getElementById('depError');
+  var monto   = parseFloat(montoEl ? montoEl.value : 0);
+  if (!monto || monto <= 0) {
+    errEl.textContent = 'Ingresá un monto válido.';
+    errEl.style.display = 'block';
+    return;
+  }
   var sess = await sb.auth.getSession();
   if (!sess.data || !sess.data.session) { alert('Sesión expirada.'); return; }
 
@@ -745,106 +695,81 @@ async function confirmarDeposito() {
 
   if (r.error) { errEl.textContent = 'Error: ' + r.error.message; errEl.style.display = 'block'; return; }
 
-  // Cerrar overlay
-  var overlay = document.querySelector('div[style*="position:fixed"][style*="9999"]');
-  if (overlay) overlay.remove();
-
-  // Mostrar confirmación
+  cerrarModal();
   var toast = document.createElement('div');
-  toast.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#00C853;color:#000;padding:12px 20px;border-radius:12px;font-weight:700;font-size:13px;z-index:9999';
+  toast.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#00C853;color:#000;padding:12px 20px;border-radius:12px;font-weight:700;font-size:13px;z-index:9999;white-space:nowrap';
   toast.textContent = '✅ Depósito notificado. El admin lo verificará pronto.';
   document.body.appendChild(toast);
   setTimeout(function(){ toast.remove(); }, 4000);
 }
 
-function cerrarModalRetiro() { var m = document.querySelector('div[style*="position:fixed"][style*="9999"]'); if(m) m.remove(); }
+// ── MODAL RETIRAR ──────────────────────────────────────────────────────────
+function abrirRetirar() {
+  var walletGuardada = window._sellerWallet || '';
+  var balanceEl = document.getElementById('walletAmount');
+  var balanceActual = balanceEl ? balanceEl.textContent.replace('$','').trim() : '0';
+
+  var overlay = document.createElement('div');
+  overlay.id = 'modalOverlay';
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px';
+  overlay.onclick = function(e){ if(e.target===overlay) cerrarModal(); };
+
+  var box = document.createElement('div');
+  box.style.cssText = 'background:#161616;border:1px solid #333;border-radius:20px;padding:24px;max-width:360px;width:100%;max-height:90vh;overflow-y:auto';
+  box.innerHTML =
+    '<div style="font-size:18px;font-weight:800;margin-bottom:4px">⬆️ Solicitar retiro</div>' +
+    '<div style="font-size:12px;color:#888;margin-bottom:16px">Saldo disponible: <strong style="color:#00C853">$'+balanceActual+' USDT</strong></div>' +
+    '<div style="font-size:11px;color:#888;font-weight:600;margin-bottom:5px">MONTO A RETIRAR (USDT)</div>' +
+    '<input id="retiroMonto" type="number" min="0.01" step="0.01" placeholder="Ej: 10.00" oninput="calcRetiro()" style="width:100%;background:#111;border:1px solid #333;border-radius:10px;padding:11px 14px;color:#f0f0f0;font-size:15px;margin-bottom:14px;outline:none;font-family:Inter,sans-serif">' +
+    '<div style="font-size:11px;color:#888;font-weight:600;margin-bottom:6px">RED DE ENVÍO</div>' +
+    '<select id="retiroRedSelect" onchange="cambiarRedRetiro(this.value)" style="width:100%;background:#111;border:1px solid #333;border-radius:10px;padding:11px 14px;color:#f0f0f0;font-size:13px;margin-bottom:14px;outline:none;font-family:Inter,sans-serif">' +
+      '<option value="TRC20">TRC20 — fee $1.00</option>' +
+      '<option value="BEP20">BEP20 — fee $0.20</option>' +
+    '</select>' +
+    '<div style="font-size:11px;color:#888;font-weight:600;margin-bottom:5px">TU WALLET DESTINO</div>' +
+    '<input id="retiroWallet" type="text" placeholder="T... o 0x..." style="width:100%;background:#111;border:1px solid #333;border-radius:10px;padding:11px 14px;color:#f0f0f0;font-size:13px;margin-bottom:14px;outline:none;font-family:monospace">' +
+    '<div id="retiroResumen" style="background:#111;border:1px solid #222;border-radius:10px;padding:12px;font-size:12px;margin-bottom:14px;display:none">' +
+      '<div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="color:#888">Retiro</span><span id="resMonto">—</span></div>' +
+      '<div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="color:#888">Fee red</span><span id="resFee" style="color:#FF4444">—</span></div>' +
+      '<div style="display:flex;justify-content:space-between;font-weight:700"><span>Recibís</span><span id="resNeto" style="color:#00C853">—</span></div>' +
+    '</div>' +
+    '<div id="retiroError" style="color:#FF4444;font-size:12px;margin-bottom:10px;display:none"></div>' +
+    '<div style="display:flex;gap:8px">' +
+      '<button onclick="cerrarModal()" style="flex:1;background:transparent;border:1px solid #333;color:#888;border-radius:12px;padding:12px;font-weight:600;cursor:pointer;font-family:Inter,sans-serif">Cancelar</button>' +
+      '<button id="btnConfirmarRetiro" onclick="confirmarRetiro()" style="flex:2;background:#00C853;color:#000;border:none;border-radius:12px;padding:12px;font-weight:800;font-size:14px;cursor:pointer;font-family:Inter,sans-serif">Solicitar retiro</button>' +
+    '</div>';
+
+  overlay.appendChild(box);
+  document.body.appendChild(overlay);
+
+  if (walletGuardada) {
+    var wi = document.getElementById('retiroWallet');
+    if (wi) wi.value = walletGuardada;
+  }
+  window._retiroRed = 'TRC20';
+  window._retiroFee = 1.00;
+}
 
 function cambiarRedRetiro(red) {
   window._retiroRed = red;
   window._retiroFee = red === 'TRC20' ? 1.00 : 0.20;
   var input = document.getElementById('retiroWallet');
-  if (input) input.placeholder = red === 'TRC20' ? 'T...' : '0x...';
-  calcRetiro();
-}
-
-
-function selRedPanel(red) {
-  window._panelRed = red;
-  var sel   = document.getElementById('selectRed');
-  var input = document.getElementById('panelWalletInput');
-  if (sel && sel.value !== red) sel.value = red;
-  if (input) input.placeholder = red === 'TRC20' ? 'T...' : '0x...';
-}
-
-async function guardarWalletPanel() {
-  var input = document.getElementById('panelWalletInput');
-  var msg   = document.getElementById('walletPanelMsg');
-  var btn   = document.getElementById('btnGuardarWallet');
-  if (!input) return;
-
-  var wallet = input.value.trim();
-  if (!wallet || wallet.length < 10) {
-    msg.textContent = '⚠️ Ingresá una wallet válida.';
-    msg.style.color = '#FF4444';
-    msg.style.display = 'block';
-    return;
-  }
-
-  btn.disabled = true;
-  btn.textContent = 'Guardando...';
-
-  try {
-    var sess = await sb.auth.getSession();
-    var uid  = sess.data.session.user.id;
-    var upd  = await sb.from('profiles').upsert({ id: uid, wallet_usdt: wallet, wallet_red: window._panelRed || 'TRC20', updated_at: new Date().toISOString() }, { onConflict: 'id' });
-    if (upd.error) {
-      msg.textContent = '❌ Error: ' + upd.error.message;
-      msg.style.color = '#FF4444';
-    } else {
-      window._sellerWallet = wallet;
-      msg.textContent = '✅ Wallet guardada correctamente.';
-      msg.style.color = '#00C853';
-      btn.style.display = 'none';
-    }
-  } catch(e) {
-    msg.textContent = '❌ Error inesperado.';
-    msg.style.color = '#FF4444';
-  }
-
-  msg.style.display = 'block';
-  btn.disabled = false;
-  btn.textContent = 'Guardar';
-}
-
-function selectRed(red) {
-  window._retiroRed = red;
-  window._retiroFee = red === 'TRC20' ? 1.00 : 0.20;
-  // Buscar botones dentro del modal activo
-  var btnTRC = document.querySelector('#btnTRC20');
-  var btnBEP = document.querySelector('#btnBEP20');
-  if (!btnTRC || !btnBEP) return;
-  // Resetear ambos
-  btnTRC.style.cssText = 'flex:1;padding:10px;border-radius:10px;cursor:pointer;font-family:Inter,sans-serif;font-weight:700;font-size:13px;border:1px solid #333;background:transparent;color:#888';
-  btnBEP.style.cssText = 'flex:1;padding:10px;border-radius:10px;cursor:pointer;font-family:Inter,sans-serif;font-weight:700;font-size:13px;border:1px solid #333;background:transparent;color:#888';
-  // Marcar el activo
-  var btnActivo = red === 'TRC20' ? btnTRC : btnBEP;
-  btnActivo.style.border = '2px solid #00C853';
-  btnActivo.style.color = '#00C853';
-  btnActivo.style.background = 'rgba(0,200,83,0.1)';
+  if (input && !input.value) input.placeholder = red === 'TRC20' ? 'T...' : '0x...';
   calcRetiro();
 }
 
 function calcRetiro() {
-  var monto = parseFloat(document.getElementById('retiroMonto').value);
-  var fee   = window._retiroFee || 1.00;
+  var montoEl = document.getElementById('retiroMonto');
   var resumen = document.getElementById('retiroResumen');
-  if (!resumen) return;
+  if (!montoEl || !resumen) return;
+  var monto = parseFloat(montoEl.value);
+  var fee   = window._retiroFee || 1.00;
   if (isNaN(monto) || monto <= 0) { resumen.style.display = 'none'; return; }
   var neto = monto - fee;
   resumen.style.display = 'block';
   document.getElementById('resMonto').textContent = '$' + monto.toFixed(2) + ' USDT';
   document.getElementById('resFee').textContent   = '-$' + fee.toFixed(2) + ' USDT';
-  document.getElementById('resNeto').textContent  = neto > 0 ? '$' + neto.toFixed(2) + ' USDT' : '—';
+  document.getElementById('resNeto').textContent  = neto > 0 ? '$' + neto.toFixed(2) + ' USDT' : 'Monto insuficiente';
 }
 
 async function confirmarRetiro() {
@@ -855,53 +780,32 @@ async function confirmarRetiro() {
   var btn    = document.getElementById('btnConfirmarRetiro');
 
   errEl.style.display = 'none';
-
   if (isNaN(monto) || monto <= 0) { errEl.textContent = 'Ingresá un monto válido.'; errEl.style.display = 'block'; return; }
   if (!wallet || wallet.length < 10) { errEl.textContent = 'Ingresá tu wallet destino.'; errEl.style.display = 'block'; return; }
+  if (!confirm('Confirmar retiro de $'+monto.toFixed(2)+' USDT por '+red+'.
+Vas a recibir: $'+(monto - window._retiroFee).toFixed(2)+' USDT')) return;
 
-  if (!confirm('Confirmar retiro de $' + monto.toFixed(2) + ' USDT por ' + red + '. Vas a recibir: $' + (monto - window._retiroFee).toFixed(2) + ' USDT')) return;
-
-  btn.disabled = true;
-  btn.textContent = 'Procesando...';
+  btn.disabled = true; btn.textContent = 'Procesando...';
 
   try {
-    var r = await sb.rpc('solicitar_retiro', {
-      p_monto_bruto: monto,
-      p_red:         red,
-      p_wallet:      wallet
-    });
-
+    var r = await sb.rpc('solicitar_retiro', { p_monto_bruto: monto, p_red: red, p_wallet: wallet });
     if (r.error || r.data !== 'ok') {
       errEl.textContent = r.error ? r.error.message : r.data;
       errEl.style.display = 'block';
       btn.disabled = false; btn.textContent = 'Solicitar retiro';
       return;
     }
-
-    // Guardar wallet en perfil para que quede registrada
+    // Guardar wallet en perfil
     var sess = await sb.auth.getSession();
     if (sess.data && sess.data.session) {
-      var uid = sess.data.session.user.id;
-      await sb.from('profiles').upsert({
-        id: uid,
-        wallet_usdt: wallet,
-        wallet_red: red,
-        updated_at: new Date().toISOString()
-      }, { onConflict: 'id' });
-      // Actualizar también el input del panel y la variable global
+      await sb.from('profiles').upsert({ id: sess.data.session.user.id, wallet_usdt: wallet, wallet_red: red, updated_at: new Date().toISOString() }, { onConflict: 'id' });
       window._sellerWallet = wallet;
       window._panelRed = red;
-      var panelInput = document.getElementById('panelWalletInput');
-      if (panelInput) panelInput.value = wallet;
-      var selectRed = document.getElementById('selectRed');
-      if (selectRed) selectRed.value = red;
+      var pi = document.getElementById('panelWalletInput'); if (pi) pi.value = wallet;
+      var sr = document.getElementById('selectRed'); if (sr) sr.value = red;
+      cerrarModal();
+      loadPanelData(sess.data.session);
     }
-
-    // Cerrar modal y recargar saldo
-    document.querySelector('div[style*="fixed"][style*="9999"]').remove();
-
-    if (sess.data && sess.data.session) loadPanelData(sess.data.session);
-
   } catch(e) {
     errEl.textContent = 'Error: ' + e.message;
     errEl.style.display = 'block';
@@ -909,83 +813,86 @@ async function confirmarRetiro() {
   }
 }
 
-// ── Notificaciones ──
+// ── GUARDAR WALLET ──────────────────────────────────────────────────────────
+async function guardarWalletPanel() {
+  var input = document.getElementById('panelWalletInput');
+  var msgEl = document.getElementById('walletPanelMsg');
+  var btn   = document.getElementById('btnGuardarWallet');
+  if (!input) return;
+  var wallet = input.value.trim();
+  if (!wallet || wallet.length < 10) {
+    msgEl.textContent = '⚠️ Ingresá una wallet válida.';
+    msgEl.style.color = '#FF4444';
+    msgEl.style.display = 'block';
+    return;
+  }
+  btn.disabled = true; btn.textContent = 'Guardando...';
+  try {
+    var sess = await sb.auth.getSession();
+    var uid  = sess.data.session.user.id;
+    var red  = document.getElementById('selectRed') ? document.getElementById('selectRed').value : 'TRC20';
+    var upd  = await sb.from('profiles').upsert({ id: uid, wallet_usdt: wallet, wallet_red: red, updated_at: new Date().toISOString() }, { onConflict: 'id' });
+    if (upd.error) {
+      msgEl.textContent = '❌ Error: ' + upd.error.message;
+      msgEl.style.color = '#FF4444';
+    } else {
+      window._sellerWallet = wallet;
+      msgEl.textContent = '✅ Wallet guardada.';
+      msgEl.style.color = '#00C853';
+      btn.style.display = 'none';
+    }
+  } catch(e) {
+    msgEl.textContent = '❌ Error inesperado.';
+    msgEl.style.color = '#FF4444';
+  }
+  msgEl.style.display = 'block';
+  btn.disabled = false; btn.textContent = 'Guardar';
+}
+
+function selRedPanel(red) {
+  window._panelRed = red;
+  var sel = document.getElementById('selectRed');
+  var input = document.getElementById('panelWalletInput');
+  if (sel && sel.value !== red) sel.value = red;
+  if (input) input.placeholder = red === 'TRC20' ? 'T...' : '0x...';
+}
+
+// ── NOTIFICACIONES ──────────────────────────────────────────────────────────
 function toggleNotifs() {
-  let panel = document.getElementById('notifPanel');
+  var panel = document.getElementById('notifPanel');
   if (panel) { panel.remove(); return; }
   panel = document.createElement('div');
   panel.id = 'notifPanel';
   panel.style.cssText = 'position:absolute;top:52px;right:10px;background:#161616;border:1px solid #333;border-radius:14px;padding:16px;width:280px;z-index:999;box-shadow:0 8px 32px rgba(0,0,0,0.5)';
-  panel.innerHTML = `
-    <div style="font-size:13px;font-weight:700;margin-bottom:12px">Notificaciones</div>
-    <div style="font-size:12px;color:#888;text-align:center;padding:20px 0">
-      No tenés notificaciones nuevas
-    </div>`;
+  panel.innerHTML = '<div style="font-size:13px;font-weight:700;margin-bottom:12px">Notificaciones</div><div style="font-size:12px;color:#888;text-align:center;padding:20px 0">No tenés notificaciones nuevas</div>';
   document.querySelector('nav').style.position = 'relative';
   document.querySelector('nav').appendChild(panel);
-  setTimeout(() => document.addEventListener('click', function h(e) {
-    if (!panel.contains(e.target) && e.target.id !== 'notifBtn') { panel.remove(); document.removeEventListener('click', h); }
-  }), 100);
+  setTimeout(function() {
+    document.addEventListener('click', function h(e) {
+      if (!panel.contains(e.target) && e.target.id !== 'notifBtn') { panel.remove(); document.removeEventListener('click', h); }
+    });
+  }, 100);
 }
 
-// ── Cargar wallet y stats reales ──
+// ── MIS PUBLICACIONES ───────────────────────────────────────────────────────
 async function loadPanelExtras(userId) {
-  // Wallet desde profiles
-  const { data: profile } = await sb.from('profiles').select('volumen_usdt').eq('id', userId).single();
-  const vol = parseFloat(profile?.volumen_usdt || 0).toFixed(2);
-  const walletEl = document.getElementById('walletAmount');
-  const walletUsd = document.getElementById('walletUsd');
-  if (walletEl) walletEl.textContent = '$' + vol;
-  if (walletUsd) walletUsd.textContent = vol + ' USDT disponibles';
-
-  // Mis publicaciones
-  const { data: listings } = await sb
-    .from('gift_cards')
-    .select('id, titulo, marca, precio_venta, estado')
-    .eq('seller_id', userId)
-    .order('created_at', { ascending: false })
-    .limit(10);
-
-  const container = document.getElementById('misPublicacionesPreview');
+  var listings = await sb.from('gift_cards').select('id,titulo,marca,precio_venta,estado').eq('seller_id', userId).order('created_at',{ascending:false}).limit(10);
+  var container = document.getElementById('misPublicacionesPreview');
   if (!container) return;
-
-  if (!listings || listings.length === 0) {
-    container.innerHTML = `<div style="text-align:center;padding:16px;color:#888;font-size:13px">
-      Todavía no publicaste nada.<br>
-      <a href="publicar.html" style="color:var(--verde)">Publicá tu primera gift card →</a>
-    </div>`;
+  if (!listings.data || listings.data.length === 0) {
+    container.innerHTML = '<div style="text-align:center;padding:16px;color:#888;font-size:13px">Todavía no publicaste nada.<br><a href="publicar.html" style="color:#00C853">Publicá tu primera gift card →</a></div>';
     return;
   }
-
-  const estadoColors = { activo:'#00C853', vendido:'#888', pausado:'#FF9800' };
-  const estadoLabel  = { activo:'● Activo', vendido:'✓ Vendido', pausado:'⏸ Pausado' };
-  container.innerHTML = listings.slice(0,5).map(l => `
-    <a href="detalle.html?id=${l.id}" style="display:flex;align-items:center;gap:12px;padding:11px 14px;background:#161616;border:1px solid #222;border-radius:12px;text-decoration:none;color:inherit;margin-bottom:8px;transition:border-color 0.15s" onmouseover="this.style.borderColor='rgba(0,200,83,0.3)'" onmouseout="this.style.borderColor='#222'">
-      <div style="flex:1;min-width:0">
-        <div style="font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${l.titulo}</div>
-        <div style="font-size:11px;color:#888;margin-top:2px">${l.marca} · $${parseFloat(l.precio_venta).toFixed(2)} USDT</div>
-      </div>
-      <span style="font-size:11px;font-weight:700;color:${estadoColors[l.estado]||'#888'};flex-shrink:0">${estadoLabel[l.estado]||l.estado}</span>
-    </a>`).join('') +
-    (listings.length > 5 ? `<a href="mis-listings.html" style="display:block;text-align:center;padding:10px;color:var(--verde);font-size:12px;font-weight:600;text-decoration:none">Ver las ${listings.length} publicaciones →</a>` : '');
-}
-
-  container.innerHTML = res.data.map(function(v) {
-    var fecha = new Date(v.created_at).toLocaleDateString('es', { day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit' });
-    var est   = v.estado || 'pendiente_pago';
-    var monto = parseFloat(v.precio || 0).toFixed(2);
-    var ref   = v.id ? v.id.substring(0,8).toUpperCase() : '—';
-    return '<a href="detalle.html?id=' + (v.gift_card_id||'') + '" style="display:flex;align-items:center;gap:12px;padding:11px 14px;background:#161616;border:1px solid #222;border-radius:12px;margin-bottom:8px;text-decoration:none;color:inherit;transition:border-color 0.15s" onmouseover="this.style.borderColor='rgba(0,200,83,0.3)'" onmouseout="this.style.borderColor='#222'">' +
-      '<div style="flex:1;min-width:0">' +
-        '<div style="font-size:13px;font-weight:600">$' + monto + ' USDT · ' + (v.red||'TRC20') + '</div>' +
-        '<div style="font-size:11px;color:#888;margin-top:2px">' + fecha + ' · #' + ref + '</div>' +
-      '</div>' +
-      '<span style="font-size:11px;font-weight:700;color:' + (estadoColors[est]||'#888') + ';flex-shrink:0;white-space:nowrap">' + (estadoLabel[est]||est) + '</span>' +
+  var estadoColors = { activo:'#00C853', vendido:'#888', pausado:'#FF9800' };
+  var estadoLabel  = { activo:'● Activo', vendido:'✓ Vendido', pausado:'⏸ Pausado' };
+  container.innerHTML = listings.data.slice(0,5).map(function(l) {
+    return '<a href="detalle.html?id='+l.id+'" style="display:flex;align-items:center;gap:12px;padding:11px 14px;background:#161616;border:1px solid #222;border-radius:12px;text-decoration:none;color:inherit;margin-bottom:8px" onmouseover="this.style.borderColor='rgba(0,200,83,0.3)'" onmouseout="this.style.borderColor='#222'">' +
+      '<div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+l.titulo+'</div><div style="font-size:11px;color:#888;margin-top:2px">'+l.marca+' · $'+parseFloat(l.precio_venta).toFixed(2)+' USDT</div></div>' +
+      '<span style="font-size:11px;font-weight:700;color:'+(estadoColors[l.estado]||'#888')+';flex-shrink:0">'+(estadoLabel[l.estado]||l.estado)+'</span>' +
     '</a>';
-  }).join('');
+  }).join('') + (listings.data.length > 5 ? '<a href="mis-listings.html" style="display:block;text-align:center;padding:10px;color:#00C853;font-size:12px;font-weight:600;text-decoration:none">Ver todas las publicaciones →</a>' : '');
 }
 
-// ── Punto de entrada: cargar extras del panel ────────────────────────────
 document.addEventListener('DOMContentLoaded', async function() {
   try {
     var s = await sb.auth.getSession();
@@ -995,4 +902,3 @@ document.addEventListener('DOMContentLoaded', async function() {
   } catch(e) { console.warn('panel extras:', e); }
 });
 </script>
-</body></html>
