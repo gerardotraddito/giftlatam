@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin — GiftLatam</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{--negro:#080808;--card:#161616;--borde:#222;--blanco:#F0F0F0;--gris:#888;--verde:#00C853;--rojo:#FF4444;--amarillo:#f3ba2f}
+    body{font-family:'Inter',sans-serif;background:var(--negro);color:var(--blanco);min-height:100vh;padding-bottom:60px}
+
+    nav{display:flex;align-items:center;justify-content:space-between;padding:0 20px;height:52px;border-bottom:1px solid var(--borde);background:rgba(8,8,8,0.97);position:sticky;top:0;z-index:100}
+    .nav-title{font-family:'Syne',sans-serif;font-weight:800;font-size:16px}
+    .nav-user{font-size:12px;color:var(--gris)}
+    .btn-logout{background:transparent;border:1px solid var(--borde);color:var(--gris);border-radius:8px;padding:5px 12px;font-size:12px;cursor:pointer;font-family:inherit}
+    .btn-logout:hover{color:var(--blanco);border-color:#555}
+
+    .container{padding:20px;max-width:1100px;margin:0 auto}
+
+    .page-title{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;margin-bottom:6px}
+    .page-sub{font-size:13px;color:var(--gris);margin-bottom:24px}
+
+    /* Filtros */
+    .filtros{display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap;align-items:center}
+    .filtro-btn{background:var(--card);border:1px solid var(--borde);color:var(--gris);border-radius:8px;padding:6px 14px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;transition:all 0.15s}
+    .filtro-btn:hover{border-color:#555;color:var(--blanco)}
+    .filtro-btn.activo{border-color:var(--verde);color:var(--verde);background:rgba(0,200,83,0.08)}
+    .filtro-count{font-size:10px;background:#2a2a2a;border-radius:10px;padding:1px 6px;margin-left:4px}
+
+    /* Mensaje de estado */
+    .msg{padding:10px 16px;border-radius:10px;font-size:13px;font-weight:600;margin-bottom:16px;display:none}
+    .msg.ok{background:rgba(0,200,83,0.1);border:1px solid rgba(0,200,83,0.3);color:var(--verde)}
+    .msg.err{background:rgba(255,68,68,0.1);border:1px solid rgba(255,68,68,0.3);color:var(--rojo)}
+
+    /* Tabla */
+    .tabla-wrap{overflow-x:auto;border-radius:12px;border:1px solid var(--borde)}
+    table{width:100%;border-collapse:collapse;font-size:13px}
+    thead tr{background:#111;border-bottom:1px solid var(--borde)}
+    th{padding:10px 14px;text-align:left;font-size:11px;font-weight:700;color:var(--gris);text-transform:uppercase;letter-spacing:0.5px;white-space:nowrap}
+    tbody tr{border-bottom:1px solid #1a1a1a;transition:background 0.1s}
+    tbody tr:last-child{border-bottom:none}
+    tbody tr:hover{background:#111}
+    td{padding:10px 14px;vertical-align:middle}
+
+    .orden-id{font-family:'Courier New',monospace;font-size:11px;color:var(--gris)}
+    .email-cell{font-size:12px}
+    .precio-cell{font-weight:700;color:var(--verde);white-space:nowrap}
+    .fecha-cell{font-size:11px;color:var(--gris);white-space:nowrap}
+
+    /* Badges de estado */
+    .badge{display:inline-flex;align-items:center;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:700;white-space:nowrap}
+    .badge-verificando{background:rgba(243,186,47,0.12);color:var(--amarillo);border:1px solid rgba(243,186,47,0.3)}
+    .badge-pendiente_pago{background:rgba(136,136,136,0.1);color:var(--gris);border:1px solid #333}
+    .badge-pagado{background:rgba(0,200,83,0.1);color:var(--verde);border:1px solid rgba(0,200,83,0.2)}
+    .badge-entregado{background:rgba(0,200,83,0.15);color:var(--verde);border:1px solid rgba(0,200,83,0.3)}
+    .badge-completado{background:rgba(0,200,83,0.2);color:var(--verde);border:1px solid rgba(0,200,83,0.4);font-weight:800}
+    .badge-cancelado{background:rgba(136,136,136,0.1);color:#555;border:1px solid #2a2a2a}
+
+    /* Botones de acción */
+    .acciones{display:flex;gap:6px;flex-wrap:nowrap}
+    .btn-aprobar{background:rgba(0,200,83,0.15);color:var(--verde);border:1px solid rgba(0,200,83,0.35);border-radius:8px;padding:5px 12px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;transition:all 0.15s}
+    .btn-aprobar:hover{background:rgba(0,200,83,0.25)}
+    .btn-rechazar{background:rgba(255,68,68,0.1);color:var(--rojo);border:1px solid rgba(255,68,68,0.3);border-radius:8px;padding:5px 12px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;transition:all 0.15s}
+    .btn-rechazar:hover{background:rgba(255,68,68,0.2)}
+    .btn-aprobar:disabled,.btn-rechazar:disabled{opacity:0.4;cursor:not-allowed}
+    .sin-accion{font-size:11px;color:#444}
+
+    /* Stats rápidas */
+    .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:24px}
+    .stat-box{background:var(--card);border:1px solid var(--borde);border-radius:12px;padding:14px 16px}
+    .stat-num{font-size:22px;font-weight:800;font-variant-numeric:tabular-nums;line-height:1}
+    .stat-label{font-size:11px;color:var(--gris);margin-top:4px}
+
+    .spinner{width:24px;height:24px;border:3px solid #222;border-top-color:var(--verde);border-radius:50%;animation:spin 0.8s linear infinite;margin:40px auto}
+    @keyframes spin{to{transform:rotate(360deg)}}
+
+    .empty{text-align:center;padding:40px;color:var(--gris);font-size:13px}
+
+    .reload-btn{background:var(--card);border:1px solid var(--borde);color:var(--blanco);border-radius:8px;padding:6px 14px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;margin-left:auto}
+    .reload-btn:hover{border-color:#555}
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.js"></script>
+  <script src="supabase.js"></script>
+</head>
+<body>
+
+<nav>
+  <div class="nav-title">⚙️ Admin Panel — GiftLatam</div>
+  <div style="display:flex;align-items:center;gap:12px">
+    <span class="nav-user" id="navUser"></span>
+    <button class="btn-logout" onclick="logout()">Cerrar sesión</button>
+  </div>
+</nav>
+
+<div class="container">
+  <div class="page-title">Panel de administración</div>
+  <div class="page-sub">Gestión de órdenes del marketplace. Solo usuarios autorizados.</div>
+
+  <!-- Stats -->
+  <div class="stats">
+    <div class="stat-box"><div class="stat-num" id="statTotal">—</div><div class="stat-label">Total órdenes</div></div>
+    <div class="stat-box"><div class="stat-num" style="color:var(--amarillo)" id="statVerificando">—</div><div class="stat-label">En verificación</div></div>
+    <div class="stat-box"><div class="stat-num" style="color:var(--verde)" id="statPagado">—</div><div class="stat-label">Pagadas</div></div>
+    <div class="stat-box"><div class="stat-num" style="color:var(--verde)" id="statCompletado">—</div><div class="stat-label">Completadas</div></div>
+    <div class="stat-box"><div class="stat-num" style="color:#555" id="statCancelado">—</div><div class="stat-label">Canceladas</div></div>
+  </div>
+
+  <!-- Mensaje éxito/error -->
+  <div class="msg" id="msgBox"></div>
+
+  <!-- Filtros + botón recargar -->
+  <div class="filtros">
+    <button class="filtro-btn activo" onclick="setFiltro('todos', this)">Todos <span class="filtro-count" id="cntTodos">0</span></button>
+    <button class="filtro-btn" onclick="setFiltro('verificando', this)">🔍 Verificando <span class="filtro-count" id="cntVerificando">0</span></button>
+    <button class="filtro-btn" onclick="setFiltro('pendiente_pago', this)">⏳ Pendiente <span class="filtro-count" id="cntPendiente">0</span></button>
+    <button class="filtro-btn" onclick="setFiltro('pagado', this)">💰 Pagado <span class="filtro-count" id="cntPagado">0</span></button>
+    <button class="filtro-btn" onclick="setFiltro('entregado', this)">📦 Entregado <span class="filtro-count" id="cntEntregado">0</span></button>
+    <button class="filtro-btn" onclick="setFiltro('completado', this)">✅ Completado <span class="filtro-count" id="cntCompletado">0</span></button>
+    <button class="filtro-btn" onclick="setFiltro('cancelado', this)">✗ Cancelado <span class="filtro-count" id="cntCancelado">0</span></button>
+    <button class="reload-btn" onclick="cargar()">↻ Recargar</button>
+  </div>
+
+  <!-- Tabla -->
+  <div class="tabla-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Orden ID</th>
+          <th>Estado</th>
+          <th>Comprador</th>
+          <th>Precio</th>
+          <th>Red</th>
+          <th>Fecha</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody id="tablaBody">
+        <tr><td colspan="7"><div class="spinner"></div></td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+var TODAS_LAS_ORDENES = [];
+var FILTRO_ACTUAL = 'todos';
+
+var ST_BADGE = {
+  pendiente_pago: '<span class="badge badge-pendiente_pago">⏳ Pendiente pago</span>',
+  verificando:    '<span class="badge badge-verificando">🔍 Verificando</span>',
+  pagado:         '<span class="badge badge-pagado">💰 Pagado</span>',
+  entregado:      '<span class="badge badge-entregado">📦 Entregado</span>',
+  completado:     '<span class="badge badge-completado">✅ Completado</span>',
+  cancelado:      '<span class="badge badge-cancelado">✗ Cancelado</span>'
+};
+
+// ── Init: verificar sesión ────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', async function() {
+  var sess = await sb.auth.getSession();
+  if (!sess.data || !sess.data.session) {
+    window.location.href = 'login.html';
+    return;
+  }
+  var email = sess.data.session.user.email || '';
+  document.getElementById('navUser').textContent = email;
+  cargar();
+});
+
+// ── Cargar todas las órdenes ─────────────────────────────────────────────
+async function cargar() {
+  var tbody = document.getElementById('tablaBody');
+  tbody.innerHTML = '<tr><td colspan="7"><div class="spinner"></div></td></tr>';
+  ocultarMsg();
+
+  try {
+    var res = await sb.from('ordenes')
+      .select('id, estado, comprador_email, seller_id, precio, red, created_at')
+      .order('created_at', { ascending: false });
+
+    if (res.error) {
+      tbody.innerHTML = '<tr><td colspan="7"><div class="empty">Error al cargar: ' + res.error.message + '</div></td></tr>';
+      return;
+    }
+
+    TODAS_LAS_ORDENES = res.data || [];
+    actualizarStats();
+    actualizarContadores();
+    renderTabla();
+
+  } catch(e) {
+    tbody.innerHTML = '<tr><td colspan="7"><div class="empty">Error inesperado: ' + e.message + '</div></td></tr>';
+  }
+}
+
+// ── Actualizar stats superiores ──────────────────────────────────────────
+function actualizarStats() {
+  var d = TODAS_LAS_ORDENES;
+  document.getElementById('statTotal').textContent      = d.length;
+  document.getElementById('statVerificando').textContent = d.filter(function(o){ return o.estado === 'verificando'; }).length;
+  document.getElementById('statPagado').textContent     = d.filter(function(o){ return o.estado === 'pagado'; }).length;
+  document.getElementById('statCompletado').textContent = d.filter(function(o){ return o.estado === 'completado'; }).length;
+  document.getElementById('statCancelado').textContent  = d.filter(function(o){ return o.estado === 'cancelado'; }).length;
+}
+
+// ── Actualizar contadores de filtros ─────────────────────────────────────
+function actualizarContadores() {
+  var d = TODAS_LAS_ORDENES;
+  document.getElementById('cntTodos').textContent       = d.length;
+  document.getElementById('cntVerificando').textContent = d.filter(function(o){ return o.estado === 'verificando'; }).length;
+  document.getElementById('cntPendiente').textContent   = d.filter(function(o){ return o.estado === 'pendiente_pago'; }).length;
+  document.getElementById('cntPagado').textContent      = d.filter(function(o){ return o.estado === 'pagado'; }).length;
+  document.getElementById('cntEntregado').textContent   = d.filter(function(o){ return o.estado === 'entregado'; }).length;
+  document.getElementById('cntCompletado').textContent  = d.filter(function(o){ return o.estado === 'completado'; }).length;
+  document.getElementById('cntCancelado').textContent   = d.filter(function(o){ return o.estado === 'cancelado'; }).length;
+}
+
+// ── Filtrar y renderizar tabla ────────────────────────────────────────────
+function setFiltro(filtro, btn) {
+  FILTRO_ACTUAL = filtro;
+  // Actualizar botones activos
+  document.querySelectorAll('.filtro-btn').forEach(function(b){ b.classList.remove('activo'); });
+  btn.classList.add('activo');
+  renderTabla();
+}
+
+function renderTabla() {
+  var datos = FILTRO_ACTUAL === 'todos'
+    ? TODAS_LAS_ORDENES
+    : TODAS_LAS_ORDENES.filter(function(o){ return o.estado === FILTRO_ACTUAL; });
+
+  var tbody = document.getElementById('tablaBody');
+
+  if (datos.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="7"><div class="empty">No hay órdenes en este estado.</div></td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = datos.map(function(o) {
+    var ref   = o.id ? o.id.substring(0, 8).toUpperCase() : '—';
+    var full  = o.id || '—';
+    var badge = ST_BADGE[o.estado] || ('<span class="badge">' + o.estado + '</span>');
+    var monto = o.precio ? '$' + parseFloat(o.precio).toFixed(2) + ' USDT' : '—';
+    var red   = o.red || '—';
+    var fecha = o.created_at
+      ? new Date(o.created_at).toLocaleDateString('es', {day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit'})
+      : '—';
+    var email   = o.comprador_email || '—';
+    var seller  = o.seller_id ? o.seller_id.substring(0, 8) + '…' : '—';
+
+    // Acciones: solo si está en 'verificando'
+    var acciones = '';
+    if (o.estado === 'verificando') {
+      acciones = '<div class="acciones">' +
+        '<button class="btn-aprobar" onclick="aprobar(\'' + full + '\', this)" title="Aprobar pago — cambia a pagado">✅ Aprobar</button>' +
+        '<button class="btn-rechazar" onclick="rechazar(\'' + full + '\', this)" title="Rechazar — cancela y restaura stock">❌ No Payment</button>' +
+      '</div>';
+    } else {
+      acciones = '<span class="sin-accion">—</span>';
+    }
+
+    return '<tr>' +
+      '<td><span class="orden-id" title="' + full + '">#' + ref + '</span></td>' +
+      '<td>' + badge + '</td>' +
+      '<td class="email-cell">' + email + '</td>' +
+      '<td class="precio-cell">' + monto + '</td>' +
+      '<td style="font-size:12px;color:var(--gris)">' + red + '</td>' +
+      '<td class="fecha-cell">' + fecha + '</td>' +
+      '<td>' + acciones + '</td>' +
+    '</tr>';
+  }).join('');
+}
+
+// ── Aprobar pago ─────────────────────────────────────────────────────────
+async function aprobar(ordenId, btn) {
+  var ref = ordenId.substring(0, 8).toUpperCase();
+  if (!confirm('¿Confirmar APROBACIÓN del pago?\nOrden: #' + ref + '\n\nEsto cambiará el estado a "pagado" y el vendedor podrá entregar el código.')) return;
+
+  btn.disabled = true;
+  btn.textContent = 'Aprobando...';
+  // Deshabilitar botón gemelo
+  var fila = btn.closest('tr');
+  if (fila) fila.querySelectorAll('button').forEach(function(b){ b.disabled = true; });
+
+  try {
+    var r = await sb.rpc('admin_aprobar_pago', { p_orden_id: ordenId });
+    if (r.error) {
+      mostrarMsg('Error al aprobar: ' + r.error.message, 'err');
+      btn.disabled = false; btn.textContent = '✅ Aprobar';
+      if (fila) fila.querySelectorAll('button').forEach(function(b){ b.disabled = false; });
+      return;
+    }
+    mostrarMsg('✅ Pago aprobado correctamente. Orden #' + ref + ' pasó a estado "pagado".', 'ok');
+    await cargar();
+  } catch(e) {
+    mostrarMsg('Error inesperado: ' + e.message, 'err');
+    btn.disabled = false; btn.textContent = '✅ Aprobar';
+  }
+}
+
+// ── Rechazar pago ────────────────────────────────────────────────────────
+async function rechazar(ordenId, btn) {
+  var ref = ordenId.substring(0, 8).toUpperCase();
+  if (!confirm('¿Confirmar RECHAZO del pago?\nOrden: #' + ref + '\n\nEsto cancelará la orden y restaurará el stock del producto.')) return;
+
+  btn.disabled = true;
+  btn.textContent = 'Rechazando...';
+  var fila = btn.closest('tr');
+  if (fila) fila.querySelectorAll('button').forEach(function(b){ b.disabled = true; });
+
+  try {
+    var r = await sb.rpc('admin_rechazar_pago', { p_orden_id: ordenId });
+    if (r.error) {
+      mostrarMsg('Error al rechazar: ' + r.error.message, 'err');
+      btn.disabled = false; btn.textContent = '❌ No Payment';
+      if (fila) fila.querySelectorAll('button').forEach(function(b){ b.disabled = false; });
+      return;
+    }
+    mostrarMsg('❌ Pago rechazado. Orden #' + ref + ' cancelada y stock restaurado.', 'ok');
+    await cargar();
+  } catch(e) {
+    mostrarMsg('Error inesperado: ' + e.message, 'err');
+    btn.disabled = false; btn.textContent = '❌ No Payment';
+  }
+}
+
+// ── Helpers de UI ────────────────────────────────────────────────────────
+function mostrarMsg(texto, tipo) {
+  var el = document.getElementById('msgBox');
+  el.textContent = texto;
+  el.className = 'msg ' + tipo;
+  el.style.display = 'block';
+  // Auto-ocultar después de 6 segundos
+  setTimeout(function(){ el.style.display = 'none'; }, 6000);
+}
+
+function ocultarMsg() {
+  document.getElementById('msgBox').style.display = 'none';
+}
+
+async function logout() {
+  await sb.auth.signOut();
+  window.location.href = 'login.html';
+}
+</script>
+</body>
+</html>
