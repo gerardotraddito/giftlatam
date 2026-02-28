@@ -125,18 +125,7 @@
 </div>
 
 <div class="bottom-nav">
-  <div class="nav-item" onclick="window.location='index.html'">
-    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>Inicio
-  </div>
-  <div class="nav-item active">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>Explorar
-  </div>
-  <div class="nav-item" onclick="window.location='publicar.html'">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>Vender
-  </div>
-  <div class="nav-item" onclick="window.location='explorar.html'">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 12V22H4V12"/><path d="M22 7H2v5h20V7z"/><path d="M12 22V7"/></svg>Ofertas
-  </div>
+  
   <div class="nav-item" onclick="window.location='panel.html'">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Perfil
   </div>
@@ -280,7 +269,7 @@ async function loadCards() {
   var tid = setTimeout(function(){ setError('Conexión lenta. Verificá tu internet.','loadCards()'); }, 12000);
   var data, err;
   try {
-    var r = await sb.from('gift_cards').select('*').eq('estado','activo').order('created_at',{ascending:false});
+    var r = await sb.from('gift_cards').select('*').eq('estado','activo').gt('cantidad', 0).order('created_at',{ascending:false});
     data = r.data; err = r.error;
   } catch(e) {
     clearTimeout(tid);

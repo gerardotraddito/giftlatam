@@ -148,10 +148,7 @@
 </div>
 
 <div class="bottom-nav">
-  <div class="nav-item" onclick="location.href='index.html'"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>Inicio</div>
-  <div class="nav-item active" onclick="location.href='explorar.html'"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>Explorar</div>
-  <div class="nav-item" onclick="location.href='publicar.html'"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>Vender</div>
-  <div class="nav-item" onclick="location.href='explorar.html'"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 12V22H4V12"/><path d="M22 7H2v5h20V7z"/><path d="M12 22V7"/></svg>Ofertas</div>
+  
   <div class="nav-item" onclick="location.href='panel.html'"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Perfil</div>
 </div>
 
@@ -249,7 +246,8 @@ function renderProduct(c) {
       '</table>' +
       (cantidad === 0
         ? '<button class="btn-comprar" disabled style="opacity:0.4;cursor:not-allowed;background:#333;color:#888">😔 Sin stock</button>'
-        : '<button class="btn-comprar" id="btnComprar" onclick="irAPago()">🔒 Comprar por $' + precio.toFixed(2) + ' USDT</button>') +
+        : '<button class="btn-comprar" id="btnComprar" onclick="irAPago()">🔒 Pagar con USDT — $' + precio.toFixed(2) + '</button>' +
+          '<button class="btn-comprar" id="btnComprarSaldo" onclick="irApagoConSaldo()" style="background:transparent;border:1px solid rgba(0,200,83,0.4);color:#00C853;margin-top:8px">💎 Pagar con saldo</button>') +
       '<button class="btn-wishlist" id="btnWish" onclick="guardarFav(\'' + c.id + '\')">♡ Guardar en favoritos</button>' +
     '</div>';
 
@@ -359,6 +357,94 @@ async function irAPago() {
 
   // 6. Redirigir a la página de pago
   location.href = 'pago.html?orden_id=' + ordenId;
+}
+
+// ── Pago con saldo ────────────────────────────────────────────────────────────
+async function irApagoConSaldo() {
+  var c = window._card;
+  if (!c) return;
+
+  var btnSaldo = document.getElementById('btnComprarSaldo');
+  var btnUsdt  = document.getElementById('btnComprar');
+  if (btnSaldo) { btnSaldo.disabled = true; btnSaldo.textContent = '⏳ Verificando saldo...'; }
+
+  // Verificar sesión
+  var sess = await sb.auth.getSession();
+  if (!sess.data || !sess.data.session) {
+    window.location.href = 'login.html?from=' + encodeURIComponent(window.location.href);
+    return;
+  }
+  var uid   = sess.data.session.user.id;
+  var email = sess.data.session.user.email;
+  var precio = parseFloat(c.precio_venta) || 0;
+
+  // Verificar saldo disponible
+  var saldoRes = await sb.from('saldos').select('balance').eq('seller_id', uid).single();
+  var balance  = parseFloat((saldoRes.data && saldoRes.data.balance) || 0);
+
+  if (balance < precio) {
+    alert('Saldo insuficiente.
+Tu saldo: $' + balance.toFixed(2) + ' USDT
+Precio: $' + precio.toFixed(2) + ' USDT
+
+Podés depositar desde tu panel.');
+    if (btnSaldo) { btnSaldo.disabled = false; btnSaldo.textContent = '💎 Pagar con saldo'; }
+    return;
+  }
+
+  if (!confirm('Pagar $' + precio.toFixed(2) + ' USDT con tu saldo?
+Saldo actual: $' + balance.toFixed(2) + ' USDT')) {
+    if (btnSaldo) { btnSaldo.disabled = false; btnSaldo.textContent = '💎 Pagar con saldo'; }
+    return;
+  }
+
+  // Verificar stock
+  var sr = await sb.from('gift_cards').select('cantidad').eq('id', c.id).single();
+  var stockActual = sr.data && sr.data.cantidad != null ? parseInt(sr.data.cantidad) : 0;
+  if (stockActual <= 0) {
+    alert('Sin stock disponible.');
+    if (btnSaldo) { btnSaldo.disabled = false; btnSaldo.textContent = '💎 Pagar con saldo'; }
+    return;
+  }
+
+  // Descontar stock
+  await sb.from('gift_cards').update({ cantidad: Math.max(0, stockActual - 1) }).eq('id', c.id);
+
+  // Descontar saldo
+  var updSaldo = await sb.from('saldos').update({ balance: balance - precio, updated_at: new Date().toISOString() }).eq('seller_id', uid);
+  if (updSaldo.error) {
+    await sb.from('gift_cards').update({ cantidad: stockActual }).eq('id', c.id);
+    alert('Error al descontar saldo: ' + updSaldo.error.message);
+    if (btnSaldo) { btnSaldo.disabled = false; btnSaldo.textContent = '💎 Pagar con saldo'; }
+    return;
+  }
+
+  // Crear orden en verificando — igual que cualquier compra
+  // El admin la aprueba y el saldo del vendedor sube automáticamente
+  var ins = await sb.from('ordenes').insert({
+    gift_card_id:    c.id,
+    seller_id:       c.seller_id || null,
+    comprador_email: email,
+    precio:          precio,
+    moneda:          'USDT',
+    red:             'SALDO',
+    wallet_destino:  'saldo_interno',
+    estado:          'verificando',
+    created_at:      new Date().toISOString(),
+    updated_at:      new Date().toISOString()
+  }).select('id').single();
+
+  if (ins.error || !ins.data) {
+    // Revertir
+    await sb.from('gift_cards').update({ cantidad: stockActual }).eq('id', c.id);
+    await sb.from('saldos').update({ balance: balance, updated_at: new Date().toISOString() }).eq('seller_id', uid);
+    alert('Error al crear la orden: ' + (ins.error ? ins.error.message : 'error desconocido'));
+    if (btnSaldo) { btnSaldo.disabled = false; btnSaldo.textContent = '💎 Pagar con saldo'; }
+    return;
+  }
+
+  // Redirigir a mis-compras con confirmación
+  location.href = 'mis-compras.html?pago=saldo&orden_id=' + ins.data.id;
 }
 
 // ── Vendedor ────────────────────────────────────────────────────────────────
