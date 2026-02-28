@@ -108,17 +108,9 @@
     .nav-item svg{width:21px;height:21px}
     @media(min-width:1024px){.bottom-nav{display:none}}
   </style>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.js"></script>
-  <script>
-  // Init Supabase inline — sin depender de archivos externos
-  (function() {
-    var URL = 'https://goibtxrhabumlrqeykwx.supabase.co';
-    var KEY = 'sb_publishable_4003pT5xt2QBDYnj1G9vgA_IQoC77At';
-    if (window.supabase) {
-      window.sb = window.supabase.createClient(URL, KEY);
-    }
-  })();
-  </script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+  <script src="supabase.js"></script>
+  <script src="auth.js"></script>
 </head>
 <body>
 
