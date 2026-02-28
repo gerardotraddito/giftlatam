@@ -128,16 +128,29 @@ function removeFoto() {
 }
 
 async function uploadFotoIfNeeded() {
-  if (!fotoFile) return fotoUrl; // devuelve URL existente si no cambió
-  document.getElementById('fotoUploading').style.display = 'flex';
-  var ext  = fotoFile.name.split('.').pop().toLowerCase() || 'jpg';
-  var path = currentUser.id + '/' + Date.now() + '.' + ext;
-  var res  = await sb.storage.from('gift-card-images').upload(path, fotoFile, { upsert:true, contentType:fotoFile.type });
-  document.getElementById('fotoUploading').style.display = 'none';
-  if (res.error) { console.error(res.error); return fotoUrl; }
-  var pub = sb.storage.from('gift-card-images').getPublicUrl(path);
-  fotoUrl = pub.data.publicUrl;
-  return fotoUrl;
+  if (!fotoFile) return fotoUrl; // no cambió la foto, devuelve la existente
+  try {
+    var uploadEl = document.getElementById('fotoUploading');
+    if (uploadEl) uploadEl.style.display = 'flex';
+    var ext  = (fotoFile.name || 'foto').split('.').pop().toLowerCase() || 'jpg';
+    var path = currentUser.id + '/' + Date.now() + '.' + ext;
+    var res  = await sb.storage.from('gift-card-images').upload(path, fotoFile, { upsert: true, contentType: fotoFile.type });
+    if (uploadEl) uploadEl.style.display = 'none';
+    if (res.error) {
+      console.error('Upload foto error completo:', res.error);
+      showToast('⚠️ Foto: ' + res.error.message);
+      return fotoUrl; // guarda igual sin nueva foto
+    }
+    var pub = sb.storage.from('gift-card-images').getPublicUrl(path);
+    fotoUrl = pub.data.publicUrl;
+    return fotoUrl;
+  } catch(e) {
+    var uploadEl = document.getElementById('fotoUploading');
+    if (uploadEl) uploadEl.style.display = 'none';
+    console.error('uploadFotoIfNeeded excepción completa:', e);
+    showToast('⚠️ Foto error: ' + (e.message || JSON.stringify(e)));
+    return fotoUrl; // guarda igual sin nueva foto
+  }
 }
 
 </script>
@@ -359,6 +372,18 @@ function calcComision() {
   document.getElementById('cTotal').textContent   = '$' + total.toFixed(2) + ' USDT';
 }
 
+function mostrarErrorVisible(msg) {
+  var old = document.getElementById('errorVisibleBox');
+  if (old) old.remove();
+  var box = document.createElement('div');
+  box.id = 'errorVisibleBox';
+  box.style.cssText = 'background:#FF4444;color:#fff;padding:14px 16px;border-radius:12px;font-size:13px;font-weight:600;margin:12px 0;line-height:1.5;word-break:break-all';
+  box.textContent = '❌ ' + msg;
+  var container = document.getElementById('mainContent');
+  if (container) container.insertBefore(box, container.firstChild);
+  window.scrollTo(0, 0);
+}
+
 async function guardar() {
   var btn = document.getElementById('btnSave');
   var titulo = document.getElementById('fTitulo').value.trim();
@@ -390,10 +415,16 @@ async function guardar() {
       imagen_url:    (imgUrl !== undefined && imgUrl !== null) ? imgUrl : listing.imagen_url,
     };
 
+    console.log('Guardando update:', update);
+    console.log('listingId:', listingId, 'seller_id:', currentUser.id);
+
     var res = await sb.from('gift_cards').update(update).eq('id', listingId).eq('seller_id', currentUser.id);
 
+    console.log('Resultado update:', res);
+
     if (res.error) {
-      showToast('❌ Error: ' + res.error.message);
+      var detalle = res.error.message || res.error.details || res.error.hint || JSON.stringify(res.error);
+      mostrarErrorVisible('Error al guardar: ' + detalle);
       btn.textContent = 'Guardar cambios';
       btn.disabled = false;
     } else {
@@ -402,7 +433,7 @@ async function guardar() {
       setTimeout(function(){ window.location.href = 'mis-listings.html'; }, 1200);
     }
   } catch(e) {
-    showToast('❌ Error inesperado: ' + e.message);
+    mostrarErrorVisible('Excepción: ' + (e.message || JSON.stringify(e)));
     btn.textContent = 'Guardar cambios';
     btn.disabled = false;
   }
