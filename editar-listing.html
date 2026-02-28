@@ -371,35 +371,41 @@ async function guardar() {
   if (!marca)  { showToast('⚠️ La marca es obligatoria');  return; }
   if (!precio || precio <= 0) { showToast('⚠️ Ingresá un precio de venta válido'); return; }
 
-  btn.textContent = 'Guardando...';
+  btn.textContent = '⏳ Guardando...';
   btn.disabled = true;
-  var imgUrl = await uploadFotoIfNeeded();
 
-  var update = {
-    titulo:       titulo,
-    marca:        marca,
-    descripcion:  desc || null,
-    precio_venta: precio,
-    valor_nominal:nominal,
-    cantidad: parseInt(document.getElementById('fCantidad').value) || 1,
-    region:       regionActiva,
-    tipo:         tipoActivo,
-    updated_at:   new Date().toISOString(),
-    imagen_url:   imgUrl !== undefined ? imgUrl : listing.imagen_url,
-  };
+  try {
+    var imgUrl = await uploadFotoIfNeeded();
 
-  var res = await sb.from('gift_cards').update(update).eq('id', listingId).eq('seller_id', currentUser.id);
+    var update = {
+      titulo:        titulo,
+      marca:         marca,
+      descripcion:   desc || null,
+      precio_venta:  precio,
+      valor_nominal: nominal,
+      cantidad:      parseInt(document.getElementById('fCantidad').value) || 1,
+      region:        regionActiva,
+      tipo:          tipoActivo,
+      updated_at:    new Date().toISOString(),
+      imagen_url:    (imgUrl !== undefined && imgUrl !== null) ? imgUrl : listing.imagen_url,
+    };
 
-  if (res.error) {
-    showToast('❌ Error: ' + res.error.message);
-  } else {
-    showToast('✅ Cambios guardados');
-    listing = Object.assign({}, listing, update);
-    setTimeout(function(){ window.location.href = 'mis-listings.html'; }, 1200);
+    var res = await sb.from('gift_cards').update(update).eq('id', listingId).eq('seller_id', currentUser.id);
+
+    if (res.error) {
+      showToast('❌ Error: ' + res.error.message);
+      btn.textContent = 'Guardar cambios';
+      btn.disabled = false;
+    } else {
+      btn.textContent = '✅ Guardado';
+      listing = Object.assign({}, listing, update);
+      setTimeout(function(){ window.location.href = 'mis-listings.html'; }, 1200);
+    }
+  } catch(e) {
+    showToast('❌ Error inesperado: ' + e.message);
+    btn.textContent = 'Guardar cambios';
+    btn.disabled = false;
   }
-
-  btn.textContent = 'Guardar cambios';
-  btn.disabled = false;
 }
 
 function confirmarEliminar() {
