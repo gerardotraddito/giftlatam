@@ -374,17 +374,12 @@ async function irApagoConSaldo() {
     var saldoRes = await sb.from('saldos').select('balance').eq('seller_id', uid).single();
     var balance  = parseFloat((saldoRes.data && saldoRes.data.balance) || 0);
     if (balance < precio) {
-      alert('Saldo insuficiente.
-Tu saldo: $' + balance.toFixed(2) + ' USDT
-Precio: $' + precio.toFixed(2) + ' USDT
-
-Depositá desde tu panel.');
+      alert('Saldo insuficiente.\nTu saldo: $' + balance.toFixed(2) + ' USDT\nPrecio: $' + precio.toFixed(2) + ' USDT\n\nDepositá desde tu panel.');
       btnOn('btnComprarSaldo', '💎 Pagar con saldo');
       return;
     }
 
-    if (!confirm('¿Pagar $' + precio.toFixed(2) + ' USDT con tu saldo?
-Saldo actual: $' + balance.toFixed(2) + ' USDT')) {
+    if (!confirm('¿Pagar $' + precio.toFixed(2) + ' USDT con tu saldo?\nSaldo actual: $' + balance.toFixed(2) + ' USDT')) {
       btnOn('btnComprarSaldo', '💎 Pagar con saldo');
       return;
     }
