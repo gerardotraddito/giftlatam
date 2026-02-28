@@ -254,6 +254,16 @@ function renderProduct(c) {
   window._card = c;
 }
 
+async function tgNotifAdmin(texto) {
+  try {
+    await fetch('https://api.telegram.org/bot8721252139:AAGDA-CHoixcoPOi9b3aElRfEDa2IcGROv0/sendMessage', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ chat_id: '5072969781', text: texto, parse_mode: 'HTML' })
+    });
+  } catch(e) {}
+}
+
 async function irAPago() {
   var c = window._card;
   if (!c) return;
