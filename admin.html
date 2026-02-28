@@ -294,8 +294,21 @@ async function cargarOrdenes() {
           'Comprador: ' + (o.comprador_email || '—') + '\n' +
           'Monto: $' + parseFloat(o.precio || 0).toFixed(2) + ' USDT'
         );
+        // Debug visual temporal
+        var dbgEl = document.getElementById('tgDebug');
+        if (!dbgEl) {
+          dbgEl = document.createElement('div');
+          dbgEl.id = 'tgDebug';
+          dbgEl.style.cssText = 'position:fixed;bottom:20px;right:20px;background:#1a1a1a;border:1px solid #00C853;color:#00C853;padding:12px 16px;border-radius:10px;font-size:12px;z-index:9999;max-width:280px';
+          document.body.appendChild(dbgEl);
+        }
+        dbgEl.innerHTML = '📨 Notificación enviada<br><small style="color:#888">#' + o.id.substring(0,8).toUpperCase() + ' — ' + new Date().toLocaleTimeString() + '</small>';
+        setTimeout(function(){ if(dbgEl) dbgEl.remove(); }, 8000);
       }
     });
+  } else {
+    // Debug: mostrar cuántas órdenes hay en el primer load
+    console.log('[TG] Primera carga. Órdenes vistas:', ORDENES.map(function(o){return o.id.substring(0,8);}));
   }
   // Actualizar IDs vistos para la próxima comparación
   ORDENES_VISTAS = ORDENES.map(function(o){ return o.id; });
