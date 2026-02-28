@@ -95,7 +95,10 @@
     .foto-uploading .mini-spin{width:14px;height:14px;border:2px solid #222;border-top-color:var(--verde);border-radius:50%;animation:spin 0.8s linear infinite}
 
   </style>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.js">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.js"></script>
+  <script src="supabase.js"></script>
+  <script src="auth.js"></script>
+  <script>
 // ── FOTO ──────────────────────────────────────────────────────────────
 var fotoFile = null;
 var fotoUrl  = null;
@@ -128,7 +131,7 @@ function removeFoto() {
 }
 
 async function uploadFotoIfNeeded() {
-  if (!fotoFile) return fotoUrl; // no cambió la foto, devuelve la existente
+  if (!fotoFile) return fotoUrl;
   try {
     var uploadEl = document.getElementById('fotoUploading');
     if (uploadEl) uploadEl.style.display = 'flex';
@@ -137,9 +140,8 @@ async function uploadFotoIfNeeded() {
     var res  = await sb.storage.from('gift-card-images').upload(path, fotoFile, { upsert: true, contentType: fotoFile.type });
     if (uploadEl) uploadEl.style.display = 'none';
     if (res.error) {
-      console.error('Upload foto error completo:', res.error);
       showToast('⚠️ Foto: ' + res.error.message);
-      return fotoUrl; // guarda igual sin nueva foto
+      return fotoUrl;
     }
     var pub = sb.storage.from('gift-card-images').getPublicUrl(path);
     fotoUrl = pub.data.publicUrl;
@@ -147,15 +149,11 @@ async function uploadFotoIfNeeded() {
   } catch(e) {
     var uploadEl = document.getElementById('fotoUploading');
     if (uploadEl) uploadEl.style.display = 'none';
-    console.error('uploadFotoIfNeeded excepción completa:', e);
-    showToast('⚠️ Foto error: ' + (e.message || JSON.stringify(e)));
-    return fotoUrl; // guarda igual sin nueva foto
+    showToast('⚠️ Foto: ' + (e.message || 'error'));
+    return fotoUrl;
   }
 }
-
-</script>
-  <script src="supabase.js"></script>
-  <script src="auth.js"></script>
+  </script>
 </head>
 <body>
 
