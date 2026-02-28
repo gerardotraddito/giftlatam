@@ -420,27 +420,7 @@ footer {
     <div class="wallet-amount" id="walletAmount" style="font-size:36px;font-weight:800;color:#00C853;letter-spacing:-1px;line-height:1.1">Cargando...</div>
     <div class="wallet-usd" id="walletUsd" style="font-size:12px;color:var(--gris);margin-top:4px;margin-bottom:14px"> </div>
 
-    <!-- Wallet de cobro -->
-    <div style="margin-bottom:14px">
-      <div style="font-size:11px;color:#888;font-weight:600;margin-bottom:8px">💳 TU WALLET DE COBRO (USDT)</div>
-      <select id="selectRed" onchange="selRedPanel(this.value)"
-        style="width:100%;background:#111;border:1px solid #2a2a2a;border-radius:10px;padding:10px 12px;color:#f0f0f0;font-size:13px;font-weight:600;margin-bottom:8px;outline:none;cursor:pointer;font-family:Inter,sans-serif;appearance:auto">
-        <option value="TRC20">TRC20 — empieza con T... (fee $1.00)</option>
-        <option value="BEP20">BEP20 — empieza con 0x... (fee $0.20)</option>
-      </select>
-      <div style="display:flex;gap:8px;align-items:center">
-        <input id="panelWalletInput" type="text" placeholder="T..."
-          style="flex:1;background:#111;border:1px solid #2a2a2a;border-radius:10px;padding:10px 12px;color:#f0f0f0;font-size:12px;outline:none;font-family:monospace"
-          oninput="document.getElementById('btnGuardarWallet').style.display='inline-block'">
-        <button id="btnGuardarWallet" onclick="guardarWalletPanel()" 
-          style="display:none;background:var(--verde);color:#000;border:none;border-radius:10px;padding:10px 14px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;font-family:Inter,sans-serif">
-          Guardar
-        </button>
-      </div>
-      <div id="walletPanelMsg" style="font-size:11px;margin-top:5px;display:none"></div>
-    </div>
-
-    <div class="wallet-btns">
+    <div class="wallet-btns" style="margin-top:4px">
       <button class="btn-wallet btn-depositar" onclick="abrirDepositar()">⬇️ Depositar</button>
       <button class="btn-wallet btn-retirar" style="border:1px solid rgba(0,200,83,0.4);color:var(--verde)" onclick="abrirRetirar()">⬆️ Retirar</button>
     </div>
