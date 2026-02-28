@@ -194,8 +194,8 @@ async function loadDisputas() {
 
   // Intentar cargar desde tabla disputes si existe, sino mostrar empty
   var res = await sb.from('disputas')
-    .select('*, transactions(gift_cards(titulo,marca))')
-    .or('buyer_id.eq.' + currentUser.id + ',seller_id.eq.' + currentUser.id)
+    .select('id, transaccion_id, usuario_id, motivo, descripcion, estado, created_at')
+    .eq('usuario_id', currentUser.id)
     .order('created_at', { ascending: false });
 
   if (res.error) {
@@ -222,15 +222,16 @@ async function loadDisputas() {
   }
 
   list.innerHTML = data.map(function(d) {
-    var gc = (d.transactions && d.transactions.gift_cards) || {};
-    var titulo = gc.titulo || 'Transacción';
     var fecha  = d.created_at ? new Date(d.created_at).toLocaleDateString('es-AR',{day:'2-digit',month:'short',year:'numeric'}) : '';
     var estado = d.estado || 'abierto';
-    var id     = d.codigo || ('#DIS-' + String(d.id).slice(-4).toUpperCase());
+    var ref    = '#DIS-' + String(d.id).slice(-4).toUpperCase();
 
     return '<div class="dispute-card">' +
       '<div class="d-header">' +
-        '<div><div class="d-product">' + titulo + '</div><div class="d-date">' + fecha + ' · ' + id + '</div></div>' +
+        '<div>' +
+          '<div class="d-product">' + (d.motivo || 'Disputa') + '</div>' +
+          '<div class="d-date">' + fecha + ' · <span style="color:var(--verde);font-weight:700">' + ref + '</span></div>' +
+        '</div>' +
         '<span class="d-status ' + (ST_CLS[estado]||'st-cerrado') + '">' + (ST_LABEL[estado]||estado) + '</span>' +
       '</div>' +
       '<div class="d-desc">' + (d.descripcion || '') + '</div>' +
@@ -239,24 +240,8 @@ async function loadDisputas() {
 }
 
 async function loadTransacciones() {
-  var sel = document.getElementById('fTx');
-  var res = await sb.from('transactions')
-    .select('id, created_at, gift_cards(titulo, marca)')
-    .eq('buyer_id', currentUser.id)
-    .eq('estado', 'completado')
-    .order('created_at', { ascending: false })
-    .limit(20);
-
-  if (res.error || !res.data || res.data.length === 0) return;
-
-  misTransacciones = res.data;
-  sel.innerHTML = '<option value="">Seleccioná una compra...</option>' +
-    res.data.map(function(t) {
-      var gc    = (t.gift_cards) || {};
-      var titulo= gc.titulo || 'Compra';
-      var fecha = t.created_at ? new Date(t.created_at).toLocaleDateString('es-AR',{day:'2-digit',month:'short'}) : '';
-      return '<option value="' + t.id + '">' + titulo + ' · ' + fecha + '</option>';
-    }).join('');
+  // No se usa - el número de orden se ingresa manualmente
+}
 }
 
 async function abrirDisputa() {
@@ -285,13 +270,12 @@ async function abrirDisputa() {
   btn.textContent = 'Enviando...';
 
   var insert = {
-    transaction_id: txId,
-    buyer_id:       currentUser.id,
-    seller_id:      sellerId,
-    motivo:         motivo,
-    descripcion:    desc,
-    estado:         'abierto',
-    created_at:     new Date().toISOString(),
+    transaccion_id:  txId,
+    usuario_id:      currentUser.id,
+    motivo:          motivo,
+    descripcion:     desc,
+    estado:          'abierto',
+    created_at:      new Date().toISOString(),
   };
 
   var res = await sb.from('disputas').insert(insert);
