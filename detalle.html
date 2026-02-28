@@ -521,15 +521,57 @@ function showError(msg) {
 }
 
 // ── Init ────────────────────────────────────────────────────
+function dbg(paso, detalle) {
+  var el = document.getElementById('detailCard');
+  if (!el) return;
+  el.innerHTML =
+    '<div style="padding:20px;font-family:monospace;font-size:13px;line-height:2">' +
+    '<div style="color:#00C853;font-weight:bold;margin-bottom:8px">🔍 DEBUG DETALLE</div>' +
+    '<div>⚙️ Paso: <b>' + paso + '</b></div>' +
+    '<div style="color:#aaa;word-break:break-all">' + (detalle || '') + '</div>' +
+    '</div>';
+}
+
 async function initDetalle() {
   try {
-    // 1. Verificar sb (ya inicializado inline en <head>)
+    dbg('1 — DOMContentLoaded OK', 'Script cargó correctamente');
+
+    // Verificar sb
     if (typeof sb === 'undefined') {
-      showError('Supabase no cargó. Revisá tu conexión y recargá.');
+      dbg('❌ FALLO', 'sb está undefined — supabase.js no cargó o tiene error');
       return;
     }
+    dbg('2 — sb OK', 'Supabase client disponible');
 
-    // 2. Actualizar nav según sesión
+    // Obtener ID de URL
+    var id = new URLSearchParams(window.location.search).get('id');
+    if (!id) {
+      dbg('❌ FALLO', 'No hay ?id= en la URL — URL actual: ' + window.location.href);
+      return;
+    }
+    dbg('3 — ID OK', 'id = ' + id);
+
+    // Query a Supabase
+    var res;
+    try {
+      res = await sb.from('gift_cards').select('*').eq('id', id).single();
+    } catch(fetchErr) {
+      dbg('❌ FALLO — Error en fetch', fetchErr.message || JSON.stringify(fetchErr));
+      return;
+    }
+    dbg('4 — Query ejecutada', 'error=' + JSON.stringify(res.error) + ' | data=' + (res.data ? 'OK' : 'null'));
+
+    if (res.error) {
+      dbg('❌ FALLO — Supabase error', 'code: ' + res.error.code + ' | msg: ' + res.error.message + ' | hint: ' + (res.error.hint||'—'));
+      return;
+    }
+    if (!res.data) {
+      dbg('❌ FALLO — Sin data', 'La query no devolvió ningún producto para id=' + id);
+      return;
+    }
+    dbg('5 — Data OK', 'titulo=' + (res.data.titulo||'?') + ' | estado=' + (res.data.estado||'?') + ' | cantidad=' + res.data.cantidad);
+
+    // Nav
     try {
       var sess = await sb.auth.getSession();
       var nav = document.getElementById('navActions');
@@ -542,27 +584,15 @@ async function initDetalle() {
       }
     } catch(e) {}
 
-    // 3. Cargar producto por ID de URL
-    var id = new URLSearchParams(window.location.search).get('id');
-    if (!id) { showError('Falta el ID del producto en la URL.'); return; }
-
-    var res = await sb.from('gift_cards').select('*').eq('id', id).single();
-
-    if (res.error) {
-      showError('Error al cargar: ' + res.error.message + ' [' + res.error.code + ']');
-      return;
-    }
-    if (!res.data) {
-      showError('Producto no encontrado.');
-      return;
-    }
-
+    dbg('6 — Llamando renderProduct...', 'Si quedás acá, el error está dentro de renderProduct()');
     renderProduct(res.data);
+
+    dbg('7 — renderProduct OK ✅', 'Cargando vendedor y relacionados...');
     loadSeller(res.data.seller_id);
     loadRel(res.data.id);
 
   } catch(e) {
-    showError('Error: ' + (e.message || 'desconocido'));
+    dbg('❌ EXCEPCIÓN INESPERADA', (e.message || 'sin mensaje') + ' | ' + (e.stack ? e.stack.split('\n')[1] : ''));
   }
 }
 
