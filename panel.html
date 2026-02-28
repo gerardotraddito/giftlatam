@@ -575,6 +575,16 @@ var _adminWallets = {
   bep20: '0x534822A13896B229855Fc0ACFA9F25664368a38C'
 };
 
+
+async function tgNotifAdmin(texto) {
+  try {
+    await fetch('https://api.telegram.org/bot8721252139:AAGDA-CHoixcoPOi9b3aElRfEDa2IcGROv0/sendMessage', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ chat_id: '5072969781', text: texto, parse_mode: 'HTML' })
+    });
+  } catch(e) {}
+}
 async function cargarWalletsAdmin() {
   try {
     var res = await sb.from('config_admin').select('clave,valor').in('clave',['wallet_trc20','wallet_bep20']);
@@ -745,6 +755,7 @@ async function confirmarDeposito() {
   if (r.error) { _showErr(errEl, 'Error: ' + r.error.message); return; }
 
   cerrarModal();
+  tgNotifAdmin('💵 <b>NUEVO DEPÓSITO PENDIENTE</b>\nMonto: $'+monto+' USDT\nRed: '+(window._depRed||'TRC20')+'\nRevisá el panel admin.');
   mostrarToast('✅ Depósito notificado. El admin lo verificará pronto.');
 }
 
@@ -895,7 +906,8 @@ async function confirmarRetiro() {
       cerrarModal();
       loadPanelData(sess.data.session);
     }
-    mostrarToast('✅ Retiro solicitado. El admin lo procesará pronto.');
+    tgNotifAdmin('⬆️ <b>NUEVO RETIRO PENDIENTE</b>\nMonto: $'+monto.toFixed(2)+' USDT\nRed: '+red+'\nWallet: '+wallet+'\nRevisá el panel admin.');
+  mostrarToast('✅ Retiro solicitado. El admin lo procesará pronto.');
   } catch(e) {
     _showErr(errEl, 'Error: ' + e.message);
     if (btn) { btn.disabled = false; btn.textContent = 'Solicitar retiro'; }

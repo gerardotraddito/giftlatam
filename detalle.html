@@ -346,6 +346,7 @@ async function irAPago() {
     }
 
     ordenId = ins.data.id;
+    tgNotifAdmin('🛒 <b>NUEVA COMPRA</b>\nOrden: #'+ordenId.substring(0,8).toUpperCase()+'\nMonto: $'+parseFloat(c.precio_venta).toFixed(2)+' USDT\nComprador: '+email);
   } catch(e) {
     console.error('[crear orden]', e);
     // Revertir stock

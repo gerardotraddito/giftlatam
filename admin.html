@@ -336,11 +336,23 @@ function renderOrdenes() {
   }).join('');
 }
 
+// ── TELEGRAM NOTIFICACIONES ───────────────────────────────────────────────
+async function tgNotif(texto) {
+  try {
+    await fetch('https://api.telegram.org/bot8721252139:AAGDA-CHoixcoPOi9b3aElRfEDa2IcGROv0/sendMessage', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ chat_id: '5072969781', text: texto, parse_mode: 'HTML' })
+    });
+  } catch(e) {}
+}
+
 async function aprobar(id, btn) {
   if (!confirm('Aprobar pago de orden #'+id.substring(0,8).toUpperCase()+'?\nEl saldo del vendedor sube automáticamente.')) return;
   bloquear(btn); btn.textContent = '...';
   var r = await sb.rpc('admin_aprobar_pago',{p_orden_id:id});
   if (r.error||r.data!=='ok') { msg('Error: '+(r.error?r.error.message:r.data),'err'); desbloquear(btn,'✅ Aprobar'); return; }
+  tgNotif('✅ <b>PAGO APROBADO</b>\nOrden: #'+id.substring(0,8).toUpperCase());
   msg('✅ Pago aprobado','ok'); cargarOrdenes();
 }
 
@@ -349,6 +361,7 @@ async function rechazar(id, btn) {
   bloquear(btn); btn.textContent = '...';
   var r = await sb.rpc('admin_rechazar_pago',{p_orden_id:id});
   if (r.error||r.data!=='ok') { msg('Error: '+(r.error?r.error.message:r.data),'err'); desbloquear(btn,'❌ Rechazar'); return; }
+  tgNotif('❌ <b>PAGO RECHAZADO</b>\nOrden: #'+id.substring(0,8).toUpperCase());
   msg('Pago rechazado','ok'); cargarOrdenes();
 }
 
@@ -386,6 +399,7 @@ async function marcarEnviado(retiroId, btn) {
   bloquear(btn); btn.textContent = '...';
   var r = await sb.rpc('admin_marcar_enviado',{p_retiro_id:retiroId,p_tx_hash:tx||null});
   if (r.error||r.data!=='ok') { msg('Error: '+(r.error?r.error.message:r.data),'err'); desbloquear(btn,'✅ Marcar enviado'); return; }
+  tgNotif('💸 <b>RETIRO ENVIADO</b>\nID: '+retiroId.substring(0,8).toUpperCase());
   msg('✅ Retiro marcado como enviado','ok'); cargarRetiros();
 }
 
@@ -438,6 +452,7 @@ async function aprobarDeposito(id, btn) {
   bloquear(btn); btn.textContent = '...';
   var r = await sb.rpc('admin_aprobar_deposito', {p_deposito_id: id});
   if (r.error||r.data!=='ok') { msg('Error: '+(r.error?r.error.message:r.data),'err'); desbloquear(btn,'✅ Aprobar'); return; }
+  tgNotif('💵 <b>DEPÓSITO APROBADO</b>\nID: '+id.substring(0,8).toUpperCase());
   msg('✅ Saldo acreditado correctamente.','ok');
   cargarDepositos();
 }
