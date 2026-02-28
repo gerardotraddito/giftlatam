@@ -100,6 +100,7 @@
   <div class="nav-logo">Gift<span>Latam</span> &nbsp;<span style="font-size:11px;color:var(--gris);font-family:Inter,sans-serif;font-weight:500">Admin</span></div>
   <div class="nav-right">
     <span class="nav-user" id="navUser"></span>
+    <button onclick="testTelegram()" style="background:#2ea;color:#000;border:none;border-radius:8px;padding:6px 12px;font-size:12px;font-weight:700;cursor:pointer;margin-right:6px">📨 Test TG</button>
     <button class="btn-logout" onclick="logout()">Salir</button>
   </div>
 </nav>
@@ -361,6 +362,34 @@ function renderOrdenes() {
 }
 
 // ── TELEGRAM NOTIFICACIONES ───────────────────────────────────────────────
+async function testTelegram() {
+  var btn = event.target;
+  btn.textContent = '⏳...';
+  btn.disabled = true;
+  try {
+    var r = await fetch('https://api.telegram.org/bot8721252139:AAGDA-CHoixcoPOi9b3aElRfEDa2IcGROv0/sendMessage', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ chat_id: '5072969781', text: '✅ Test desde GiftLatam Admin — funciona!', parse_mode: 'HTML' })
+    });
+    var data = await r.json();
+    if (data.ok) {
+      btn.textContent = '✅ Enviado!';
+      btn.style.background = '#00C853';
+    } else {
+      btn.textContent = '❌ Error: ' + data.description;
+      btn.style.background = '#ff4444';
+      btn.style.color = '#fff';
+      btn.disabled = false;
+    }
+  } catch(e) {
+    btn.textContent = '❌ ' + e.message;
+    btn.style.background = '#ff4444';
+    btn.style.color = '#fff';
+    btn.disabled = false;
+  }
+}
+
 async function tgNotif(texto) {
   try {
     await fetch('https://api.telegram.org/bot8721252139:AAGDA-CHoixcoPOi9b3aElRfEDa2IcGROv0/sendMessage', {
