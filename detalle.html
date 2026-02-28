@@ -260,7 +260,7 @@ function renderProduct(c) {
         '<tr><td>Protección</td><td>Escrow incluido ✓</td></tr>' +
       '</table>' +
       botonesHtml +
-      '<button class="btn-wishlist" id="btnWish" onclick="guardarFav('' + c.id + '')">♡ Guardar en favoritos</button>' +
+      '<button class="btn-wishlist" id="btnWish" onclick="guardarFav(\'' + c.id + '\')">♡ Guardar en favoritos</button>' +
     '</div>';
 
   window._card = c;
@@ -481,7 +481,7 @@ async function loadRel(cid) {
       var k  = bkey(c.marca);
       var bg = BG[k] || 'rgba(0,200,83,0.08)';
       var ico = LOGOS[k]
-        ? '<img src="' + LOGOS[k] + '" width="26" height="26" style="object-fit:contain" onerror="this.parentElement.innerHTML='' + (EMOJI[k]||'🎁') + ''">'
+        ? '<img src="' + LOGOS[k] + '" width="26" height="26" style="object-fit:contain" onerror="this.parentElement.innerHTML=\'' + (EMOJI[k]||'🎁') + '\'">'
         : (EMOJI[k]||'🎁');
       return '<a href="detalle.html?id=' + c.id + '" class="rel-card">' +
         '<div class="rel-icon" style="background:' + bg + '">' + ico + '</div>' +
