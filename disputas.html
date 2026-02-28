@@ -193,7 +193,7 @@ async function loadDisputas() {
   var list = document.getElementById('disputasList');
 
   // Intentar cargar desde tabla disputes si existe, sino mostrar empty
-  var res = await sb.from('disputes')
+  var res = await sb.from('disputas')
     .select('*, transactions(gift_cards(titulo,marca))')
     .or('buyer_id.eq.' + currentUser.id + ',seller_id.eq.' + currentUser.id)
     .order('created_at', { ascending: false });
@@ -294,7 +294,7 @@ async function abrirDisputa() {
     created_at:     new Date().toISOString(),
   };
 
-  var res = await sb.from('disputes').insert(insert);
+  var res = await sb.from('disputas').insert(insert);
 
   if (res.error) {
     showToast('❌ ' + res.error.message);
