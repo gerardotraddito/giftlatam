@@ -88,7 +88,7 @@
 
     .panel-sec{display:none}
     .panel-sec.visible{display:block}
-    .id-cell{font-family:'Courier New',monospace;font-size:11px;color:var(--gris);cursor:help}
+    .id-cell{font-family:'Courier New',monospace;font-size:13px;font-weight:700;color:var(--verde);cursor:help;letter-spacing:0.5px}
     .monto{font-weight:700;white-space:nowrap}
   </style>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
@@ -275,7 +275,7 @@ function showTab(tab, btn) {
 async function cargarOrdenes() {
   var tb = document.getElementById('tbOrdenes');
   tb.innerHTML = '<tr><td colspan="8"><div class="spinner"></div></td></tr>';
-  var res = await sb.from('ordenes').select('id,estado,comprador_email,seller_id,precio,red,created_at').order('created_at',{ascending:false});
+  var res = await sb.from('ordenes').select('id,numero_orden,estado,comprador_email,seller_id,precio,red,created_at').order('created_at',{ascending:false});
   if (res.error) { tb.innerHTML = '<tr><td colspan="8"><div class="empty">Error: ' + res.error.message + '</div></td></tr>'; return; }
   ORDENES = res.data || [];
 
@@ -290,7 +290,7 @@ async function cargarOrdenes() {
         tgNotif(
           '🛒 <b>NUEVA ORDEN</b>\n' +
           estadoTexto + '\n' +
-          'ID: #' + o.id.substring(0,8).toUpperCase() + '\n' +
+          'ID: #' + (o.numero_orden ? String(o.numero_orden).padStart(6,'0') : o.id.substring(0,8).toUpperCase()) + '\n' +
           'Comprador: ' + (o.comprador_email || '—') + '\n' +
           'Monto: $' + parseFloat(o.precio || 0).toFixed(2) + ' USDT'
         );
@@ -352,7 +352,7 @@ function renderOrdenes() {
   var tb = document.getElementById('tbOrdenes');
   if (datos.length === 0) { tb.innerHTML = '<tr><td colspan="8"><div class="empty">Sin órdenes en este estado.</div></td></tr>'; return; }
   tb.innerHTML = datos.map(function(o) {
-    var ref   = '#' + (o.id||'').substring(0,8).toUpperCase();
+    var ref   = o.numero_orden ? '#' + String(o.numero_orden).padStart(6, '0') : '#' + (o.id||'').substring(0,8).toUpperCase();
     var badge = BADGE[o.estado] || o.estado;
     var precio = parseFloat(o.precio||0);
     var neto   = precio > 0 ? '$'+(precio*0.97).toFixed(2)+' USDT' : '—';
@@ -414,20 +414,20 @@ async function tgNotif(texto) {
 }
 
 async function aprobar(id, btn) {
-  if (!confirm('Aprobar pago de orden #'+id.substring(0,8).toUpperCase()+'?\nEl saldo del vendedor sube automáticamente.')) return;
+  if (!confirm('Aprobar pago de orden #'+ (function(){var o=ORDENES.find(function(x){return x.id===id;}); return o&&o.numero_orden?String(o.numero_orden).padStart(6,'0'):id.substring(0,8).toUpperCase();})() +'?\nEl saldo del vendedor sube automáticamente.')) return;
   bloquear(btn); btn.textContent = '...';
   var r = await sb.rpc('admin_aprobar_pago',{p_orden_id:id});
   if (r.error||r.data!=='ok') { msg('Error: '+(r.error?r.error.message:r.data),'err'); desbloquear(btn,'✅ Aprobar'); return; }
-  tgNotif('✅ <b>PAGO APROBADO</b>\nOrden: #'+id.substring(0,8).toUpperCase());
+  tgNotif('✅ <b>PAGO APROBADO</b>\nOrden: #'+(function(){var o=ORDENES.find(function(x){return x.id===id;}); return o&&o.numero_orden?String(o.numero_orden).padStart(6,'0'):id.substring(0,8).toUpperCase();})()); ;
   msg('✅ Pago aprobado','ok'); cargarOrdenes();
 }
 
 async function rechazar(id, btn) {
-  if (!confirm('Rechazar pago de orden #'+id.substring(0,8).toUpperCase()+'?\nSe cancela y restaura el stock.')) return;
+  if (!confirm('Rechazar pago de orden #'+(function(){var o=ORDENES.find(function(x){return x.id===id;}); return o&&o.numero_orden?String(o.numero_orden).padStart(6,'0'):id.substring(0,8).toUpperCase();})()+'?\nSe cancela y restaura el stock.')) return;
   bloquear(btn); btn.textContent = '...';
   var r = await sb.rpc('admin_rechazar_pago',{p_orden_id:id});
   if (r.error||r.data!=='ok') { msg('Error: '+(r.error?r.error.message:r.data),'err'); desbloquear(btn,'❌ Rechazar'); return; }
-  tgNotif('❌ <b>PAGO RECHAZADO</b>\nOrden: #'+id.substring(0,8).toUpperCase());
+  tgNotif('❌ <b>PAGO RECHAZADO</b>\nOrden: #'+(function(){var o=ORDENES.find(function(x){return x.id===id;}); return o&&o.numero_orden?String(o.numero_orden).padStart(6,'0'):id.substring(0,8).toUpperCase();})());
   msg('Pago rechazado','ok'); cargarOrdenes();
 }
 

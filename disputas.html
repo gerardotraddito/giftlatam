@@ -82,7 +82,7 @@
     .nav-item.active{color:var(--verde)}
     .nav-item svg{width:21px;height:21px}
   </style>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
   <script src="supabase.js"></script>
   <script src="auth.js"></script>
 </head>
@@ -117,8 +117,8 @@
   <!-- PANEL: ABRIR DISPUTA -->
   <div class="panel" id="panel-abrir">
     <div class="field">
-      <span class="field-label">TRANSACCIÓN / PEDIDO *</span>
-      <select id="fTx"><option value="">Seleccioná una compra...</option></select>
+      <span class="field-label">NÚMERO DE ORDEN *</span>
+      <input type="number" id="fTx" placeholder="Ej: 000123" min="1" style="letter-spacing:1px">
     </div>
     <div class="field">
       <span class="field-label">MOTIVO *</span>
@@ -148,10 +148,7 @@
 </div>
 
 <div class="bottom-nav">
-  <div class="nav-item" onclick="location.href='index.html'"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>Inicio</div>
-  <div class="nav-item" onclick="location.href='explorar.html'"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>Explorar</div>
-  <div class="nav-item" onclick="location.href='publicar.html'"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>Vender</div>
-  <div class="nav-item active" onclick="location.href='disputas.html'"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>Ofertas</div>
+  
   <div class="nav-item" onclick="location.href='panel.html'"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Perfil</div>
 </div>
 
@@ -263,21 +260,29 @@ async function loadTransacciones() {
 }
 
 async function abrirDisputa() {
-  var btn    = document.getElementById('btnSubmit');
-  var txId   = document.getElementById('fTx').value;
-  var motivo = document.getElementById('fMotivo').value;
-  var desc   = document.getElementById('fDesc').value.trim();
+  var btn         = document.getElementById('btnSubmit');
+  var numeroOrden = document.getElementById('fTx').value.trim();
+  var motivo      = document.getElementById('fMotivo').value;
+  var desc        = document.getElementById('fDesc').value.trim();
 
-  if (!txId)   { showToast('⚠️ Seleccioná la transacción'); return; }
+  if (!numeroOrden || isNaN(numeroOrden)) { showToast('⚠️ Ingresá el número de orden (solo números)'); return; }
   if (!motivo) { showToast('⚠️ Seleccioná el motivo'); return; }
   if (!desc)   { showToast('⚠️ Describí el problema'); return; }
 
   btn.disabled = true;
-  btn.textContent = 'Enviando...';
+  btn.textContent = 'Buscando orden...';
 
-  // Obtener seller_id de la transacción
-  var txRes = await sb.from('transactions').select('seller_id').eq('id', txId).single();
-  var sellerId = txRes.data ? txRes.data.seller_id : null;
+  // Buscar la orden por numero_orden
+  var txRes = await sb.from('ordenes').select('id,seller_id,comprador_email').eq('numero_orden', parseInt(numeroOrden)).single();
+  if (txRes.error || !txRes.data) {
+    showToast('❌ Orden #' + numeroOrden + ' no encontrada');
+    btn.disabled = false; btn.textContent = 'Abrir disputa';
+    return;
+  }
+  var txId     = txRes.data.id;
+  var sellerId = txRes.data.seller_id || null;
+
+  btn.textContent = 'Enviando...';
 
   var insert = {
     transaction_id: txId,

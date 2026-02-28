@@ -35,6 +35,21 @@
     .st-entregado{background:rgba(0,200,83,0.15);color:var(--verde);border:1px solid rgba(0,200,83,0.3)}
     .st-verificando{background:rgba(243,186,47,0.08);color:var(--amarillo);border:1px solid rgba(243,186,47,0.2)}
     .st-cancelado{background:rgba(136,136,136,0.1);color:var(--gris);border:1px solid #333}
+    /* NUEVO: estado completado */
+    .st-completado{background:rgba(0,200,83,0.18);color:var(--verde);border:1px solid rgba(0,200,83,0.4);font-weight:800}
+    /* NUEVO: calificación */
+    .calif-wrap{margin-top:12px;border-top:1px solid var(--borde);padding-top:12px}
+    .calif-titulo{font-size:12px;color:var(--gris);margin-bottom:8px}
+    .estrellas{display:flex;gap:4px;margin-bottom:8px}
+    .estrella{font-size:22px;cursor:pointer;opacity:0.3;transition:opacity 0.15s;background:none;border:none;padding:0;line-height:1}
+    .estrella.activa{opacity:1}
+    .calif-comentario{width:100%;background:#0d0d0d;border:1px solid var(--borde);border-radius:9px;padding:8px 12px;color:var(--blanco);font-family:inherit;font-size:12px;resize:vertical;min-height:60px}
+    .calif-comentario:focus{outline:none;border-color:var(--verde)}
+    .btn-calif{margin-top:8px;background:var(--verde);color:#000;border:none;border-radius:9px;padding:7px 16px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit}
+    .btn-calif:disabled{opacity:0.4;cursor:not-allowed}
+    .calif-enviada{font-size:12px;color:var(--verde);padding:6px 0}
+    @keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+    .anim-entrada{animation:fadeIn 0.3s ease}
 
     .btn-accion{border:none;border-radius:9px;padding:6px 14px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;transition:opacity 0.2s}
     .btn-accion:hover{opacity:0.85}
@@ -56,7 +71,7 @@
     .codigo-label{font-size:11px;color:var(--gris);margin-top:8px}
     .msg-estado{font-size:12px;padding:6px 0;line-height:1.5}
   </style>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
   <script src="supabase.js"></script>
   <script src="auth.js"></script>
 </head>
@@ -80,8 +95,8 @@
 </div>
 
 <script>
-var ST_LABEL = { pendiente_pago:'⏳ Pago pendiente', verificando:'🔍 Verificando pago', pagado:'💰 Pagado — esperando entrega', entregado:'✓ Entregado', cancelado:'✗ Cancelada' };
-var ST_CLS   = { pendiente_pago:'st-pendiente_pago', verificando:'st-verificando', pagado:'st-pagado', entregado:'st-entregado', cancelado:'st-cancelado' };
+var ST_LABEL = { pendiente_pago:'⏳ Pago pendiente', verificando:'🔍 Verificando pago', pagado:'💰 Pagado — esperando entrega', entregado:'✓ Entregado', cancelado:'✗ Cancelada', completado:'✅ Completado' };
+var ST_CLS   = { pendiente_pago:'st-pendiente_pago', verificando:'st-verificando', pagado:'st-pagado', entregado:'st-entregado', cancelado:'st-cancelado', completado:'st-completado' };
 var ICONS    = { steam:'🎮',xbox:'🎮',playstation:'🎮',psn:'🎮',nintendo:'🎮',roblox:'🎮',netflix:'🎬',spotify:'🎵',amazon:'🛒',youtube:'📺',discord:'💬',apple:'🍎' };
 function icon(m){ return ICONS[(m||'').toLowerCase().split(' ')[0]] || '🎁'; }
 
@@ -102,7 +117,7 @@ async function cargar() {
   list.innerHTML = '<div class="spinner"></div>';
 
   var res = await sb.from('ordenes')
-    .select('id, gift_card_id, precio, red, estado, created_at, expires_at, codigo_entregado')
+    .select('id, numero_orden, gift_card_id, precio, red, estado, created_at, expires_at, codigo_entregado, seller_id')
     .eq('comprador_email', USER_EMAIL)
     .order('created_at', { ascending: false });
 
@@ -142,7 +157,7 @@ async function cargar() {
     var marca  = gc.marca  || '';
     var monto  = parseFloat(o.precio || 0).toFixed(2);
     var fecha  = o.created_at ? new Date(o.created_at).toLocaleDateString('es', {day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}) : '';
-    var ref    = o.id ? o.id.substring(0,8).toUpperCase() : '—';
+    var ref    = o.numero_orden ? '#' + String(o.numero_orden).padStart(6,'0') : '#' + (o.id||'').substring(0,8).toUpperCase();
     var st     = o.estado || 'pendiente_pago';
 
     // Tiempo restante si está pendiente
@@ -169,9 +184,31 @@ async function cargar() {
 
     } else if (st === 'entregado') {
       var codigo = o.codigo_entregado || null;
-      botones = codigo
+      // Muestra código + botón confirmar recepción
+      botones = (codigo
         ? '<div><div class="codigo-label">🎁 Código entregado:</div><div class="codigo-box">' + codigo + '</div></div>'
-        : '<div class="msg-estado" style="color:var(--verde)">✓ Entregado. El código aparecerá acá en breve.</div>';
+        : '<div class="msg-estado" style="color:var(--verde)">✓ Entregado. El código aparecerá acá en breve.</div>') +
+        /* NUEVO: botón confirmar recepción */
+        '<button class="btn-accion btn-entregar anim-entrada" style="margin-top:8px" onclick="confirmarRecepcion(\'' + o.id + '\', this)">✅ Confirmar recepción</button>';
+
+    // NUEVO: estado completado — muestra código y formulario de calificación
+    } else if (st === 'completado') {
+      var codigoComp = o.codigo_entregado || null;
+      botones = '<div class="msg-estado anim-entrada" style="color:var(--verde)">✅ Compra completada con éxito</div>' +
+        (codigoComp ? '<div><div class="codigo-label">🎁 Tu código:</div><div class="codigo-box">' + codigoComp + '</div></div>' : '') +
+        // Formulario de calificación (se oculta tras enviar)
+        '<div class="calif-wrap" id="calif-' + o.id + '">' +
+          '<div class="calif-titulo">⭐ Calificar al vendedor:</div>' +
+          '<div class="estrellas" id="stars-' + o.id + '">' +
+            '<button class="estrella" data-val="1" onclick="selEstrella(\'' + o.id + '\',1)">★</button>' +
+            '<button class="estrella" data-val="2" onclick="selEstrella(\'' + o.id + '\',2)">★</button>' +
+            '<button class="estrella" data-val="3" onclick="selEstrella(\'' + o.id + '\',3)">★</button>' +
+            '<button class="estrella" data-val="4" onclick="selEstrella(\'' + o.id + '\',4)">★</button>' +
+            '<button class="estrella" data-val="5" onclick="selEstrella(\'' + o.id + '\',5)">★</button>' +
+          '</div>' +
+          '<textarea class="calif-comentario" id="comentario-' + o.id + '" placeholder="Comentario opcional..."></textarea>' +
+          '<button class="btn-calif" onclick="enviarCalif(\'' + o.id + '\', \'' + (o.seller_id||'') + '\', this)">Enviar calificación</button>' +
+        '</div>';
     }
 
     return '<div class="tx-card" id="orden-' + o.id + '">' +
@@ -179,7 +216,7 @@ async function cargar() {
         '<div class="tx-icon">' + icon(marca) + '</div>' +
         '<div class="tx-info">' +
           '<div class="tx-title">' + titulo + '</div>' +
-          '<div class="tx-meta">#' + ref + ' · ' + fecha + '</div>' +
+          '<div class="tx-meta"><span style="color:var(--verde);font-weight:700;font-size:12px;letter-spacing:0.5px">' + ref + '</span> <span style="color:#555">·</span> ' + fecha + '</div>' +
         '</div>' +
         '<div class="tx-amount">$' + monto + '</div>' +
       '</div>' +
@@ -233,6 +270,89 @@ async function confirmarEntrega(ordenId, btn) {
 
   if (upd.error) { alert('Error: ' + upd.error.message); btn.disabled = false; return; }
   cargar();
+}
+// NUEVO: Confirmar recepción — entregado → completado
+async function confirmarRecepcion(ordenId, btn) {
+  if (!confirm('¿Confirmás que recibiste el producto correctamente?')) return;
+  btn.disabled = true;
+  btn.textContent = 'Confirmando...';
+
+  // Protección: solo si sigue en 'entregado'
+  var check = await sb.from('ordenes').select('estado').eq('id', ordenId).single();
+  if (!check.data || check.data.estado !== 'entregado') {
+    alert('Esta orden no está en estado entregado.');
+    btn.disabled = false; btn.textContent = '✅ Confirmar recepción';
+    return;
+  }
+
+  var r = await sb.rpc('confirmar_recepcion', { p_orden_id: ordenId });
+  if (r.error) {
+    alert('Error: ' + r.error.message);
+    btn.disabled = false; btn.textContent = '✅ Confirmar recepción';
+    return;
+  }
+
+  // Animar y recargar
+  var card = document.getElementById('orden-' + ordenId);
+  if (card) { card.style.transition = 'opacity 0.3s'; card.style.opacity = '0.5'; }
+  setTimeout(function() { cargar(); }, 400);
+}
+
+// NUEVO: Seleccionar estrellas visualmente
+function selEstrella(ordenId, val) {
+  var stars = document.querySelectorAll('#stars-' + ordenId + ' .estrella');
+  stars.forEach(function(s) {
+    s.classList.toggle('activa', parseInt(s.dataset.val) <= val);
+  });
+  // Guardar valor seleccionado en atributo del contenedor
+  document.getElementById('stars-' + ordenId).dataset.sel = val;
+}
+
+// NUEVO: Enviar calificación
+async function enviarCalif(ordenId, vendedorId, btn) {
+  var starsEl   = document.getElementById('stars-' + ordenId);
+  var estrellas = parseInt(starsEl.dataset.sel || 0);
+  if (!estrellas) { alert('Seleccioná al menos una estrella.'); return; }
+
+  var comentario = document.getElementById('comentario-' + ordenId).value.trim();
+
+  btn.disabled = true;
+  btn.textContent = 'Enviando...';
+
+  // Obtener comprador_id del usuario actual
+  var sess = await sb.auth.getSession();
+  var compradorId = sess.data && sess.data.session ? sess.data.session.user.id : null;
+  if (!compradorId) { alert('Sesión expirada. Recargá la página.'); btn.disabled = false; return; }
+
+  // Protección: solo si estado = completado
+  var check = await sb.from('ordenes').select('estado').eq('id', ordenId).single();
+  if (!check.data || check.data.estado !== 'completado') {
+    alert('Solo podés calificar órdenes completadas.');
+    btn.disabled = false; btn.textContent = 'Enviar calificación';
+    return;
+  }
+
+  var ins = await sb.from('calificaciones').insert({
+    orden_id:    ordenId,
+    vendedor_id: vendedorId,
+    comprador_id: compradorId,
+    estrellas:   estrellas,
+    comentario:  comentario || null
+  });
+
+  if (ins.error) {
+    // Error de unicidad = ya calificó
+    if (ins.error.code === '23505') {
+      document.getElementById('calif-' + ordenId).innerHTML = '<div class="calif-enviada">✅ Ya enviaste tu calificación para esta orden.</div>';
+    } else {
+      alert('Error: ' + ins.error.message);
+      btn.disabled = false; btn.textContent = 'Enviar calificación';
+    }
+    return;
+  }
+
+  // Éxito: ocultar form y mostrar mensaje
+  document.getElementById('calif-' + ordenId).innerHTML = '<div class="calif-enviada anim-entrada">✅ Calificación enviada. ¡Gracias!</div>';
 }
 </script>
 </body>
