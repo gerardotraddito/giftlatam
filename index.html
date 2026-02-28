@@ -482,7 +482,7 @@
 <footer>
   <div class="container">
     <div class="footer-grid">
-      <div class="footer-col"><div class="footer-col-title">Comprar</div><a href="detalle.html">Todas las gift cards</a><a href="detalle.html">Gaming</a><a href="detalle.html">Streaming</a><a href="detalle.html">Ofertas del día</a></div>
+      <div class="footer-col"><div class="footer-col-title">Comprar</div><a href="detalle.html">Todas las gift cards</a><a href="detalle.html">Gaming</a><a href="detalle.html">Streaming</a><a href="explorar.html">Ver catálogo</a></div>
       <div class="footer-col"><div class="footer-col-title">Vender</div><a href="publicar.html">Publicar gift card</a><a href="como-vender.html">Cómo vender</a><a href="comisiones.html">Comisiones</a></div>
       <div class="footer-col"><div class="footer-col-title">Soporte</div><a href="ayuda.html">Centro de ayuda</a><a href="disputas.html">Centro de disputas</a><a href="tutorial.html">Tutorial</a></div>
       <div class="footer-col"><div class="footer-col-title">GiftLatam</div><a href="nosotros.html">Sobre nosotros</a><a href="terminos.html">Términos y condiciones</a><a href="privacidad.html">Privacidad</a></div>
@@ -507,71 +507,85 @@
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
     Vender
   </div>
-  <div class="nav-item" onclick="window.location='explorar.html'">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 12V22H4V12"/><path d="M22 7H2v5h20V7z"/><path d="M12 22V7"/></svg>
-    Ofertas
+  <div class="nav-item" onclick="window.location='ayuda.html'">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+    Soporte
   </div>
   <div class="nav-item" onclick="window.location='panel.html'">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-    Perfil
+    Mi cuenta
   </div>
 </div>
 
-
 <script>
-  // sb loaded from js/supabase.js
-
-  sb.auth.getSession().then(({ data }) => {
-    const actions = document.getElementById('navActions');
-    if (data.session) {
-      const user = data.session.user;
-      const nombre = user.user_metadata?.usuario || user.user_metadata?.nombre || user.email.split('@')[0];
-      actions.innerHTML = `
-        <span style="font-size:13px;color:#888">Hola, <strong style="color:#fff">${nombre}</strong></span>
-        <button class="btn-vender" onclick="window.location='publicar.html'">+ Vender</button>
-        <button class="btn-login" onclick="window.location='panel.html'">Mi panel</button>
-      `;
-    }
-  });
-</script>
-
-
-<script>
-// Cargar ofertas del día desde Supabase (últimos 6 productos)
 async function loadOfertas() {
-  const grid = document.getElementById('ofertasGrid');
+  var grid = document.getElementById('ofertasGrid');
   if (!grid) return;
 
-  const { data, error } = await sb
-    .from('gift_cards')
-    .select('id, titulo, marca, precio_venta, valor_nominal, tipo')
-    .eq('estado', 'activo')
-    .order('created_at', { ascending: false })
-    .limit(6);
+  try {
+    // Traer los últimos 6 con stock + los más vendidos mezclados
+    var [recientes, masVendidos] = await Promise.all([
+      sb.from('gift_cards')
+        .select('id,titulo,marca,tipo,precio_venta,valor_nominal,cantidad')
+        .eq('estado','activo')
+        .gt('cantidad', 0)
+        .order('created_at', {ascending: false})
+        .limit(8),
+      sb.from('gift_cards')
+        .select('id,titulo,marca,tipo,precio_venta,valor_nominal,cantidad')
+        .eq('estado','activo')
+        .gt('cantidad', 0)
+        .order('ventas_count', {ascending: false})
+        .limit(8)
+    ]);
 
-  if (error || !data || data.length === 0) {
-    grid.innerHTML = '<div style="text-align:center;padding:30px;color:#888;font-size:13px;grid-column:1/-1">No hay productos publicados todavía.<br><a href="publicar.html" style="color:#00C853;text-decoration:none">Sé el primero en publicar →</a></div>';
-    return;
+    // Mezclar sin repetir
+    var vistos = {};
+    var mix = [];
+    var r = recientes.data || [];
+    var v = masVendidos.data || [];
+    for (var i = 0; i < Math.max(r.length, v.length); i++) {
+      if (r[i] && !vistos[r[i].id]) { vistos[r[i].id] = true; mix.push(r[i]); }
+      if (v[i] && !vistos[v[i].id]) { vistos[v[i].id] = true; mix.push(v[i]); }
+    }
+    mix = mix.slice(0, 8);
+
+    if (mix.length === 0) {
+      grid.innerHTML = '<div style="text-align:center;padding:30px;color:#888;font-size:13px;grid-column:1/-1">No hay productos disponibles ahora.</div>';
+      return;
+    }
+
+    var icons = { gift_card:'🎁', cuenta:'👤', licencia:'🔑', otro:'📄' };
+    grid.innerHTML = mix.map(function(card) {
+      var icon = icons[card.tipo] || '🎁';
+      var pct  = card.valor_nominal ? Math.round((1 - card.precio_venta / card.valor_nominal) * 100) : 0;
+      var badge = pct > 5 ? '<span class="badge">-'+pct+'%</span>' : '';
+      var stock = parseInt(card.cantidad) || 0;
+      var stockBadge = stock <= 3 ? '<span style="font-size:10px;color:#FF9800;font-weight:700">⚠️ Últimas '+stock+'</span>' : '';
+      return '<a href="detalle.html?id='+card.id+'" class="voucher-card">' +
+        '<div class="voucher-icon">'+icon+'</div>' +
+        '<div class="voucher-info">' +
+          '<span class="voucher-name">'+card.titulo+'</span>' +
+          '<div class="voucher-meta">'+card.marca+' '+badge+' '+stockBadge+'</div>' +
+        '</div>' +
+        '<div class="voucher-price">' +
+          '<span class="price-main">$'+parseFloat(card.precio_venta).toFixed(2)+'</span>' +
+          (card.valor_nominal ? '<span class="price-old">$'+parseFloat(card.valor_nominal).toFixed(2)+'</span>' : '') +
+        '</div>' +
+      '</a>';
+    }).join('');
+
+    // Suscripción realtime — actualiza si cambia el stock
+    sb.channel('index-stock')
+      .on('postgres_changes', {
+        event: 'UPDATE', schema: 'public', table: 'gift_cards'
+      }, function() { loadOfertas(); })
+      .subscribe();
+
+  } catch(e) {
+    console.warn('loadOfertas error:', e);
+    grid.innerHTML = '<div style="text-align:center;padding:30px;color:#888;font-size:13px;grid-column:1/-1">Error cargando productos.</div>';
   }
-
-  const icons = { gift_card:'🎁', cuenta:'👤', licencia:'🔑', otro:'📄' };
-  grid.innerHTML = data.map(card => {
-    const icon = icons[card.tipo] || '🎁';
-    const pct = card.valor_nominal ? Math.round((1 - card.precio_venta / card.valor_nominal) * 100) : 0;
-    const badge = pct > 0 ? `<span class="badge">-${pct}%</span>` : '';
-    return `
-      <a href="detalle.html?id=${card.id}" class="voucher-card">
-        <div class="voucher-icon">${icon}</div>
-        <div class="voucher-info">
-          <span class="voucher-name">${card.titulo}</span>
-          <div class="voucher-meta">${card.marca} ${badge}</div>
-        </div>
-        <div class="voucher-price">
-          <span class="price-main">$${parseFloat(card.precio_venta).toFixed(2)}</span>
-          ${card.valor_nominal ? `<span class="price-old">$${parseFloat(card.valor_nominal).toFixed(2)}</span>` : ''}
-        </div>
-      </a>`;
-  }).join('');
 }
 
 document.addEventListener('DOMContentLoaded', loadOfertas);
