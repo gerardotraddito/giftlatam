@@ -108,9 +108,28 @@
     .nav-item svg{width:21px;height:21px}
     @media(min-width:1024px){.bottom-nav{display:none}}
   </style>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.js"></script>
-  <script src="supabase.js"></script>
-  <script src="auth.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.js"
+    onerror="document.getElementById('detailCard').innerHTML='<div style=padding:30px;color:#ff4444;font-size:13px>❌ Error: No cargó el CDN de Supabase. Revisá tu conexión.</div>'">
+  </script>
+  <script>
+  // Diagnóstico — se ejecuta antes de todo
+  window.addEventListener('error', function(e) {
+    var card = document.getElementById('detailCard');
+    if (card && card.querySelector && card.querySelector('.spinner')) {
+      card.innerHTML = '<div style="padding:30px;color:#ff4444;font-size:13px;line-height:1.8">' +
+        '❌ <b>Error de script:</b><br>' + 
+        (e.message || 'Error desconocido') + '<br>' +
+        '<small style="color:#888">Archivo: ' + (e.filename||'?').split('/').pop() + ' línea ' + (e.lineno||'?') + '</small>' +
+        '</div>';
+    }
+  });
+  </script>
+  <script src="supabase.js"
+    onerror="document.getElementById('detailCard').innerHTML='<div style=padding:30px;color:#ff4444;font-size:13px>❌ Error: No cargó supabase.js — verificá que el archivo existe en tu repositorio.</div>'">
+  </script>
+  <script src="auth.js"
+    onerror="document.getElementById('detailCard').innerHTML='<div style=padding:30px;color:#ff4444;font-size:13px>❌ Error: No cargó auth.js — verificá que el archivo existe en tu repositorio.</div>'">
+  </script>
 </head>
 <body>
 
@@ -530,30 +549,52 @@ function showError(msg) {
 
 // ── Init ────────────────────────────────────────────────────
 async function initDetalle() {
-  // Esperar a que sb esté disponible (máx 5 segundos)
-  for (var i = 0; i < 100 && typeof sb === 'undefined'; i++) {
-    await new Promise(function(r){ setTimeout(r, 50); });
-  }
-  if (typeof sb === 'undefined') {
-    showError('No se pudo conectar con Supabase. Revisá tu conexión.');
-    return;
-  }
-
-  var id = new URLSearchParams(window.location.search).get('id');
-  if (!id) {
-    showError('No se indicó qué producto mostrar.');
-    return;
-  }
+  // Mostrar error si después de 8 segundos sigue el spinner
+  var timeout = setTimeout(function() {
+    var card = document.getElementById('detailCard');
+    if (card && card.querySelector('.spinner')) {
+      showError('Tiempo de espera agotado. Revisá tu conexión y recargá.');
+    }
+  }, 8000);
 
   try {
+    // Esperar a que sb esté disponible (máx 5 segundos)
+    for (var i = 0; i < 100 && typeof sb === 'undefined'; i++) {
+      await new Promise(function(r){ setTimeout(r, 50); });
+    }
+
+    if (typeof sb === 'undefined') {
+      clearTimeout(timeout);
+      showError('No cargó Supabase. Revisá tu conexión o recargá la página.');
+      return;
+    }
+
+    var id = new URLSearchParams(window.location.search).get('id');
+    if (!id) {
+      clearTimeout(timeout);
+      showError('No se indicó qué producto mostrar.');
+      return;
+    }
+
     var res = await sb.from('gift_cards').select('*').eq('id', id).single();
-    if (res.error) { showError('Error: ' + res.error.message); return; }
-    if (!res.data)  { showError('Producto no encontrado.'); return; }
+    clearTimeout(timeout);
+
+    if (res.error) {
+      showError('Error de base de datos: ' + res.error.message + ' (código: ' + res.error.code + ')');
+      return;
+    }
+    if (!res.data) {
+      showError('Producto no encontrado o sin stock.');
+      return;
+    }
+
     renderProduct(res.data);
     loadSeller(res.data.seller_id);
     loadRel(res.data.id);
+
   } catch(e) {
-    showError('Error inesperado. Intentá recargar la página.');
+    clearTimeout(timeout);
+    showError('Error: ' + (e.message || JSON.stringify(e)));
   }
 }
 
