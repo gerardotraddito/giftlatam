@@ -148,12 +148,19 @@
 </div>
 
 <div class="bottom-nav">
-  
+  <div class="nav-item" onclick="location.href='index.html'"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>Inicio</div>
+  <div class="nav-item active" onclick="location.href='explorar.html'"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>Explorar</div>
+  <div class="nav-item" onclick="location.href='publicar.html'"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>Vender</div>
+  <div class="nav-item" onclick="location.href='ayuda.html'"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>Soporte</div>
   <div class="nav-item" onclick="location.href='panel.html'"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Perfil</div>
 </div>
 
 <script>
-// ── Datos de marcas ─────────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════
+// GIFTLATAM — detalle.html
+// ═══════════════════════════════════════════════════════════
+
+// ── Datos visuales de marcas ────────────────────────────────
 var LOGOS = {
   xbox:'https://cdn.simpleicons.org/xbox/107C10',
   playstation:'https://cdn.simpleicons.org/playstation/003791',
@@ -183,10 +190,10 @@ var EMOJI = {
   spotify:'🎵',netflix:'🎬',youtube:'📺',amazon:'🛒',apple:'🍎',
   discord:'💬',twitch:'📡',roblox:'🎮',
 };
-function bkey(m){ return (m||'').toLowerCase().trim().split(/[\s-]/)[0]; }
-function esc(s){ return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function bkey(m) { return (m||'').toLowerCase().trim().split(/[\s-]/)[0]; }
+function esc(s)  { return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
-// ── Render del producto ─────────────────────────────────────────────────────
+// ── Render del producto ─────────────────────────────────────
 function renderProduct(c) {
   var precio  = parseFloat(c.precio_venta  || 0);
   var nominal = parseFloat(c.valor_nominal || 0);
@@ -196,14 +203,14 @@ function renderProduct(c) {
   var emoji   = EMOJI[k] || '🎁';
   var logo    = LOGOS[k];
 
-  // Imagen hero: foto vendedor > logo marca > emoji
+  // Imagen: foto vendedor > logo marca > emoji
   var imgHtml;
   if (c.imagen_url) {
     imgHtml = '<img class="cover" src="' + esc(c.imagen_url) + '" alt="' + esc(c.titulo||'') + '" '
-            + 'onerror="this.onerror=null;this.parentElement.innerHTML=\'<span class=&quot;brand-emoji&quot;>' + emoji + '</span>\'">';
+            + 'onerror="this.onerror=null;this.parentElement.innerHTML='<span class=&quot;brand-emoji&quot;>' + emoji + '</span>'">';
   } else if (logo) {
     imgHtml = '<img class="logo-brand" src="' + logo + '" alt="' + esc(c.marca||'') + '" '
-            + 'onerror="this.onerror=null;this.parentElement.innerHTML=\'<span class=&quot;brand-emoji&quot;>' + emoji + '</span>\'">';
+            + 'onerror="this.onerror=null;this.parentElement.innerHTML='<span class=&quot;brand-emoji&quot;>' + emoji + '</span>'">';
   } else {
     imgHtml = '<span class="brand-emoji">' + emoji + '</span>';
   }
@@ -215,12 +222,28 @@ function renderProduct(c) {
   var tipoTxt = TIPO[c.tipo]    || c.tipo  || 'Digital';
   var region  = c.region || 'Global';
   var cantidad = (c.cantidad != null) ? parseInt(c.cantidad) : null;
-  var stockHtml = cantidad !== null
-    ? (cantidad <= 3
-        ? '<span style="display:inline-block;background:rgba(255,107,53,0.12);border:1px solid rgba(255,107,53,0.3);color:#ff6b35;border-radius:8px;padding:3px 10px;font-size:12px;font-weight:700;margin-bottom:14px">⚡ Solo quedan ' + cantidad + ' unidad' + (cantidad !== 1 ? 'es' : '') + '</span>'
-        : '<span style="display:inline-block;background:rgba(0,200,83,0.08);border:1px solid rgba(0,200,83,0.2);color:var(--verde);border-radius:8px;padding:3px 10px;font-size:12px;font-weight:600;margin-bottom:14px">✓ ' + cantidad + ' en stock</span>')
-    : '';
   var desc    = c.descripcion || 'Gift card digital. El código se entrega tras confirmar el pago vía escrow.';
+
+  var stockHtml = '';
+  if (cantidad !== null) {
+    if (cantidad <= 0) {
+      stockHtml = '<span style="display:inline-block;background:rgba(255,50,50,0.1);border:1px solid rgba(255,50,50,0.3);color:#ff4444;border-radius:8px;padding:3px 10px;font-size:12px;font-weight:700;margin-bottom:14px">😔 Sin stock</span>';
+    } else if (cantidad <= 3) {
+      stockHtml = '<span style="display:inline-block;background:rgba(255,107,53,0.12);border:1px solid rgba(255,107,53,0.3);color:#ff6b35;border-radius:8px;padding:3px 10px;font-size:12px;font-weight:700;margin-bottom:14px">⚡ Solo quedan ' + cantidad + ' unidad' + (cantidad !== 1 ? 'es' : '') + '</span>';
+    } else {
+      stockHtml = '<span style="display:inline-block;background:rgba(0,200,83,0.08);border:1px solid rgba(0,200,83,0.2);color:var(--verde);border-radius:8px;padding:3px 10px;font-size:12px;font-weight:600;margin-bottom:14px">✓ ' + cantidad + ' en stock</span>';
+    }
+  }
+
+  // Botones de compra según stock
+  var botonesHtml;
+  if (cantidad === 0) {
+    botonesHtml = '<button class="btn-comprar" disabled style="opacity:0.4;cursor:not-allowed;background:#333;color:#888">😔 Sin stock</button>';
+  } else {
+    botonesHtml =
+      '<button class="btn-comprar" id="btnComprar" onclick="irAPago()">🔒 Pagar con USDT — $' + precio.toFixed(2) + '</button>' +
+      '<button class="btn-comprar" id="btnComprarSaldo" onclick="irApagoConSaldo()" style="background:transparent;border:1px solid rgba(0,200,83,0.4);color:#00C853;margin-top:8px">💎 Pagar con saldo</button>';
+  }
 
   document.getElementById('detailCard').innerHTML =
     '<div class="detail-img-wrap" style="background:' + bg + '">' + imgHtml + '</div>' +
@@ -241,88 +264,74 @@ function renderProduct(c) {
         '<tr><td>Región</td><td>' + esc(region) + '</td></tr>' +
         (cantidad !== null ? '<tr><td>Stock</td><td>' + cantidad + ' unidad' + (cantidad !== 1 ? 'es' : '') + '</td></tr>' : '') +
         '<tr><td>Entrega</td><td>' + esc(entTxt) + '</td></tr>' +
-        '<tr><td>Pago</td><td>USDT · BTC · ETH</td></tr>' +
+        '<tr><td>Pago</td><td>USDT · Escrow</td></tr>' +
         '<tr><td>Protección</td><td>Escrow incluido ✓</td></tr>' +
       '</table>' +
-      (cantidad === 0
-        ? '<button class="btn-comprar" disabled style="opacity:0.4;cursor:not-allowed;background:#333;color:#888">😔 Sin stock</button>'
-        : '<button class="btn-comprar" id="btnComprar" onclick="irAPago()">🔒 Pagar con USDT — $' + precio.toFixed(2) + '</button>' +
-          '<button class="btn-comprar" id="btnComprarSaldo" onclick="irApagoConSaldo()" style="background:transparent;border:1px solid rgba(0,200,83,0.4);color:#00C853;margin-top:8px">💎 Pagar con saldo</button>') +
-      '<button class="btn-wishlist" id="btnWish" onclick="guardarFav(\'' + c.id + '\')">♡ Guardar en favoritos</button>' +
+      botonesHtml +
+      '<button class="btn-wishlist" id="btnWish" onclick="guardarFav('' + c.id + '')">♡ Guardar en favoritos</button>' +
     '</div>';
 
   window._card = c;
 }
 
+// ── Helpers de botones ──────────────────────────────────────
+function btnOff(id, txt) {
+  var b = document.getElementById(id);
+  if (b) { b.disabled = true; b.textContent = txt; }
+}
+function btnOn(id, txt) {
+  var b = document.getElementById(id);
+  if (b) { b.disabled = false; b.textContent = txt; }
+}
+
+// ── Comprar con USDT ────────────────────────────────────────
 async function irAPago() {
   var c = window._card;
   if (!c) return;
+  btnOff('btnComprar', '⏳ Creando orden...');
 
-  var btn = document.getElementById('btnComprar');
-  if (btn) { btn.disabled = true; btn.textContent = '⏳ Creando orden...'; }
-
-  // 1. Verificar sesión — requerida para comprar
-  var email = '';
-  var userId = null;
   try {
+    // 1. Verificar sesión
     var sess = await sb.auth.getSession();
-    if (sess.data && sess.data.session) {
-      email  = sess.data.session.user.email || '';
-      userId = sess.data.session.user.id;
+    if (!sess.data || !sess.data.session) {
+      window.location.href = 'login.html?from=' + encodeURIComponent(window.location.href);
+      return;
     }
-  } catch(e) {}
+    var email = sess.data.session.user.email;
 
-  if (!email) {
-    window.location.href = 'login.html?from=' + encodeURIComponent(window.location.href);
-    return;
-  }
-
-  // 2. Verificar stock en tiempo real
-  var stockActual = 0;
-  try {
+    // 2. Verificar stock en tiempo real
     var sr = await sb.from('gift_cards').select('cantidad').eq('id', c.id).single();
-    stockActual = sr.data && sr.data.cantidad != null ? parseInt(sr.data.cantidad) : 0;
-  } catch(e) {}
-
-  if (stockActual <= 0) {
-    alert('Sin stock disponible. Este producto ya no está disponible.');
-    if (btn) { btn.disabled = false; btn.textContent = '😔 Sin stock'; }
-    location.reload();
-    return;
-  }
-
-  // 3. Limpiar órdenes expiradas de este producto (restaura stock de compras abandonadas)
-  try {
-    var hace10 = new Date(Date.now() - 10 * 60 * 1000).toISOString();
-    var vencidas = await sb.from('ordenes')
-      .select('id')
-      .eq('gift_card_id', c.id)
-      .eq('estado', 'pendiente_pago')
-      .lt('expires_at', new Date().toISOString());
-    if (vencidas.data && vencidas.data.length > 0) {
-      for (var i = 0; i < vencidas.data.length; i++) {
-        await sb.from('ordenes').update({ estado: 'cancelado', updated_at: new Date().toISOString() }).eq('id', vencidas.data[i].id);
-        stockActual++;
-      }
-      // Restaurar stock acumulado
-      await sb.from('gift_cards').update({ cantidad: stockActual }).eq('id', c.id);
+    var stock = sr.data ? parseInt(sr.data.cantidad || 0) : 0;
+    if (stock <= 0) {
+      alert('Este producto ya no tiene stock disponible.');
+      btnOn('btnComprar', '😔 Sin stock');
+      location.reload();
+      return;
     }
-  } catch(e) { console.warn('limpieza expiradas:', e); }
 
-  // 4. Descontar stock (optimista — antes de crear la orden)
-  try {
-    var nuevoStock = Math.max(0, stockActual - 1);
-    await sb.from('gift_cards').update({ cantidad: nuevoStock }).eq('id', c.id);
-  } catch(e) {
-    alert('Error al reservar el stock. Intentá de nuevo.');
-    if (btn) { btn.disabled = false; btn.textContent = '🔒 Comprar por $' + parseFloat(c.precio_venta).toFixed(2) + ' USDT'; }
-    return;
-  }
+    // 3. Limpiar órdenes expiradas y restaurar su stock
+    try {
+      var vencidas = await sb.from('ordenes')
+        .select('id')
+        .eq('gift_card_id', c.id)
+        .eq('estado', 'pendiente_pago')
+        .lt('expires_at', new Date().toISOString());
+      if (vencidas.data && vencidas.data.length > 0) {
+        for (var i = 0; i < vencidas.data.length; i++) {
+          await sb.from('ordenes').update({ estado:'cancelado', updated_at:new Date().toISOString() }).eq('id', vencidas.data[i].id);
+        }
+        // Reconsultar stock actualizado tras limpiar
+        var sr2 = await sb.from('gift_cards').select('cantidad').eq('id', c.id).single();
+        stock = sr2.data ? parseInt(sr2.data.cantidad || 0) : stock;
+      }
+    } catch(e) { /* no bloquea la compra */ }
 
-  // 5. Crear la orden con estado pendiente_pago y expiración de 10 minutos
-  var expiresAt = new Date(Date.now() + 10 * 60 * 1000).toISOString();
-  var ordenId = null;
-  try {
+    // 4. Descontar stock
+    var updStock = await sb.from('gift_cards').update({ cantidad: Math.max(0, stock - 1) }).eq('id', c.id);
+    if (updStock.error) throw new Error('No se pudo reservar el stock: ' + updStock.error.message);
+
+    // 5. Crear orden
+    var expiresAt = new Date(Date.now() + 10 * 60 * 1000).toISOString();
     var ins = await sb.from('ordenes').insert({
       gift_card_id:    c.id,
       seller_id:       c.seller_id || null,
@@ -338,131 +347,122 @@ async function irAPago() {
     }).select('id').single();
 
     if (ins.error || !ins.data) {
-      // Revertir stock si falla la inserción
-      await sb.from('gift_cards').update({ cantidad: stockActual }).eq('id', c.id);
-      alert('No se pudo crear la orden: ' + (ins.error ? ins.error.message : 'error desconocido'));
-      if (btn) { btn.disabled = false; btn.textContent = '🔒 Comprar por $' + parseFloat(c.precio_venta).toFixed(2) + ' USDT'; }
-      return;
+      // Revertir stock
+      await sb.from('gift_cards').update({ cantidad: stock }).eq('id', c.id);
+      throw new Error(ins.error ? ins.error.message : 'Error al crear la orden');
     }
 
-    ordenId = ins.data.id;
-  } catch(e) {
-    console.error('[crear orden]', e);
-    // Revertir stock
-    try { await sb.from('gift_cards').update({ cantidad: stockActual }).eq('id', c.id); } catch(e2) {}
-    alert('Error inesperado. Intentá de nuevo.');
-    if (btn) { btn.disabled = false; btn.textContent = '🔒 Comprar por $' + parseFloat(c.precio_venta).toFixed(2) + ' USDT'; }
-    return;
-  }
+    // 6. Redirigir al pago
+    location.href = 'pago.html?orden_id=' + ins.data.id;
 
-  // 6. Redirigir a la página de pago
-  location.href = 'pago.html?orden_id=' + ordenId;
+  } catch(e) {
+    alert('Error: ' + (e.message || 'Intentá de nuevo'));
+    btnOn('btnComprar', '🔒 Pagar con USDT — $' + parseFloat(c.precio_venta).toFixed(2));
+  }
 }
 
-// ── Pago con saldo ────────────────────────────────────────────────────────────
+// ── Pagar con saldo ─────────────────────────────────────────
 async function irApagoConSaldo() {
   var c = window._card;
   if (!c) return;
+  btnOff('btnComprarSaldo', '⏳ Verificando saldo...');
 
-  var btnSaldo = document.getElementById('btnComprarSaldo');
-  var btnUsdt  = document.getElementById('btnComprar');
-  if (btnSaldo) { btnSaldo.disabled = true; btnSaldo.textContent = '⏳ Verificando saldo...'; }
+  try {
+    // 1. Sesión
+    var sess = await sb.auth.getSession();
+    if (!sess.data || !sess.data.session) {
+      window.location.href = 'login.html?from=' + encodeURIComponent(window.location.href);
+      return;
+    }
+    var uid    = sess.data.session.user.id;
+    var email  = sess.data.session.user.email;
+    var precio = parseFloat(c.precio_venta) || 0;
 
-  // Verificar sesión
-  var sess = await sb.auth.getSession();
-  if (!sess.data || !sess.data.session) {
-    window.location.href = 'login.html?from=' + encodeURIComponent(window.location.href);
-    return;
-  }
-  var uid   = sess.data.session.user.id;
-  var email = sess.data.session.user.email;
-  var precio = parseFloat(c.precio_venta) || 0;
-
-  // Verificar saldo disponible
-  var saldoRes = await sb.from('saldos').select('balance').eq('seller_id', uid).single();
-  var balance  = parseFloat((saldoRes.data && saldoRes.data.balance) || 0);
-
-  if (balance < precio) {
-    alert('Saldo insuficiente.
+    // 2. Verificar saldo
+    var saldoRes = await sb.from('saldos').select('balance').eq('seller_id', uid).single();
+    var balance  = parseFloat((saldoRes.data && saldoRes.data.balance) || 0);
+    if (balance < precio) {
+      alert('Saldo insuficiente.
 Tu saldo: $' + balance.toFixed(2) + ' USDT
 Precio: $' + precio.toFixed(2) + ' USDT
 
-Podés depositar desde tu panel.');
-    if (btnSaldo) { btnSaldo.disabled = false; btnSaldo.textContent = '💎 Pagar con saldo'; }
-    return;
-  }
+Depositá desde tu panel.');
+      btnOn('btnComprarSaldo', '💎 Pagar con saldo');
+      return;
+    }
 
-  if (!confirm('Pagar $' + precio.toFixed(2) + ' USDT con tu saldo?
+    if (!confirm('¿Pagar $' + precio.toFixed(2) + ' USDT con tu saldo?
 Saldo actual: $' + balance.toFixed(2) + ' USDT')) {
-    if (btnSaldo) { btnSaldo.disabled = false; btnSaldo.textContent = '💎 Pagar con saldo'; }
-    return;
+      btnOn('btnComprarSaldo', '💎 Pagar con saldo');
+      return;
+    }
+
+    // 3. Verificar stock
+    var sr = await sb.from('gift_cards').select('cantidad').eq('id', c.id).single();
+    var stock = sr.data ? parseInt(sr.data.cantidad || 0) : 0;
+    if (stock <= 0) {
+      alert('Sin stock disponible.');
+      btnOn('btnComprarSaldo', '💎 Pagar con saldo');
+      return;
+    }
+
+    // 4. Descontar stock
+    var updStock = await sb.from('gift_cards').update({ cantidad: Math.max(0, stock - 1) }).eq('id', c.id);
+    if (updStock.error) throw new Error('Error al reservar stock: ' + updStock.error.message);
+
+    // 5. Descontar saldo
+    var updSaldo = await sb.from('saldos').update({ balance: balance - precio, updated_at: new Date().toISOString() }).eq('seller_id', uid);
+    if (updSaldo.error) {
+      // Revertir stock
+      await sb.from('gift_cards').update({ cantidad: stock }).eq('id', c.id);
+      throw new Error('Error al descontar saldo: ' + updSaldo.error.message);
+    }
+
+    // 6. Crear orden
+    var ins = await sb.from('ordenes').insert({
+      gift_card_id:    c.id,
+      seller_id:       c.seller_id || null,
+      comprador_email: email,
+      precio:          precio,
+      moneda:          'USDT',
+      red:             'SALDO',
+      wallet_destino:  'saldo_interno',
+      estado:          'verificando',
+      created_at:      new Date().toISOString(),
+      updated_at:      new Date().toISOString()
+    }).select('id').single();
+
+    if (ins.error || !ins.data) {
+      // Revertir stock y saldo
+      await sb.from('gift_cards').update({ cantidad: stock }).eq('id', c.id);
+      await sb.from('saldos').update({ balance: balance, updated_at: new Date().toISOString() }).eq('seller_id', uid);
+      throw new Error(ins.error ? ins.error.message : 'Error al crear la orden');
+    }
+
+    location.href = 'mis-compras.html?pago=saldo&orden_id=' + ins.data.id;
+
+  } catch(e) {
+    alert('Error: ' + (e.message || 'Intentá de nuevo'));
+    btnOn('btnComprarSaldo', '💎 Pagar con saldo');
   }
-
-  // Verificar stock
-  var sr = await sb.from('gift_cards').select('cantidad').eq('id', c.id).single();
-  var stockActual = sr.data && sr.data.cantidad != null ? parseInt(sr.data.cantidad) : 0;
-  if (stockActual <= 0) {
-    alert('Sin stock disponible.');
-    if (btnSaldo) { btnSaldo.disabled = false; btnSaldo.textContent = '💎 Pagar con saldo'; }
-    return;
-  }
-
-  // Descontar stock
-  await sb.from('gift_cards').update({ cantidad: Math.max(0, stockActual - 1) }).eq('id', c.id);
-
-  // Descontar saldo
-  var updSaldo = await sb.from('saldos').update({ balance: balance - precio, updated_at: new Date().toISOString() }).eq('seller_id', uid);
-  if (updSaldo.error) {
-    await sb.from('gift_cards').update({ cantidad: stockActual }).eq('id', c.id);
-    alert('Error al descontar saldo: ' + updSaldo.error.message);
-    if (btnSaldo) { btnSaldo.disabled = false; btnSaldo.textContent = '💎 Pagar con saldo'; }
-    return;
-  }
-
-  // Crear orden en verificando — igual que cualquier compra
-  // El admin la aprueba y el saldo del vendedor sube automáticamente
-  var ins = await sb.from('ordenes').insert({
-    gift_card_id:    c.id,
-    seller_id:       c.seller_id || null,
-    comprador_email: email,
-    precio:          precio,
-    moneda:          'USDT',
-    red:             'SALDO',
-    wallet_destino:  'saldo_interno',
-    estado:          'verificando',
-    created_at:      new Date().toISOString(),
-    updated_at:      new Date().toISOString()
-  }).select('id').single();
-
-  if (ins.error || !ins.data) {
-    // Revertir
-    await sb.from('gift_cards').update({ cantidad: stockActual }).eq('id', c.id);
-    await sb.from('saldos').update({ balance: balance, updated_at: new Date().toISOString() }).eq('seller_id', uid);
-    alert('Error al crear la orden: ' + (ins.error ? ins.error.message : 'error desconocido'));
-    if (btnSaldo) { btnSaldo.disabled = false; btnSaldo.textContent = '💎 Pagar con saldo'; }
-    return;
-  }
-
-  // Redirigir a mis-compras con confirmación
-  location.href = 'mis-compras.html?pago=saldo&orden_id=' + ins.data.id;
 }
 
-// ── Vendedor ────────────────────────────────────────────────────────────────
+// ── Vendedor ────────────────────────────────────────────────
 async function loadSeller(sid) {
   if (!sid) return;
   try {
     var r = await sb.from('profiles').select('usuario,nombre,email,reputacion,ventas_totales,created_at').eq('id', sid).single();
-    if (r.error) console.warn('[loadSeller] error:', r.error.message);
     var p = r.data || {};
-    var nombre = p.usuario || p.nombre || (p.email ? p.email.split('@')[0] : null) || 'usuario';
+    var nombre = p.usuario || p.nombre || (p.email ? p.email.split('@')[0] : 'usuario');
     var since  = p.created_at ? new Date(p.created_at).getFullYear() : '2025';
-    var rep    = p.reputacion   ? parseFloat(p.reputacion).toFixed(1)  : '5.0';
+    var rep    = p.reputacion ? parseFloat(p.reputacion).toFixed(1) : '5.0';
     var ventas = p.ventas_totales || 0;
 
     var vn = document.getElementById('vendNombre');
     if (vn) vn.innerHTML = '@' + esc(nombre) + ' <span class="verified">✓</span>';
 
     var sc = document.getElementById('sellerCard');
+    if (!sc) return;
     sc.style.display = 'block';
     sc.innerHTML =
       '<div class="seller-top">' +
@@ -475,35 +475,35 @@ async function loadSeller(sid) {
       '<div class="stat-row"><span>Miembro desde</span><span>' + since + '</span></div>' +
       '<div class="stat-row"><span>Reputación</span><span>⭐ ' + rep + '</span></div>' +
       '<div class="stat-row"><span>Ventas</span><span>' + ventas + '</span></div>';
-  } catch(e){ console.warn('seller:', e); }
+  } catch(e) { /* silencioso */ }
 }
 
-// ── Relacionados ────────────────────────────────────────────────────────────
+// ── Relacionados ────────────────────────────────────────────
 async function loadRel(cid) {
   try {
-    var r = await sb.from('gift_cards').select('id,titulo,marca,precio_venta,tipo').eq('estado','activo').neq('id',cid).limit(4);
+    var r = await sb.from('gift_cards').select('id,titulo,marca,precio_venta,tipo').eq('estado','activo').gt('cantidad',0).neq('id',cid).limit(4);
     var data = r.data || [];
     if (!data.length) return;
     document.getElementById('relWrap').style.display = 'block';
     document.getElementById('relList').innerHTML = data.map(function(c) {
-      var k   = bkey(c.marca);
-      var bg  = BG[k] || 'rgba(0,200,83,0.08)';
+      var k  = bkey(c.marca);
+      var bg = BG[k] || 'rgba(0,200,83,0.08)';
       var ico = LOGOS[k]
-        ? '<img src="' + LOGOS[k] + '" width="26" height="26" style="object-fit:contain" onerror="this.parentElement.innerHTML=\'' + (EMOJI[k]||'🎁') + '\'">'
+        ? '<img src="' + LOGOS[k] + '" width="26" height="26" style="object-fit:contain" onerror="this.parentElement.innerHTML='' + (EMOJI[k]||'🎁') + ''">'
         : (EMOJI[k]||'🎁');
-      var p = parseFloat(c.precio_venta||0);
       return '<a href="detalle.html?id=' + c.id + '" class="rel-card">' +
         '<div class="rel-icon" style="background:' + bg + '">' + ico + '</div>' +
         '<div class="rel-info"><div class="rel-title">' + esc(c.titulo||'') + '</div><div class="rel-marca">' + esc(c.marca||'') + '</div></div>' +
-        '<div class="rel-price">$' + p.toFixed(2) + '</div>' +
+        '<div class="rel-price">$' + parseFloat(c.precio_venta||0).toFixed(2) + '</div>' +
       '</a>';
     }).join('');
-  } catch(e){ console.warn('rel:', e); }
+  } catch(e) { /* silencioso */ }
 }
 
-// ── Favorito ────────────────────────────────────────────────────────────────
+// ── Favoritos ───────────────────────────────────────────────
 async function guardarFav(id) {
-  var btn = document.getElementById('btnWish'); if (!btn) return;
+  var btn = document.getElementById('btnWish');
+  if (!btn) return;
   try {
     var r = await sb.auth.getSession();
     if (!r.data || !r.data.session) {
@@ -514,43 +514,50 @@ async function guardarFav(id) {
       btn.style.color = 'var(--verde)';
       btn.style.borderColor = 'var(--verde)';
     }
-  } catch(e){ console.warn('fav:', e); }
+  } catch(e) {}
 }
 
-// ── Mostrar error ───────────────────────────────────────────────────────────
+// ── Error ───────────────────────────────────────────────────
 function showError(msg) {
   document.getElementById('detailCard').innerHTML =
     '<div class="error-block">' +
       '<div style="font-size:40px;margin-bottom:14px">😕</div>' +
       '<div style="color:var(--blanco);font-weight:700;margin-bottom:8px">No encontramos este producto</div>' +
-      '<div style="font-size:13px">' + msg + '</div>' +
+      '<div style="font-size:13px;color:#888">' + esc(msg) + '</div>' +
       '<a href="explorar.html" style="display:inline-block;margin-top:18px;color:var(--verde);text-decoration:none;font-weight:600">← Ver otros productos</a>' +
     '</div>';
 }
 
-// ── Init ────────────────────────────────────────────────────────────────────
-document.addEventListener('DOMContentLoaded', async function() {
-  // Esperar hasta que sb esté disponible (supabase.js usa IIFE)
-  for (var i = 0; i < 30 && typeof sb === 'undefined'; i++) {
+// ── Init ────────────────────────────────────────────────────
+async function initDetalle() {
+  // Esperar a que sb esté disponible (máx 5 segundos)
+  for (var i = 0; i < 100 && typeof sb === 'undefined'; i++) {
     await new Promise(function(r){ setTimeout(r, 50); });
   }
-  if (typeof sb === 'undefined') { showError('No se pudo conectar con Supabase. Recargá la página.'); return; }
+  if (typeof sb === 'undefined') {
+    showError('No se pudo conectar con Supabase. Revisá tu conexión.');
+    return;
+  }
 
   var id = new URLSearchParams(window.location.search).get('id');
-  if (!id) { showError('No se especificó qué producto mostrar.'); return; }
+  if (!id) {
+    showError('No se indicó qué producto mostrar.');
+    return;
+  }
 
   try {
     var res = await sb.from('gift_cards').select('*').eq('id', id).single();
-    if (res.error) { showError('Error ' + res.error.code + ': ' + res.error.message); return; }
-    if (!res.data)  { showError('Producto no encontrado o ya fue vendido.'); return; }
+    if (res.error) { showError('Error: ' + res.error.message); return; }
+    if (!res.data)  { showError('Producto no encontrado.'); return; }
     renderProduct(res.data);
     loadSeller(res.data.seller_id);
     loadRel(res.data.id);
   } catch(e) {
-    console.error(e);
-    showError('Error inesperado. Intentá recargar.');
+    showError('Error inesperado. Intentá recargar la página.');
   }
-});
+}
+
+document.addEventListener('DOMContentLoaded', initDetalle);
 </script>
 </body>
 </html>
