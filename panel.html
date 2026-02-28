@@ -387,7 +387,7 @@ footer {
     }
   </style>
   <!-- GiftLatam core -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
   <script src="supabase.js"></script>
   <script src="auth.js"></script>
 </head>
@@ -441,6 +441,17 @@ footer {
     <a href="disputas.html" class="menu-item"><span class="menu-icon">⚖️</span>Centro de disputas<span class="menu-arrow">›</span></a>
     <a href="configuracion.html" class="menu-item"><span class="menu-icon">⚙️</span>Configuración<span class="menu-arrow">›</span></a>
     <a href="#" onclick="logout(); return false;" class="menu-item"><span class="menu-icon">🚪</span>Cerrar sesión<span class="menu-arrow">›</span></a>
+  </div>
+
+  <!-- Telegram para vendedores -->
+  <div style="background:#161616;border:1px solid #222;border-radius:16px;padding:18px;margin-top:16px">
+    <div style="font-size:14px;font-weight:700;margin-bottom:4px">📲 Telegram para notificaciones</div>
+    <div style="font-size:12px;color:#888;margin-bottom:14px;line-height:1.6">Recibí un aviso en Telegram cada vez que alguien compre tu producto o haya novedades en tus ventas. <b style="color:#aaa">Recomendado si vendés en GiftLatam.</b></div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <input id="telegramInput" type="text" placeholder="@tu_usuario" style="flex:1;background:#0d0d0d;border:1px solid #333;border-radius:10px;padding:10px 14px;color:#f0f0f0;font-size:14px;font-family:Inter,sans-serif;outline:none">
+      <button onclick="guardarTelegram()" id="btnGuardarTelegram" style="background:#00C853;color:#000;border:none;border-radius:10px;padding:10px 16px;font-weight:700;font-size:13px;cursor:pointer;white-space:nowrap">Guardar</button>
+    </div>
+    <div id="telegramMsg" style="font-size:12px;margin-top:8px;display:none"></div>
   </div>
 
   <!-- Preview mis publicaciones -->
@@ -518,6 +529,14 @@ async function loadPanelData(session) {
   }
   if (el('statRep'))    el('statRep').textContent    = rep || '—';
   if (el('statRepSub')) el('statRepSub').textContent = resenas > 0 ? resenas + ' reseñas positivas' : 'sin reseñas aún';
+
+  // ── Telegram ──
+  var tgInput = document.getElementById('telegramInput');
+  if (tgInput) {
+    sb.from('profiles').select('telegram_username').eq('id', uid).single().then(function(r) {
+      if (r.data && r.data.telegram_username) tgInput.value = r.data.telegram_username;
+    });
+  }
 
   // ── Wallet ──
   // Mostrar wallet guardada en el input del panel
@@ -917,6 +936,41 @@ async function confirmarRetiro() {
 // ═══════════════════════════════════════════════════════════════════════════
 // GUARDAR WALLET
 // ═══════════════════════════════════════════════════════════════════════════
+async function guardarTelegram() {
+  var input = document.getElementById('telegramInput');
+  var msgEl = document.getElementById('telegramMsg');
+  var btn   = document.getElementById('btnGuardarTelegram');
+  if (!input || !msgEl) return;
+  var tg = input.value.trim().replace(/^@/, '');
+  if (!tg) {
+    msgEl.textContent = '⚠️ Ingresá tu usuario de Telegram';
+    msgEl.style.color = '#FF4444';
+    msgEl.style.display = 'block';
+    return;
+  }
+  if (btn) { btn.disabled = true; btn.textContent = 'Guardando...'; }
+  try {
+    var sess = await sb.auth.getSession();
+    var uid  = sess.data.session.user.id;
+    var upd  = await sb.from('profiles').upsert({
+      id: uid, telegram_username: '@' + tg, updated_at: new Date().toISOString()
+    }, { onConflict: 'id' });
+    if (upd.error) {
+      msgEl.textContent = '❌ Error: ' + upd.error.message;
+      msgEl.style.color = '#FF4444';
+    } else {
+      input.value = '@' + tg;
+      msgEl.textContent = '✅ Telegram guardado correctamente';
+      msgEl.style.color = '#00C853';
+    }
+  } catch(e) {
+    msgEl.textContent = '❌ Error inesperado';
+    msgEl.style.color = '#FF4444';
+  }
+  msgEl.style.display = 'block';
+  if (btn) { btn.disabled = false; btn.textContent = 'Guardar'; }
+}
+
 async function guardarWalletPanel() {
   var input = document.getElementById('panelWalletInput');
   var msgEl = document.getElementById('walletPanelMsg');

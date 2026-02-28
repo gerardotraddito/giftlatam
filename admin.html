@@ -123,6 +123,7 @@
     <button class="tab" onclick="showTab('retiros',this)">💸 Retiros <span class="tab-badge" id="tBadgeR" style="background:var(--azul);display:none">0</span></button>
     <button class="tab" onclick="showTab('config',this)">⚙️ Mis wallets</button>
     <button class="tab" onclick="showTab('depositos',this)">💵 Depósitos <span class="tab-badge" id="tBadgeD" style="background:#a855f7;display:none">0</span></button>
+    <button class="tab" onclick="showTab('disputas',this);cargarDisputasAdmin()">⚖️ Disputas <span class="tab-badge" id="tBadgeDis" style="background:#ff4444;display:none">0</span></button>
   </div>
 
   <div class="msg" id="msgGlobal"></div>
@@ -202,6 +203,18 @@
   </div>
 
   <!-- CONFIGURACIÓN WALLETS -->
+  <div id="secDisputas" class="panel-sec">
+    <div class="sec-header">
+      <div>
+        <div class="sec-title">⚖️ Disputas</div>
+        <div class="sec-sub">Disputas abiertas por compradores. Contactá al vendedor por Telegram o email para resolverlas.</div>
+      </div>
+      <button class="btn-reload" onclick="cargarDisputasAdmin()">↻ Recargar</button>
+    </div>
+    <div class="msg" id="msgDisputas"></div>
+    <div id="tbDisputas"><div class="spinner"></div></div>
+  </div>
+
   <div id="secConfig" class="panel-sec">
     <div class="sec-header">
       <div>
@@ -372,6 +385,91 @@ function renderOrdenes() {
       '<td>'+accion+'</td>'+
     '</tr>';
   }).join('');
+}
+
+// ── DISPUTAS ─────────────────────────────────────────────────────────────
+async function cargarDisputasAdmin() {
+  var tb = document.getElementById('tbDisputas');
+  tb.innerHTML = '<div class="spinner"></div>';
+  try {
+    var res = await sb.from('disputas')
+      .select('id, transaccion_id, usuario_id, motivo, descripcion, estado, created_at')
+      .order('created_at', { ascending: false });
+
+    if (res.error) { tb.innerHTML = '<div class="empty">Error: ' + res.error.message + '</div>'; return; }
+    var data = res.data || [];
+
+    // Badge
+    var abiertos = data.filter(function(d){ return d.estado === 'abierto'; }).length;
+    var badge = document.getElementById('tBadgeDis');
+    if (badge) { badge.textContent = abiertos; badge.style.display = abiertos > 0 ? 'inline-flex' : 'none'; }
+
+    if (!data.length) { tb.innerHTML = '<div class="empty">No hay disputas registradas.</div>'; return; }
+
+    // Para cada disputa buscar el perfil del usuario y la orden
+    var html = '';
+    for (var i = 0; i < data.length; i++) {
+      var d = data[i];
+      var fecha = d.created_at ? new Date(d.created_at).toLocaleDateString('es-AR',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}) : '—';
+      var estado = d.estado || 'abierto';
+      var estadoColor = estado === 'abierto' ? '#ff4444' : estado === 'en_revision' ? '#ffaa00' : '#00C853';
+
+      // Buscar usuario y orden
+      var perfil = {};
+      var orden = {};
+      try {
+        var pr = await sb.from('profiles').select('email,telegram_username,usuario').eq('id', d.usuario_id).single();
+        perfil = pr.data || {};
+      } catch(e) {}
+      try {
+        if (d.transaccion_id) {
+          var or = await sb.from('ordenes').select('numero_orden,seller_id,precio').eq('id', d.transaccion_id).single();
+          orden = or.data || {};
+          if (orden.seller_id) {
+            var vp = await sb.from('profiles').select('email,telegram_username,usuario').eq('id', orden.seller_id).single();
+            orden.vendedor = vp.data || {};
+          }
+        }
+      } catch(e) {}
+
+      var numOrden = orden.numero_orden ? '#' + String(orden.numero_orden).padStart(6,'0') : (d.transaccion_id ? '#' + d.transaccion_id.substring(0,8).toUpperCase() : '—');
+      var compradorEmail = perfil.email || d.usuario_id || '—';
+      var compradorTg = perfil.telegram_username || '';
+      var vendedorEmail = (orden.vendedor && orden.vendedor.email) || '—';
+      var vendedorTg = (orden.vendedor && orden.vendedor.telegram_username) || '';
+      var precio = orden.precio ? '$' + parseFloat(orden.precio).toFixed(2) + ' USDT' : '—';
+
+      html +=
+        '<div style="background:#1a1a1a;border:1px solid #2a2a2a;border-radius:12px;padding:16px;margin-bottom:12px">' +
+          '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">' +
+            '<div style="font-weight:700;font-size:14px">⚖️ Disputa <span style="color:var(--verde);font-family:\'Courier New\',monospace">' + numOrden + '</span></div>' +
+            '<span style="background:' + estadoColor + '22;color:' + estadoColor + ';border:1px solid ' + estadoColor + '44;border-radius:6px;padding:3px 10px;font-size:11px;font-weight:700">' + estado.toUpperCase() + '</span>' +
+          '</div>' +
+          '<div style="font-size:12px;color:#888;margin-bottom:4px">📅 ' + fecha + ' · 💰 ' + precio + '</div>' +
+          '<div style="font-size:12px;margin-bottom:4px"><b style="color:#aaa">Motivo:</b> ' + (d.motivo || '—') + '</div>' +
+          '<div style="font-size:12px;color:#bbb;margin-bottom:12px;line-height:1.5">' + (d.descripcion || '') + '</div>' +
+          '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:12px">' +
+            '<div style="background:#111;border-radius:8px;padding:10px">' +
+              '<div style="color:#888;margin-bottom:4px;font-size:11px">COMPRADOR</div>' +
+              '<div style="margin-bottom:4px">' + compradorEmail + '</div>' +
+              (compradorTg ? '<a href="https://t.me/' + compradorTg.replace('@','') + '" target="_blank" style="color:var(--verde);text-decoration:none;font-weight:600">💬 ' + compradorTg + '</a>' : '<span style="color:#555">Sin Telegram</span>') +
+            '</div>' +
+            '<div style="background:#111;border-radius:8px;padding:10px">' +
+              '<div style="color:#888;margin-bottom:4px;font-size:11px">VENDEDOR</div>' +
+              '<div style="margin-bottom:4px">' + vendedorEmail + '</div>' +
+              (vendedorTg ? '<a href="https://t.me/' + vendedorTg.replace('@','') + '" target="_blank" style="color:var(--verde);text-decoration:none;font-weight:600">💬 ' + vendedorTg + '</a>' : '<span style="color:#555">Sin Telegram</span>') +
+            '</div>' +
+          '</div>' +
+          '<div style="display:flex;gap:8px;margin-top:12px">' +
+            '<a href="mailto:' + vendedorEmail + '?subject=Disputa%20' + numOrden + '&body=Hola,%20hay%20una%20disputa%20abierta%20sobre%20la%20orden%20' + numOrden + '.%20Motivo:%20' + (d.motivo||'') + '" style="flex:1;text-align:center;background:rgba(0,200,83,0.1);border:1px solid rgba(0,200,83,0.3);color:var(--verde);border-radius:8px;padding:8px;font-size:12px;font-weight:700;text-decoration:none">📧 Email vendedor</a>' +
+            '<a href="mailto:' + compradorEmail + '?subject=Tu%20disputa%20' + numOrden + '&body=Hola,%20estamos%20revisando%20tu%20disputa%20sobre%20la%20orden%20' + numOrden + '." style="flex:1;text-align:center;background:rgba(0,200,83,0.1);border:1px solid rgba(0,200,83,0.3);color:var(--verde);border-radius:8px;padding:8px;font-size:12px;font-weight:700;text-decoration:none">📧 Email comprador</a>' +
+          '</div>' +
+        '</div>';
+    }
+    tb.innerHTML = html;
+  } catch(e) {
+    tb.innerHTML = '<div class="empty">Error: ' + e.message + '</div>';
+  }
 }
 
 // ── TELEGRAM NOTIFICACIONES ───────────────────────────────────────────────
