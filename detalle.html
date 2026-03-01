@@ -526,19 +526,6 @@ async function initDetalle() {
       return;
     }
 
-    // Actualizar nav según sesión
-    try {
-      var sess = await sb.auth.getSession();
-      var nav = document.getElementById('navActions');
-      if (nav && sess.data && sess.data.session) {
-        var meta = sess.data.session.user.user_metadata || {};
-        var uname = meta.usuario || meta.nombre || sess.data.session.user.email.split('@')[0];
-        nav.innerHTML =
-          '<button class="btn-vender" onclick="window.location=\'publicar.html\'">+ Vender</button>' +
-          '<button class="btn-login" onclick="window.location=\'panel.html\'">@' + uname + '</button>';
-      }
-    } catch(e) {}
-
     var id = new URLSearchParams(window.location.search).get('id');
     if (!id) { showError('Falta el ID del producto en la URL.'); return; }
 
