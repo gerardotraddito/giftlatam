@@ -446,12 +446,13 @@ async function loadSeller(sid) {
     var ventas = p.ventas_totales || 0;
 
     var vn = document.getElementById('vendNombre');
-    if (vn) vn.innerHTML = '@' + esc(nombre) + ' <span class="verified">✓</span>';
+    if (vn) vn.innerHTML = '<a href="perfil-vendedor.html?id=' + sid + '" style="color:inherit;text-decoration:none">@' + esc(nombre) + ' <span class="verified">✓</span></a>';
 
     var sc = document.getElementById('sellerCard');
     if (!sc) return;
     sc.style.display = 'block';
     sc.innerHTML =
+      '<a href="perfil-vendedor.html?id=' + sid + '" style="text-decoration:none;color:inherit;display:block">' +
       '<div class="seller-top">' +
         '<div class="seller-avatar">😊</div>' +
         '<div>' +
@@ -459,9 +460,11 @@ async function loadSeller(sid) {
           '<div class="seller-sub">⭐ ' + rep + ' · ' + ventas + ' ventas</div>' +
         '</div>' +
       '</div>' +
+      '</a>' +
       '<div class="stat-row"><span>Miembro desde</span><span>' + since + '</span></div>' +
       '<div class="stat-row"><span>Reputación</span><span>⭐ ' + rep + '</span></div>' +
-      '<div class="stat-row"><span>Ventas</span><span>' + ventas + '</span></div>';
+      '<div class="stat-row"><span>Ventas</span><span>' + ventas + '</span></div>' +
+      '<a href="perfil-vendedor.html?id=' + sid + '" style="display:block;margin-top:12px;text-align:center;font-size:12px;color:var(--verde);text-decoration:none;font-weight:600">Ver perfil completo →</a>';
   } catch(e) { /* silencioso */ }
 }
 
