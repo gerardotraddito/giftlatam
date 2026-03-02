@@ -418,16 +418,18 @@ async function cargarDisputasAdmin() {
       var perfil = {};
       var orden = {};
       try {
-        var pr = await sb.from('profiles').select('email,telegram_username,usuario').eq('id', d.usuario_id).single();
-        perfil = pr.data || {};
+        var pr = await sb.from('usuarios').select('email').eq('id', d.usuario_id).single();
+        var tgr = await sb.from('profiles').select('telegram_username').eq('id', d.usuario_id).single();
+        perfil = { email: (pr.data||{}).email, telegram_username: (tgr.data||{}).telegram_username };
       } catch(e) {}
       try {
         if (d.transaccion_id) {
           var or = await sb.from('ordenes').select('numero_orden,seller_id,precio').eq('id', d.transaccion_id).single();
           orden = or.data || {};
           if (orden.seller_id) {
-            var vp = await sb.from('profiles').select('email,telegram_username,usuario').eq('id', orden.seller_id).single();
-            orden.vendedor = vp.data || {};
+            var vpu = await sb.from('usuarios').select('email').eq('id', orden.seller_id).single();
+            var vpp = await sb.from('profiles').select('telegram_username').eq('id', orden.seller_id).single();
+            orden.vendedor = { email: (vpu.data||{}).email, telegram_username: (vpp.data||{}).telegram_username };
           }
         }
       } catch(e) {}
