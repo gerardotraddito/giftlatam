@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GiftLatam - Perfil vendedor</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{--negro:#080808;--oscuro:#111;--card:#161616;--borde:#222;--blanco:#F0F0F0;--gris:#888;--verde:#00C853;--naranja:#FF6B35}
+    html,body{max-width:100%;overflow-x:hidden}
+    body{font-family:'Inter',-apple-system,sans-serif;background:var(--negro);color:var(--blanco);padding-bottom:90px}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    @keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+
+    /* NAV */
+    nav{display:flex;align-items:center;padding:0 14px;height:54px;border-bottom:1px solid var(--borde);position:sticky;top:0;z-index:100;background:rgba(8,8,8,0.97);backdrop-filter:blur(16px);gap:8px}
+    .logo{display:flex;align-items:center;gap:7px;text-decoration:none;flex-shrink:0}
+    .logo-icon{width:32px;height:32px;background:var(--verde);border-radius:9px;display:flex;align-items:center;justify-content:center}
+    .logo-icon svg{width:18px;height:18px}
+    .logo-text{font-family:'Syne',sans-serif;font-weight:800;font-size:18px;color:var(--blanco)}
+    .logo-text .g{color:var(--verde)}
+    .nav-spacer{flex:1}
+    .nav-actions{display:flex;align-items:center;gap:6px}
+    .btn-login{background:transparent;color:var(--blanco);border:1px solid var(--borde);border-radius:9px;padding:7px 12px;font-size:13px;font-family:'Inter',sans-serif;cursor:pointer}
+    .btn-vender{background:var(--verde);color:#000;border:none;border-radius:9px;padding:8px 14px;font-family:'Inter',sans-serif;font-weight:700;font-size:13px;cursor:pointer}
+
+    /* LAYOUT */
+    .container{max-width:860px;margin:0 auto;padding:0 14px}
+    .back-link{color:var(--gris);text-decoration:none;font-size:13px;display:inline-flex;align-items:center;gap:5px;margin:16px 0;transition:color 0.15s}
+    .back-link:hover{color:var(--blanco)}
+
+    /* HERO VENDEDOR */
+    .seller-hero{background:var(--card);border:1px solid var(--borde);border-radius:20px;padding:24px;margin-bottom:16px;animation:fadeUp 0.4s ease}
+    .seller-top{display:flex;align-items:center;gap:16px;margin-bottom:20px}
+    .seller-avatar{width:64px;height:64px;min-width:64px;border-radius:50%;background:rgba(0,200,83,0.12);border:2px solid rgba(0,200,83,0.3);display:flex;align-items:center;justify-content:center;font-size:28px}
+    .seller-info{flex:1}
+    .seller-name{font-family:'Syne',sans-serif;font-size:20px;font-weight:800;margin-bottom:4px}
+    .seller-since{font-size:12px;color:var(--gris)}
+    .verified{background:rgba(0,200,83,0.1);color:var(--verde);border:1px solid rgba(0,200,83,0.25);border-radius:5px;padding:2px 7px;font-size:10px;font-weight:700;margin-left:6px;vertical-align:middle}
+
+    /* STATS */
+    .stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:20px}
+    .stat-box{background:#1a1a1a;border-radius:12px;padding:14px;text-align:center}
+    .stat-num{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;color:var(--verde)}
+    .stat-lbl{font-size:11px;color:var(--gris);margin-top:2px}
+
+    /* REP */
+    .rep-bar{background:#1a1a1a;border-radius:12px;padding:14px 18px;display:flex;align-items:center;gap:14px}
+    .rep-num{font-family:'Syne',sans-serif;font-size:36px;font-weight:800;color:var(--verde);line-height:1}
+    .rep-stars{font-size:20px;letter-spacing:2px;margin-bottom:2px}
+    .rep-sub{font-size:12px;color:var(--gris)}
+
+    /* SECCIONES */
+    .sec-title{font-size:11px;font-weight:700;color:var(--gris);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:12px}
+
+    /* COMENTARIOS */
+    .comment-card{background:var(--card);border:1px solid var(--borde);border-radius:14px;padding:14px 16px;margin-bottom:10px;animation:fadeUp 0.3s ease}
+    .comment-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+    .comment-user{font-size:13px;font-weight:600}
+    .comment-stars{color:#FFD700;font-size:14px;letter-spacing:1px}
+    .comment-text{font-size:13px;color:#bbb;line-height:1.6}
+    .comment-fecha{font-size:11px;color:#555;margin-top:6px}
+
+    /* PRODUCTOS */
+    .products-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px}
+    .prod-card{background:var(--card);border:1px solid var(--borde);border-radius:14px;overflow:hidden;text-decoration:none;color:inherit;transition:border-color 0.15s,transform 0.15s;display:block}
+    .prod-card:hover{border-color:rgba(0,200,83,0.4);transform:translateY(-2px)}
+    .prod-img{width:100%;aspect-ratio:16/9;display:flex;align-items:center;justify-content:center;font-size:36px}
+    .prod-body{padding:10px}
+    .prod-title{font-size:12px;font-weight:600;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .prod-price{font-size:14px;font-weight:800;color:var(--verde);font-variant-numeric:tabular-nums}
+
+    /* SPINNER / EMPTY */
+    .spinner{width:28px;height:28px;border:3px solid #333;border-top-color:var(--verde);border-radius:50%;animation:spin 0.8s linear infinite;margin:44px auto}
+    .empty{text-align:center;padding:32px;color:var(--gris);font-size:13px}
+
+    /* BOTTOM NAV */
+    .bottom-nav{position:fixed;bottom:0;left:0;right:0;background:rgba(14,14,14,0.97);border-top:1px solid var(--borde);display:flex;justify-content:space-around;align-items:center;padding:8px 0 14px;z-index:9999;backdrop-filter:blur(20px)}
+    .nav-item{display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;color:var(--gris);font-size:10px;padding:2px 8px}
+    .nav-item svg{width:21px;height:21px}
+    @media(min-width:1024px){.bottom-nav{display:none}}
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+  <script src="supabase.js"></script>
+  <script src="auth.js"></script>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="logo">
+    <div class="logo-icon"><svg viewBox="0 0 44 44" fill="none"><rect width="44" height="44" rx="11" fill="#00C853"/><polygon points="22,10 32,22 22,34 12,22" fill="#003D1A" opacity="0.6"/><polygon points="22,10 32,22 22,34 12,22" fill="#00FF6E" opacity="0.85" transform="scale(0.6) translate(14.7,14.7)"/></svg></div>
+    <span class="logo-text">Gift<span class="g">Latam</span></span>
+  </a>
+  <div class="nav-spacer"></div>
+  <div class="nav-actions" id="navActions">
+    <button class="btn-login" onclick="location.href='login.html'">Iniciar sesión</button>
+    <button class="btn-vender" onclick="location.href='publicar.html'">+ Vender</button>
+  </div>
+</nav>
+
+<div class="container">
+  <a href="javascript:history.back()" class="back-link">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+    Volver
+  </a>
+
+  <!-- Hero del vendedor -->
+  <div id="heroWrap"><div class="spinner"></div></div>
+
+  <!-- Comentarios -->
+  <div id="comentariosWrap" style="display:none;margin-bottom:24px">
+    <div class="sec-title">💬 Comentarios de compradores</div>
+    <div id="comentariosList"></div>
+  </div>
+
+  <!-- Productos del vendedor -->
+  <div id="productosWrap" style="display:none;margin-bottom:24px">
+    <div class="sec-title">🛒 Productos disponibles</div>
+    <div class="products-grid" id="productosList"></div>
+  </div>
+</div>
+
+<div class="bottom-nav">
+  <div class="nav-item" onclick="window.location='index.html'"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>Inicio</div>
+  <div class="nav-item" onclick="window.location='explorar.html'"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>Explorar</div>
+  <div class="nav-item" onclick="window.location='publicar.html'"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v8M8 12h8"/></svg>Vender</div>
+  <div class="nav-item" onclick="window.location='panel.html'"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Perfil</div>
+</div>
+
+<script>
+function esc(s){ return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function bkey(m){ return (m||'').toLowerCase().trim().split(/[\s-]/)[0]; }
+
+var LOGOS = {
+  xbox:'https://cdn.simpleicons.org/xbox/107C10',
+  playstation:'https://cdn.simpleicons.org/playstation/003791',
+  psn:'https://cdn.simpleicons.org/playstation/003791',
+  steam:'https://cdn.simpleicons.org/steam/66c0f4',
+  apple:'https://cdn.simpleicons.org/apple/f5f5f7',
+  spotify:'https://cdn.simpleicons.org/spotify/1ED760',
+  netflix:'https://cdn.simpleicons.org/netflix/E50914',
+  nintendo:'https://cdn.simpleicons.org/nintendo/E60012',
+  roblox:'https://cdn.simpleicons.org/roblox/E2231A',
+  youtube:'https://cdn.simpleicons.org/youtube/FF0000',
+  amazon:'https://cdn.simpleicons.org/amazon/FF9900',
+  discord:'https://cdn.simpleicons.org/discord/5865F2',
+  twitch:'https://cdn.simpleicons.org/twitch/9146FF',
+};
+var BG = {
+  steam:'rgba(102,192,244,0.12)',xbox:'rgba(16,124,16,0.15)',
+  playstation:'rgba(0,55,145,0.15)',psn:'rgba(0,55,145,0.15)',
+  spotify:'rgba(30,215,96,0.15)',netflix:'rgba(229,9,20,0.15)',
+  apple:'rgba(255,255,255,0.07)',nintendo:'rgba(230,0,18,0.15)',
+  roblox:'rgba(226,35,26,0.15)',youtube:'rgba(255,0,0,0.15)',
+  amazon:'rgba(255,153,0,0.15)',discord:'rgba(88,101,242,0.15)',
+  twitch:'rgba(145,70,255,0.15)',
+};
+var EMOJI = {
+  steam:'🎮',xbox:'🎮',playstation:'🎮',psn:'🎮',nintendo:'🎮',
+  spotify:'🎵',netflix:'🎬',youtube:'📺',amazon:'🛒',apple:'🍎',
+  discord:'💬',twitch:'📡',roblox:'🎮',
+};
+
+function estrellas(n) {
+  var s = '';
+  for (var i = 1; i <= 5; i++) s += i <= n ? '★' : '☆';
+  return s;
+}
+
+async function initPerfil() {
+  var id = new URLSearchParams(window.location.search).get('id');
+  if (!id) { document.getElementById('heroWrap').innerHTML = '<div class="empty">Vendedor no encontrado.</div>'; return; }
+
+  try {
+    // 1. Perfil del vendedor
+    var pr = await sb.from('usuarios')
+      .select('id,username,email,ventas_totales,created_at')
+      .eq('id', id).single();
+    var prp = await sb.from('profiles')
+      .select('reputacion,resenas_positivas')
+      .eq('id', id).single();
+
+    if (pr.error || !pr.data) { document.getElementById('heroWrap').innerHTML = '<div class="empty">Vendedor no encontrado.</div>'; return; }
+    var p = pr.data;
+    var pp = prp.data || {};
+    var nombre   = p.username || 'vendedor';
+    var since    = p.created_at ? new Date(p.created_at).getFullYear() : '2025';
+    var rep      = pp.reputacion ? parseFloat(pp.reputacion) : null;
+    var repStr   = rep ? rep.toFixed(1) : '—';
+    var ventas   = p.ventas_totales || 0;
+    var resenas  = pp.resenas_positivas || pp['reseñas_positivas'] || 0;
+
+    // Stars display
+    var starsHtml = rep
+      ? '<div class="rep-stars" style="color:#FFD700">' + estrellas(Math.round(rep)) + '</div><div class="rep-sub">' + resenas + ' reseña' + (resenas !== 1 ? 's' : '') + '</div>'
+      : '<div class="rep-sub" style="margin-top:4px">Sin reseñas aún</div>';
+
+    document.getElementById('heroWrap').innerHTML =
+      '<div class="seller-hero">' +
+        '<div class="seller-top">' +
+          '<div class="seller-avatar">😊</div>' +
+          '<div class="seller-info">' +
+            '<div class="seller-name">@' + esc(nombre) + '<span class="verified">✓ Verificado</span></div>' +
+            '<div class="seller-since">Miembro desde ' + since + '</div>' +
+          '</div>' +
+        '</div>' +
+        '<div class="stats-row">' +
+          '<div class="stat-box"><div class="stat-num">' + ventas + '</div><div class="stat-lbl">Ventas</div></div>' +
+          '<div class="stat-box"><div class="stat-num" style="color:#FFD700">' + repStr + '</div><div class="stat-lbl">Reputación</div></div>' +
+          '<div class="stat-box"><div class="stat-num">' + resenas + '</div><div class="stat-lbl">Reseñas</div></div>' +
+        '</div>' +
+        (rep ? '<div class="rep-bar"><div class="rep-num" style="color:#FFD700">' + repStr + '</div><div>' + starsHtml + '</div></div>' : '') +
+      '</div>';
+
+    // 2. Comentarios
+    var cr = await sb.from('calificaciones')
+      .select('estrellas,comentario,created_at,comprador_id')
+      .eq('vendedor_id', id)
+      .order('created_at', { ascending: false })
+      .limit(20);
+
+    var coms = (cr.data || []).filter(function(c){ return c.comentario; });
+    if (coms.length) {
+      document.getElementById('comentariosWrap').style.display = 'block';
+      document.getElementById('comentariosList').innerHTML = coms.map(function(c) {
+        var fecha = c.created_at ? new Date(c.created_at).toLocaleDateString('es-AR',{day:'2-digit',month:'short',year:'numeric'}) : '';
+        return '<div class="comment-card">' +
+          '<div class="comment-top">' +
+            '<span class="comment-user">Comprador verificado</span>' +
+            '<span class="comment-stars">' + estrellas(c.estrellas) + '</span>' +
+          '</div>' +
+          '<div class="comment-text">' + esc(c.comentario) + '</div>' +
+          '<div class="comment-fecha">' + fecha + '</div>' +
+        '</div>';
+      }).join('');
+    }
+
+    // 3. Productos del vendedor
+    var gr = await sb.from('gift_cards')
+      .select('id,titulo,marca,precio_venta,tipo,imagen_url')
+      .eq('seller_id', id)
+      .eq('estado', 'activo')
+      .gt('cantidad', 0)
+      .order('created_at', { ascending: false });
+
+    var prods = gr.data || [];
+    if (prods.length) {
+      document.getElementById('productosWrap').style.display = 'block';
+      document.getElementById('productosList').innerHTML = prods.map(function(g) {
+        var k    = bkey(g.marca);
+        var bg   = BG[k]    || 'rgba(0,200,83,0.08)';
+        var em   = EMOJI[k] || '🎁';
+        var logo = LOGOS[k];
+        var imgHtml = logo
+          ? '<img src="' + logo + '" width="40" height="40" style="object-fit:contain" onerror="this.parentElement.innerHTML=\'' + em + '\'">'
+          : em;
+        return '<a href="detalle.html?id=' + g.id + '" class="prod-card">' +
+          '<div class="prod-img" style="background:' + bg + '">' + imgHtml + '</div>' +
+          '<div class="prod-body">' +
+            '<div class="prod-title">' + esc(g.titulo||'') + '</div>' +
+            '<div class="prod-price">$' + parseFloat(g.precio_venta||0).toFixed(2) + ' USDT</div>' +
+          '</div>' +
+        '</a>';
+      }).join('');
+    }
+
+  } catch(e) {
+    document.getElementById('heroWrap').innerHTML = '<div class="empty">Error: ' + e.message + '</div>';
+  }
+}
+
+document.addEventListener('DOMContentLoaded', initPerfil);
+</script>
+</body>
+</html>
