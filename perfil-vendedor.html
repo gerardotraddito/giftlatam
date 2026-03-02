@@ -175,7 +175,7 @@ async function initPerfil() {
   try {
     // 1. Perfil del vendedor
     var pr = await sb.from('profiles')
-      .select('id,username,reputacion,ventas_totales,created_at,resenas_positivas')
+      .select('id,username,reputacion,ventas_totales,created_at,reseñas_positivas')
       .eq('id', id).single();
 
     if (pr.error || !pr.data) { 
@@ -189,7 +189,7 @@ async function initPerfil() {
     var rep      = pp.reputacion ? parseFloat(pp.reputacion) : null;
     var repStr   = rep ? rep.toFixed(1) : '—';
     var ventas   = p.ventas_totales || 0;
-    var resenas  = pp.resenas_positivas || pp['reseñas_positivas'] || 0;
+    var resenas  = pp['reseñas_positivas'] || 0;
 
     // Stars display
     var starsHtml = rep
