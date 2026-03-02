@@ -178,7 +178,10 @@ async function initPerfil() {
       .select('id,username,reputacion,ventas_totales,created_at,resenas_positivas')
       .eq('id', id).single();
 
-    if (pr.error || !pr.data) { document.getElementById('heroWrap').innerHTML = '<div class="empty">Vendedor no encontrado.</div>'; return; }
+    if (pr.error || !pr.data) { 
+      document.getElementById('heroWrap').innerHTML = '<div class="empty">Error: ' + (pr.error ? pr.error.message : 'sin data') + '<br>ID buscado: ' + id + '</div>'; 
+      return; 
+    }
     var p = pr.data;
     var pp = p;
     var nombre   = p.username || 'vendedor';
