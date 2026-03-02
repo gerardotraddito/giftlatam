@@ -184,7 +184,7 @@ async function initPerfil() {
     if (pr.error || !pr.data) { document.getElementById('heroWrap').innerHTML = '<div class="empty">Vendedor no encontrado.</div>'; return; }
     var p = pr.data;
     var pp = prp.data || {};
-    var nombre   = p.username || (p.email ? p.email.split('@')[0] : 'vendedor');
+    var nombre   = p.username || 'vendedor';
     var since    = p.created_at ? new Date(p.created_at).getFullYear() : '2025';
     var rep      = pp.reputacion ? parseFloat(pp.reputacion) : null;
     var repStr   = rep ? rep.toFixed(1) : '—';

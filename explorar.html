@@ -76,7 +76,7 @@
     @media (min-width: 768px) { .vouchers-list { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; } }
     @media (min-width: 1024px) { .bottom-nav { display: none; } .vouchers-list { grid-template-columns: repeat(3, 1fr); } }
   </style>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
   <script src="supabase.js"></script>
   <script src="auth.js"></script>
 </head>
@@ -286,7 +286,7 @@ async function loadCards() {
   ids = ids.filter(function(id,i){ return ids.indexOf(id)===i; });
   if (ids.length > 0) {
     try {
-      var pr = await sb.from('profiles').select('id,usuario,nombre,email,reputacion,ventas_totales').in('id',ids);
+      var pr = await sb.from('profiles').select('id,username,reputacion,ventas_totales').in('id',ids);
       if (!pr.error && pr.data) {
         var pm = {};
         pr.data.forEach(function(p){ pm[p.id]=p; });
@@ -327,7 +327,7 @@ function renderCards() {
     var pct     = (nominal>0 && precio<nominal) ? Math.round((1-precio/nominal)*100) : 0;
     var region  = (card.region && card.region!=='Global') ? ' | '+card.region : '';
     var prof    = card._seller || {};
-    var seller  = prof.usuario || prof.nombre || (prof.email ? prof.email.split('@')[0] : null) || 'usuario';
+    var seller  = prof.username || 'vendedor';
     var rep     = prof.reputacion ? parseFloat(prof.reputacion).toFixed(1) : null;
     var nVentas = prof.ventas_totales != null ? parseInt(prof.ventas_totales) : 0;
 

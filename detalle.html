@@ -438,10 +438,10 @@ async function irApagoConSaldo() {
 async function loadSeller(sid) {
   if (!sid) return;
   try {
-    var r  = await sb.from('usuarios').select('username,email,ventas_totales,created_at').eq('id', sid).single();
+    var r  = await sb.from('profiles').select('username,ventas_totales,created_at').eq('id', sid).single();
     var rp = await sb.from('profiles').select('reputacion').eq('id', sid).single();
     var p  = r.data || {};
-    var nombre = p.username || (p.email ? p.email.split('@')[0] : 'vendedor');
+    var nombre = p.username || 'vendedor';
     var since  = p.created_at ? new Date(p.created_at).getFullYear() : '2025';
     var rep    = (rp.data && rp.data.reputacion) ? parseFloat(rp.data.reputacion).toFixed(1) : '5.0';
     var ventas = p.ventas_totales || 0;
