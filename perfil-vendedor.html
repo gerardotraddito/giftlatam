@@ -174,16 +174,13 @@ async function initPerfil() {
 
   try {
     // 1. Perfil del vendedor
-    var pr = await sb.from('usuarios')
-      .select('id,username,email,ventas_totales,created_at')
-      .eq('id', id).single();
-    var prp = await sb.from('profiles')
-      .select('reputacion,resenas_positivas')
+    var pr = await sb.from('profiles')
+      .select('id,username,reputacion,ventas_totales,created_at,resenas_positivas')
       .eq('id', id).single();
 
     if (pr.error || !pr.data) { document.getElementById('heroWrap').innerHTML = '<div class="empty">Vendedor no encontrado.</div>'; return; }
     var p = pr.data;
-    var pp = prp.data || {};
+    var pp = p;
     var nombre   = p.username || 'vendedor';
     var since    = p.created_at ? new Date(p.created_at).getFullYear() : '2025';
     var rep      = pp.reputacion ? parseFloat(pp.reputacion) : null;
