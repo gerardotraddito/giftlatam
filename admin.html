@@ -394,7 +394,6 @@ async function cargarDisputasAdmin() {
   try {
     var res = await sb.from('disputas')
       .select('id, transaccion_id, usuario_id, motivo, descripcion, estado, created_at')
-      .eq('estado', 'abierta')
       .order('created_at', { ascending: false });
 
     if (res.error) { tb.innerHTML = '<div class="empty">Error: ' + res.error.message + '</div>'; return; }
