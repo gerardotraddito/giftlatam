@@ -14,14 +14,16 @@ const DROPDOWN_CSS = `
   }
   #gl-search-input {
     width:100%;background:#141414;border:1px solid #222;border-radius:20px;
-    padding:8px 14px 8px 36px;font-size:13px;color:#f0f0f0;
+    padding:8px 36px 8px 14px;font-size:13px;color:#f0f0f0;
     font-family:'Inter',sans-serif;outline:none;transition:border-color 0.15s;
   }
   #gl-search-input:focus { border-color:rgba(0,200,83,0.4); }
-  #gl-search-icon {
-    position:absolute;left:12px;top:50%;transform:translateY(-50%);
-    color:#555;pointer-events:none;
+  #gl-search-btn {
+    position:absolute;right:10px;top:50%;transform:translateY(-50%);
+    color:#555;cursor:pointer;background:none;border:none;padding:2px;
+    display:flex;align-items:center;transition:color 0.15s;
   }
+  #gl-search-btn:hover { color:#00C853; }
   #gl-search-results {
     position:absolute;top:calc(100% + 6px);left:0;right:0;
     background:#111;border:1px solid #222;border-radius:14px;
@@ -161,6 +163,12 @@ async function doSearch(q) {
   }
 }
 
+function ejecutarBusqueda() {
+  var input = document.getElementById('gl-search-input');
+  var q = input ? input.value.trim() : '';
+  window.location.href = q ? 'explorar.html?q=' + encodeURIComponent(q) : 'explorar.html';
+}
+
 function initSearch() {
   const wrap = document.getElementById('gl-search-wrap');
   if (!wrap) return;
@@ -173,10 +181,7 @@ function initSearch() {
   });
 
   input.addEventListener('keydown', function(e) {
-    if (e.key === 'Enter') {
-      var q = input.value.trim();
-      if (q) window.location.href = 'explorar.html?q=' + encodeURIComponent(q);
-    }
+    if (e.key === 'Enter') ejecutarBusqueda();
     if (e.key === 'Escape') closeSearch();
   });
 
@@ -207,8 +212,10 @@ async function loadAvatar(uid) {
 function buildSearchBar() {
   return `
     <div id="gl-search-wrap">
-      <svg id="gl-search-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
       <input id="gl-search-input" type="text" placeholder="Buscar Netflix, Steam, PSN..." autocomplete="off">
+      <button id="gl-search-btn" onclick="ejecutarBusqueda()">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      </button>
       <div id="gl-search-results"></div>
     </div>
   `;
