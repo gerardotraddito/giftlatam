@@ -508,8 +508,8 @@ async function loadPanelData(session) {
     sb.from('gift_cards').select('*', {count:'exact', head:true}).eq('seller_id', uid).eq('estado','vendido'),
     sb.from('transactions').select('*', {count:'exact', head:true}).eq('buyer_id', uid),
     sb.from('transactions').select('monto').eq('seller_id', uid).eq('estado','completado'),
-    sb.from('profiles').select('reputacion, reseñas_positivas, volumen_usdt, wallet_usdt, avatar_url').eq('id', uid).single(),
-    sb.from('saldos').select('balance, total_ganado').eq('seller_id', uid).single(),
+    sb.from('profiles').select('reputacion, reseñas_positivas, volumen_usdt, wallet_usdt, avatar_url').eq('id', uid).maybeSingle(),
+    sb.from('saldos').select('balance, total_ganado').eq('seller_id', uid).maybeSingle(),
   ]);
 
   const listings = listingsRes.count || 0;
@@ -541,7 +541,7 @@ async function loadPanelData(session) {
   // ── Telegram ──
   var tgInput = document.getElementById('telegramInput');
   if (tgInput) {
-    sb.from('profiles').select('telegram_username').eq('id', uid).single().then(function(r) {
+    sb.from('profiles').select('telegram_username').eq('id', uid).maybeSingle().then(function(r) {
       if (r.data && r.data.telegram_username) tgInput.value = r.data.telegram_username;
     });
   }
