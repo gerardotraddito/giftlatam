@@ -507,7 +507,6 @@ async function loadPanelData(session) {
   const volumen  = (volRes.data || []).reduce((s,t) => s + parseFloat(t.precio||0), 0);
   const profile  = profileRes.data || {};
   const saldoData = saldoRes.data || {};
-  alert('profile: ' + JSON.stringify(profile) + '\nerror: ' + JSON.stringify(profileRes.error));
 
   // ── Avatar ──
   const avatar = document.getElementById('userAvatar');
