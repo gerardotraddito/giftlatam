@@ -394,6 +394,7 @@ async function cargarDisputasAdmin() {
   try {
     var res = await sb.from('disputas')
       .select('id, transaccion_id, usuario_id, motivo, descripcion, estado, created_at')
+      .in('estado', ['abierta', null])
       .order('created_at', { ascending: false });
 
     if (res.error) { tb.innerHTML = '<div class="empty">Error: ' + res.error.message + '</div>'; return; }
@@ -466,11 +467,37 @@ async function cargarDisputasAdmin() {
             '<a href="mailto:' + vendedorEmail + '?subject=Disputa%20' + numOrden + '&body=Hola,%20hay%20una%20disputa%20abierta%20sobre%20la%20orden%20' + numOrden + '.%20Motivo:%20' + (d.motivo||'') + '" style="flex:1;text-align:center;background:rgba(0,200,83,0.1);border:1px solid rgba(0,200,83,0.3);color:var(--verde);border-radius:8px;padding:8px;font-size:12px;font-weight:700;text-decoration:none">📧 Email vendedor</a>' +
             '<a href="mailto:' + compradorEmail + '?subject=Tu%20disputa%20' + numOrden + '&body=Hola,%20estamos%20revisando%20tu%20disputa%20sobre%20la%20orden%20' + numOrden + '." style="flex:1;text-align:center;background:rgba(0,200,83,0.1);border:1px solid rgba(0,200,83,0.3);color:var(--verde);border-radius:8px;padding:8px;font-size:12px;font-weight:700;text-decoration:none">📧 Email comprador</a>' +
           '</div>' +
+          '<div style="display:flex;gap:8px;margin-top:8px">' +
+            '<button onclick="resolverDisputa(\'' + d.id + '\',\'resuelta\',this)" style="flex:1;background:rgba(0,200,83,0.15);border:1px solid rgba(0,200,83,0.4);color:var(--verde);border-radius:8px;padding:9px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit">✅ Marcar resuelta</button>' +
+            '<button onclick="resolverDisputa(\'' + d.id + '\',\'rechazada\',this)" style="flex:1;background:rgba(255,68,68,0.1);border:1px solid rgba(255,68,68,0.3);color:#ff4444;border-radius:8px;padding:9px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit">❌ Rechazar disputa</button>' +
+          '</div>' +
+          '<div style="display:flex;gap:8px;margin-top:6px">' +
+            '<button onclick="resolverDisputa(\'' + d.id + '\',\'favor_comprador\',this)" style="flex:1;background:rgba(41,121,255,0.1);border:1px solid rgba(41,121,255,0.3);color:#2979FF;border-radius:8px;padding:9px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit">👤 Favor comprador</button>' +
+            '<button onclick="resolverDisputa(\'' + d.id + '\',\'favor_vendedor\',this)" style="flex:1;background:rgba(255,145,0,0.1);border:1px solid rgba(255,145,0,0.3);color:#FF9100;border-radius:8px;padding:9px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit">🏪 Favor vendedor</button>' +
+          '</div>' +
         '</div>';
     }
     tb.innerHTML = html;
   } catch(e) {
     tb.innerHTML = '<div class="empty">Error: ' + e.message + '</div>';
+  }
+}
+
+async function resolverDisputa(id, estado, btn) {
+  var labels = { resuelta:'✅ Resuelta', rechazada:'❌ Rechazada', favor_comprador:'👤 Favor comprador', favor_vendedor:'🏪 Favor vendedor' };
+  if (!confirm('¿Marcar disputa como "' + (labels[estado]||estado) + '"?')) return;
+  btn.textContent = '⏳...';
+  btn.disabled = true;
+  try {
+    var r = await sb.from('disputas').update({ estado: estado, updated_at: new Date().toISOString() }).eq('id', id);
+    if (r.error) { alert('Error: ' + r.error.message); btn.disabled=false; return; }
+    // Remover la card de la lista
+    var card = btn.closest('[id^="disp-"]') || btn.closest('div[style]');
+    // Recargar la lista completa
+    cargarDisputasAdmin();
+  } catch(e) {
+    alert('Error: ' + e.message);
+    btn.disabled = false;
   }
 }
 
