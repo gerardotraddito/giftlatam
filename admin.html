@@ -398,6 +398,7 @@ async function cargarDisputasAdmin() {
       .order('created_at', { ascending: false });
 
     if (res.error) { tb.innerHTML = '<div class="empty">Error: ' + res.error.message + '</div>'; return; }
+    alert('disputas: ' + JSON.stringify(res.data) + '\nerror: ' + JSON.stringify(res.error));
     var data = res.data || [];
 
     // Badge
