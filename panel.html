@@ -495,8 +495,8 @@ async function loadPanelData(session) {
   const [listingsRes, ventasRes, comprasRes, volRes, profileRes, saldoRes] = await Promise.all([
     sb.from('gift_cards').select('*', {count:'exact', head:true}).eq('seller_id', uid).eq('estado','activo'),
     sb.from('gift_cards').select('*', {count:'exact', head:true}).eq('seller_id', uid).eq('estado','vendido'),
-    sb.from('transactions').select('*', {count:'exact', head:true}).eq('buyer_id', uid),
-    sb.from('transactions').select('monto').eq('seller_id', uid).eq('estado','completado'),
+    sb.from('ordenes').select('*', {count:'exact', head:true}).eq('comprador_email', user.email),
+    sb.from('ordenes').select('precio').eq('seller_id', uid).eq('estado','completado'),
     sb.from('profiles').select('reputacion, reseñas_positivas, volumen_usdt, wallet_usdt, avatar_url').eq('id', uid).single(),
     sb.from('saldos').select('balance, total_ganado').eq('seller_id', uid).single(),
   ]);
@@ -504,7 +504,7 @@ async function loadPanelData(session) {
   const listings = listingsRes.count || 0;
   const ventas   = ventasRes.count  || 0;
   const compras  = comprasRes.count || 0;
-  const volumen  = (volRes.data || []).reduce((s,t) => s + parseFloat(t.monto||0), 0);
+  const volumen  = (volRes.data || []).reduce((s,t) => s + parseFloat(t.precio||0), 0);
   const profile  = profileRes.data || {};
   const saldoData = saldoRes.data || {};
 
