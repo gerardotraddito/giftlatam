@@ -3,7 +3,7 @@
 // Dropdown perfil + barra de búsqueda global
 // ============================================
 
-const PROTECTED_PAGES = ['publicar.html', 'panel.html', 'pago.html', 'disputas.html', 'ordenes.html'];
+const PROTECTED_PAGES = ['publicar.html', 'panel.html', 'pago.html', 'disputas.html', 'transacciones.html'];
 const currentPage = window.location.pathname.split('/').pop() || 'index.html';
 let isLoggingOut = false;
 let _searchTimer = null;
@@ -250,7 +250,7 @@ function updateNav(session) {
           <div id="gl-saldo-num">Cargando...</div>
           <div id="gl-saldo-sub">USDT en tu cuenta</div>
         </div>
-        <a href="ordenes.html" class="gl-menu-item" onclick="closeDropdown()"><span class="gl-icon">📦</span> Mis órdenes</a>
+        <a href="transacciones.html" class="gl-menu-item" onclick="closeDropdown()"><span class="gl-icon">📦</span> Historial</a>
         <a href="panel.html" class="gl-menu-item" onclick="closeDropdown()"><span class="gl-icon">🏪</span> Mi panel</a>
         <a href="mis-ventas.html" class="gl-menu-item" onclick="closeDropdown()"><span class="gl-icon">💰</span> Mis ventas</a>
         <div class="gl-menu-divider"></div>

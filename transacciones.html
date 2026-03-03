@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GiftLatam — Transacciones</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{
+      --negro:#080808;--card:#111;--card2:#161616;--borde:#1e1e1e;
+      --blanco:#f0f0f0;--gris:#666;--verde:#00C853;--rojo:#FF4444;
+      --naranja:#FF9100;--azul:#2979FF;--amarillo:#FFD600;
+    }
+    html,body{max-width:100%;overflow-x:hidden}
+    body{font-family:'Inter',sans-serif;background:var(--negro);color:var(--blanco);padding-bottom:100px;min-height:100vh}
+    @keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+    @keyframes spin{to{transform:rotate(360deg)}}
+
+    nav{display:flex;align-items:center;padding:0 16px;height:54px;border-bottom:1px solid var(--borde);position:sticky;top:0;z-index:100;background:rgba(8,8,8,0.97);backdrop-filter:blur(20px);gap:10px}
+    .logo{display:flex;align-items:center;gap:7px;text-decoration:none;flex-shrink:0}
+    .logo-icon{width:32px;height:32px;background:var(--verde);border-radius:9px;display:flex;align-items:center;justify-content:center}
+    .logo-icon svg{width:18px;height:18px}
+    .logo-text{font-weight:800;font-size:18px;color:var(--blanco)}
+    .logo-text .g{color:var(--verde)}
+    .nav-spacer{flex:1}
+    .nav-actions{display:flex;gap:6px}
+    .btn-login{background:transparent;color:var(--blanco);border:1px solid var(--borde);border-radius:9px;padding:7px 12px;font-size:13px;font-family:'Inter',sans-serif;cursor:pointer}
+    .btn-vender{background:var(--verde);color:#000;border:none;border-radius:9px;padding:8px 14px;font-family:'Inter',sans-serif;font-weight:700;font-size:13px;cursor:pointer}
+
+    .container{max-width:720px;margin:0 auto;padding:0 14px}
+
+    .page-header{padding:20px 0 16px}
+    .page-title{font-size:22px;font-weight:800;margin-bottom:4px}
+    .page-sub{font-size:13px;color:var(--gris)}
+
+    /* STATS */
+    .stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:18px}
+    .stat-box{background:var(--card2);border:1px solid var(--borde);border-radius:14px;padding:14px;text-align:center}
+    .stat-num{font-size:18px;font-weight:800}
+    .stat-lbl{font-size:11px;color:var(--gris);margin-top:2px}
+
+    /* TABS */
+    .tabs{display:flex;gap:6px;margin-bottom:16px;overflow-x:auto;padding-bottom:2px;scrollbar-width:none}
+    .tabs::-webkit-scrollbar{display:none}
+    .tab{flex-shrink:0;padding:7px 14px;border-radius:20px;font-size:12px;font-weight:600;cursor:pointer;border:1px solid var(--borde);background:transparent;color:var(--gris);transition:all 0.15s;font-family:'Inter',sans-serif}
+    .tab.active{background:var(--verde);color:#000;border-color:var(--verde)}
+
+    /* ITEM */
+    .tx-item{background:var(--card);border:1px solid var(--borde);border-radius:14px;margin-bottom:8px;overflow:hidden;animation:fadeUp 0.25s ease;cursor:pointer;transition:border-color 0.15s}
+    .tx-item:hover{border-color:#333}
+    .tx-head{display:flex;align-items:center;gap:12px;padding:13px 15px}
+    .tx-tipo-icon{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+    .tx-info{flex:1;min-width:0}
+    .tx-titulo{font-size:13px;font-weight:700;margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .tx-meta{font-size:11px;color:var(--gris);display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+    .tx-id{font-family:'Courier New',monospace;font-size:10px;color:#444;font-weight:700}
+    .tx-monto{font-size:15px;font-weight:800;flex-shrink:0;text-align:right;line-height:1.2}
+    .tx-monto.pos{color:var(--verde)}
+    .tx-monto.neg{color:#ff6b6b}
+    .tx-monto.neu{color:#888}
+
+    /* BADGE */
+    .badge{display:inline-flex;align-items:center;gap:3px;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:700}
+    .b-exito{background:rgba(0,200,83,0.12);color:var(--verde);border:1px solid rgba(0,200,83,0.25)}
+    .b-pendiente{background:rgba(255,145,0,0.12);color:var(--naranja);border:1px solid rgba(255,145,0,0.25)}
+    .b-procesando{background:rgba(41,121,255,0.12);color:var(--azul);border:1px solid rgba(41,121,255,0.25)}
+    .b-cancelado{background:rgba(255,68,68,0.12);color:var(--rojo);border:1px solid rgba(255,68,68,0.25)}
+    .b-entregado{background:rgba(0,200,83,0.12);color:var(--verde);border:1px solid rgba(0,200,83,0.25)}
+
+    /* DETALLE */
+    .tx-detalle{border-top:1px solid var(--borde);padding:12px 15px;display:none}
+    .tx-detalle.open{display:block;animation:fadeUp 0.2s ease}
+    .det-row{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid rgba(255,255,255,0.04);font-size:12px}
+    .det-row:last-child{border:none}
+    .det-row span:first-child{color:var(--gris)}
+    .det-row span:last-child{font-weight:600;text-align:right;max-width:65%;word-break:break-all}
+
+    /* CODIGO */
+    .codigo-box{background:#0d0d0d;border:1px solid rgba(0,200,83,0.25);border-radius:10px;padding:10px 12px;margin-top:8px}
+    .codigo-lbl{font-size:10px;color:var(--gris);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:5px}
+    .codigo-val{font-family:'Courier New',monospace;font-size:14px;font-weight:700;color:var(--verde);word-break:break-all}
+    .btn-copiar{background:rgba(0,200,83,0.1);color:var(--verde);border:1px solid rgba(0,200,83,0.25);border-radius:8px;padding:6px;font-size:11px;font-weight:700;cursor:pointer;margin-top:6px;font-family:'Inter',sans-serif;width:100%}
+
+    .spinner{width:26px;height:26px;border:3px solid #222;border-top-color:var(--verde);border-radius:50%;animation:spin 0.8s linear infinite;margin:48px auto}
+    .empty{text-align:center;padding:48px 20px;color:var(--gris)}
+    .empty-icon{font-size:36px;margin-bottom:10px}
+    .empty-title{font-size:15px;font-weight:700;color:var(--blanco);margin-bottom:4px}
+
+    .bottom-nav{position:fixed;bottom:0;left:0;right:0;background:rgba(10,10,10,0.97);border-top:1px solid var(--borde);display:flex;justify-content:space-around;align-items:center;padding:8px 0 14px;z-index:9999;backdrop-filter:blur(20px)}
+    .nav-item{display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;color:var(--gris);font-size:10px;padding:2px 8px;text-decoration:none}
+    .nav-item.active{color:var(--verde)}
+    .nav-item svg{width:21px;height:21px}
+    @media(min-width:1024px){.bottom-nav{display:none}}
+
+    .toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:#1a1a1a;border:1px solid var(--verde);color:var(--verde);padding:10px 20px;border-radius:20px;font-size:13px;font-weight:600;z-index:9999;opacity:0;transition:opacity 0.3s;pointer-events:none;white-space:nowrap}
+    .toast.show{opacity:1}
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+  <script src="supabase.js"></script>
+  <script src="auth.js"></script>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="logo">
+    <div class="logo-icon"><svg viewBox="0 0 44 44" fill="none"><rect width="44" height="44" rx="11" fill="#00C853"/><polygon points="22,10 32,22 22,34 12,22" fill="#003D1A" opacity="0.6"/><polygon points="22,10 32,22 22,34 12,22" fill="#00FF6E" opacity="0.85" transform="scale(0.6) translate(14.7,14.7)"/></svg></div>
+    <span class="logo-text">Gift<span class="g">Latam</span></span>
+  </a>
+  <div class="nav-spacer"></div>
+  <div class="nav-actions" id="navActions">
+    <button class="btn-login" onclick="location.href='login.html'">Iniciar sesión</button>
+    <button class="btn-vender" onclick="location.href='publicar.html'">+ Vender</button>
+  </div>
+</nav>
+
+<div class="container">
+  <div class="page-header">
+    <div class="page-title">📊 Transacciones</div>
+    <div class="page-sub" id="pageSub">Cargando...</div>
+  </div>
+
+  <div class="stats-row" id="statsRow" style="display:none">
+    <div class="stat-box">
+      <div class="stat-num" id="statIngresos" style="color:var(--verde)">$0</div>
+      <div class="stat-lbl">Ingresos</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-num" id="statEgresos" style="color:#ff6b6b">$0</div>
+      <div class="stat-lbl">Egresos</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-num" id="statTotal">0</div>
+      <div class="stat-lbl">Operaciones</div>
+    </div>
+  </div>
+
+  <div class="tabs" id="tabsWrap" style="display:none">
+    <button class="tab active" onclick="filtrar('todas',this)">Todas</button>
+    <button class="tab" onclick="filtrar('compra',this)">🛒 Compras</button>
+    <button class="tab" onclick="filtrar('venta',this)">💰 Ventas</button>
+    <button class="tab" onclick="filtrar('deposito',this)">📥 Depósitos</button>
+    <button class="tab" onclick="filtrar('retiro',this)">📤 Retiros</button>
+  </div>
+
+  <div id="txList"><div class="spinner"></div></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<div class="bottom-nav">
+  <a href="index.html" class="nav-item"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>Inicio</a>
+  <a href="explorar.html" class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>Explorar</a>
+  <a href="publicar.html" class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v8M8 12h8"/></svg>Vender</a>
+  <a href="transacciones.html" class="nav-item active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/></svg>Historial</a>
+  <a href="panel.html" class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Perfil</a>
+</div>
+
+<script>
+function esc(s){ return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function toast(m){ var t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(function(){t.classList.remove('show');},2000); }
+
+function formatFecha(dt) {
+  if (!dt) return '';
+  var d = new Date(dt);
+  var meses=['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+  return d.getDate()+' '+meses[d.getMonth()]+' '+d.getFullYear()+' · '+d.getHours().toString().padStart(2,'0')+':'+d.getMinutes().toString().padStart(2,'0');
+}
+
+function badgeEstado(estado) {
+  var map = {
+    completado:'b-exito',entregado:'b-entregado',exitoso:'b-exito',aprobado:'b-exito',
+    pendiente:'b-pendiente',verificando:'b-procesando',procesando:'b-procesando',pagado:'b-procesando',
+    cancelado:'b-cancelado',rechazado:'b-cancelado'
+  };
+  var cls = map[(estado||'').toLowerCase()] || 'b-pendiente';
+  var labels = {completado:'Completado',entregado:'Entregado',exitoso:'Exitoso',aprobado:'Aprobado',pendiente:'Pendiente',verificando:'Verificando',procesando:'Procesando',pagado:'Pagado',cancelado:'Cancelado',rechazado:'Rechazado'};
+  var lbl = labels[(estado||'').toLowerCase()] || estado || '—';
+  return '<span class="badge '+cls+'">'+lbl+'</span>';
+}
+
+var TODAS = [];
+var FILTRO = 'todas';
+
+function toggleTx(id) {
+  var d = document.getElementById('txd-'+id);
+  if (d) d.classList.toggle('open');
+}
+
+function copiar(id) {
+  var el = document.getElementById('txcod-'+id);
+  if (!el) return;
+  navigator.clipboard.writeText(el.textContent).then(function(){ toast('✅ Código copiado'); });
+}
+
+function renderItem(tx) {
+  var signo   = tx._tipo === 'venta' || tx._tipo === 'deposito' ? 'pos' : 'neg';
+  var prefix  = tx._tipo === 'venta' || tx._tipo === 'deposito' ? '+' : '-';
+  var monto   = parseFloat(tx.monto || tx.precio || 0).toFixed(2);
+  var fecha   = formatFecha(tx.created_at);
+  var num     = tx.numero_orden ? '#'+String(tx.numero_orden).padStart(6,'0') : '#'+String(tx.id||'').substring(0,8).toUpperCase();
+
+  var iconMap = { compra:'🛒', venta:'💰', deposito:'📥', retiro:'📤' };
+  var bgMap   = { compra:'rgba(255,107,107,0.1)', venta:'rgba(0,200,83,0.1)', deposito:'rgba(41,121,255,0.1)', retiro:'rgba(255,145,0,0.1)' };
+  var icon = iconMap[tx._tipo] || '💱';
+  var bg   = bgMap[tx._tipo]   || 'rgba(255,255,255,0.06)';
+
+  var tituloMap = { compra: tx._gc ? (tx._gc.titulo||tx._gc.marca||'Compra') : 'Compra', venta: tx._gc ? (tx._gc.titulo||tx._gc.marca||'Venta') : 'Venta', deposito:'Depósito de saldo', retiro:'Retiro de saldo' };
+  var titulo = tituloMap[tx._tipo] || 'Operación';
+
+  // Detalle rows
+  var rows = '<div class="det-row"><span>ID operación</span><span style="font-family:monospace;color:#555">'+String(tx.id).substring(0,16)+'...</span></div>';
+  rows += '<div class="det-row"><span>Fecha</span><span>'+fecha+'</span></div>';
+  rows += '<div class="det-row"><span>Estado</span><span>'+badgeEstado(tx.estado)+'</span></div>';
+  if (tx.red) rows += '<div class="det-row"><span>Red</span><span>'+esc(tx.red)+'</span></div>';
+  if (tx.wallet) rows += '<div class="det-row"><span>Wallet</span><span>'+esc(tx.wallet)+'</span></div>';
+  if (tx._gc && tx._gc.marca) rows += '<div class="det-row"><span>Marca</span><span>'+esc(tx._gc.marca)+'</span></div>';
+
+  var codigoHtml = '';
+  if (tx.codigo_entregado && (tx.estado==='entregado'||tx.estado==='completado')) {
+    codigoHtml = '<div class="codigo-box"><div class="codigo-lbl">🎁 Código</div><div class="codigo-val" id="txcod-'+tx.id+'">'+esc(tx.codigo_entregado)+'</div><button class="btn-copiar" onclick="copiar(\''+tx.id+'\')">📋 Copiar</button></div>';
+  }
+
+  return '<div class="tx-item" id="txi-'+tx.id+'">' +
+    '<div class="tx-head" onclick="toggleTx(\''+tx.id+'\')">' +
+      '<div class="tx-tipo-icon" style="background:'+bg+'">'+icon+'</div>' +
+      '<div class="tx-info">' +
+        '<div class="tx-titulo">'+esc(titulo)+'</div>' +
+        '<div class="tx-meta">' +
+          '<span class="tx-id">'+num+'</span>' +
+          '<span>'+fecha+'</span>' +
+          badgeEstado(tx.estado) +
+        '</div>' +
+      '</div>' +
+      '<div>' +
+        '<div class="tx-monto '+signo+'">'+prefix+'$'+monto+'</div>' +
+        '<div style="text-align:right;font-size:11px;color:#444;margin-top:2px">USDT</div>' +
+      '</div>' +
+    '</div>' +
+    '<div class="tx-detalle" id="txd-'+tx.id+'">'+rows+codigoHtml+'</div>' +
+  '</div>';
+}
+
+function filtrar(tipo, btn) {
+  FILTRO = tipo;
+  document.querySelectorAll('.tab').forEach(function(t){ t.classList.remove('active'); });
+  if (btn) btn.classList.add('active');
+  var list = tipo === 'todas' ? TODAS : TODAS.filter(function(t){ return t._tipo === tipo; });
+  renderLista(list);
+}
+
+function renderLista(list) {
+  var el = document.getElementById('txList');
+  if (!list.length) {
+    el.innerHTML = '<div class="empty"><div class="empty-icon">📭</div><div class="empty-title">Sin transacciones</div></div>';
+    return;
+  }
+  el.innerHTML = list.map(renderItem).join('');
+}
+
+async function loadTx() {
+  var sess = await sb.auth.getSession();
+  if (!sess.data || !sess.data.session) { window.location.href='login.html?from=transacciones.html'; return; }
+  var user = sess.data.session.user;
+  var uid  = user.id;
+  var email = user.email;
+
+  // Cargar en paralelo
+  var [ordenesRes, ventasRes, depositosRes, retirosRes] = await Promise.all([
+    sb.from('ordenes').select('id,numero_orden,gift_card_id,precio,red,estado,created_at,codigo_entregado').eq('comprador_email', email).order('created_at',{ascending:false}),
+    sb.from('ordenes').select('id,numero_orden,gift_card_id,precio,red,estado,created_at').eq('seller_id', uid).order('created_at',{ascending:false}),
+    sb.from('depositos').select('id,monto,red,estado,created_at').eq('seller_id', uid).order('created_at',{ascending:false}),
+    sb.from('retiros').select('id,monto,red,wallet,estado,created_at').eq('seller_id', uid).order('created_at',{ascending:false}),
+  ]);
+
+  var compras   = (ordenesRes.data  || []).map(function(o){ o._tipo='compra';   return o; });
+  var ventas    = (ventasRes.data   || []).map(function(o){ o._tipo='venta';    return o; });
+  var depositos = (depositosRes.data|| []).map(function(o){ o._tipo='deposito'; return o; });
+  var retiros   = (retirosRes.data  || []).map(function(o){ o._tipo='retiro';   return o; });
+
+  // Cargar gift cards
+  var gcIds = [...compras, ...ventas].map(function(o){ return o.gift_card_id; }).filter(Boolean);
+  var gcMap = {};
+  if (gcIds.length) {
+    var gcR = await sb.from('gift_cards').select('id,titulo,marca').in('id',[...new Set(gcIds)]);
+    if (gcR.data) gcR.data.forEach(function(g){ gcMap[g.id]=g; });
+  }
+  [...compras,...ventas].forEach(function(o){ o._gc = gcMap[o.gift_card_id]||null; });
+
+  // Juntar y ordenar por fecha
+  TODAS = [...compras,...ventas,...depositos,...retiros].sort(function(a,b){
+    return new Date(b.created_at) - new Date(a.created_at);
+  });
+
+  // Stats
+  var ingresos = [...ventas,...depositos].filter(function(t){ return t.estado==='completado'||t.estado==='entregado'||t.estado==='aprobado'||t.estado==='exitoso'; }).reduce(function(s,t){ return s+parseFloat(t.monto||t.precio||0); },0);
+  var egresos  = [...compras,...retiros].filter(function(t){ return t.estado==='completado'||t.estado==='entregado'||t.estado==='aprobado'||t.estado==='exitoso'; }).reduce(function(s,t){ return s+parseFloat(t.monto||t.precio||0); },0);
+
+  document.getElementById('statIngresos').textContent = '+$'+ingresos.toFixed(2);
+  document.getElementById('statEgresos').textContent  = '-$'+egresos.toFixed(2);
+  document.getElementById('statTotal').textContent    = TODAS.length;
+  document.getElementById('statsRow').style.display   = 'grid';
+  document.getElementById('tabsWrap').style.display   = 'flex';
+  document.getElementById('pageSub').textContent      = TODAS.length + ' operación' + (TODAS.length!==1?'es':'');
+
+  renderLista(TODAS);
+}
+
+document.addEventListener('DOMContentLoaded', loadTx);
+</script>
+</body>
+</html>
