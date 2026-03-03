@@ -175,7 +175,7 @@ async function initPerfil() {
   try {
     // 1. Perfil del vendedor
     var pr = await sb.from('profiles')
-      .select('id,username,reputacion,ventas_totales,created_at,reseñas_positivas')
+      .select('id,username,reputacion,ventas_totales,created_at,reseñas_positivas,avatar_url')
       .eq('id', id).single();
 
     if (pr.error || !pr.data) { 
@@ -199,7 +199,7 @@ async function initPerfil() {
     document.getElementById('heroWrap').innerHTML =
       '<div class="seller-hero">' +
         '<div class="seller-top">' +
-          '<div class="seller-avatar">😊</div>' +
+          '<div class="seller-avatar">' + (p.avatar_url ? '<img src="' + p.avatar_url + '" style="width:100%;height:100%;object-fit:cover;border-radius:50%">' : '😊') + '</div>' +
           '<div class="seller-info">' +
             '<div class="seller-name">@' + esc(nombre) + '<span class="verified">✓ Verificado</span></div>' +
             '<div class="seller-since">Miembro desde ' + since + '</div>' +

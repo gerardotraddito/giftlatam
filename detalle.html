@@ -438,7 +438,7 @@ async function irApagoConSaldo() {
 async function loadSeller(sid) {
   if (!sid) return;
   try {
-    var r  = await sb.from('profiles').select('username,ventas_totales,created_at').eq('id', sid).single();
+    var r  = await sb.from('profiles').select('username,ventas_totales,created_at,avatar_url').eq('id', sid).single();
     var rp = await sb.from('profiles').select('reputacion').eq('id', sid).single();
     var p  = r.data || {};
     var nombre = p.username || 'vendedor';
@@ -455,7 +455,7 @@ async function loadSeller(sid) {
     sc.innerHTML =
       '<a href="perfil-vendedor.html?id=' + sid + '" style="text-decoration:none;color:inherit;display:block">' +
       '<div class="seller-top">' +
-        '<div class="seller-avatar">😊</div>' +
+        '<div class="seller-avatar">' + (p.avatar_url ? '<img src="' + p.avatar_url + '" style="width:100%;height:100%;object-fit:cover;border-radius:50%">' : '😊') + '</div>' +
         '<div>' +
           '<div class="seller-name">@' + esc(nombre) + '<span class="verified">✓</span></div>' +
           '<div class="seller-sub">⭐ ' + rep + ' · ' + ventas + ' ventas</div>' +
