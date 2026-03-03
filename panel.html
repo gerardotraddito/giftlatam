@@ -493,12 +493,12 @@ async function loadPanelData(session) {
 
   // ── Queries en paralelo ──
   const [listingsRes, ventasRes, comprasRes, volRes, profileRes, saldoRes] = await Promise.all([
-    sb.from('gift_cards').select('*', {count:'exact', head:true}).eq('seller_id', uid).eq('estado','activo').catch(()=>({count:0})),
-    sb.from('gift_cards').select('*', {count:'exact', head:true}).eq('seller_id', uid).eq('estado','vendido').catch(()=>({count:0})),
-    sb.from('transactions').select('*', {count:'exact', head:true}).eq('buyer_id', uid).catch(()=>({count:0})),
-    sb.from('transactions').select('monto').eq('seller_id', uid).eq('estado','completado').catch(()=>({data:[]})),
-    sb.from('profiles').select('reputacion, reseñas_positivas, volumen_usdt, wallet_usdt, avatar_url').eq('id', uid).single().catch(()=>({data:{}})),
-    sb.from('saldos').select('balance, total_ganado').eq('seller_id', uid).single().catch(()=>({data:{}})),
+    sb.from('gift_cards').select('*', {count:'exact', head:true}).eq('seller_id', uid).eq('estado','activo'),
+    sb.from('gift_cards').select('*', {count:'exact', head:true}).eq('seller_id', uid).eq('estado','vendido'),
+    sb.from('transactions').select('*', {count:'exact', head:true}).eq('buyer_id', uid),
+    sb.from('transactions').select('monto').eq('seller_id', uid).eq('estado','completado'),
+    sb.from('profiles').select('reputacion, reseñas_positivas, volumen_usdt, wallet_usdt, avatar_url').eq('id', uid).single(),
+    sb.from('saldos').select('balance, total_ganado').eq('seller_id', uid).single(),
   ]);
 
   const listings = listingsRes.count || 0;
