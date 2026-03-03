@@ -486,17 +486,6 @@ async function loadPanelData(session) {
   if (pill) { pill.style.display = 'flex'; }
   if (pillName) pillName.textContent = usuario;
 
-  // ── Avatar ──
-  const avatar = document.getElementById('userAvatar');
-  if (avatar) {
-    if (profile.avatar_url) {
-      avatar.innerHTML = '<img src="' + profile.avatar_url + '" style="width:100%;height:100%;object-fit:cover;border-radius:50%">';
-    } else {
-      avatar.textContent = (meta.nombre ? meta.nombre[0] : usuario[0]).toUpperCase();
-      avatar.style.cssText += ';background:rgba(0,200,83,0.2);color:#00C853;font-family:Syne,sans-serif;font-weight:800;font-size:22px';
-    }
-  }
-
   // ── Nombre y fecha ──
   const el = (id) => document.getElementById(id);
   if (el('userName')) el('userName').textContent = '@' + usuario;
@@ -519,6 +508,17 @@ async function loadPanelData(session) {
   const volumen  = (volRes.data || []).reduce((s,t) => s + parseFloat(t.monto||0), 0);
   const profile  = profileRes.data || {};
   const saldoData = saldoRes.data || {};
+
+  // ── Avatar ──
+  const avatar = document.getElementById('userAvatar');
+  if (avatar) {
+    if (profile.avatar_url) {
+      avatar.innerHTML = '<img src="' + profile.avatar_url + '" style="width:100%;height:100%;object-fit:cover;border-radius:50%">';
+    } else {
+      avatar.textContent = (meta.nombre ? meta.nombre[0] : usuario[0]).toUpperCase();
+      avatar.style.cssText += ';background:rgba(0,200,83,0.2);color:#00C853;font-family:Inter,sans-serif;font-weight:800;font-size:22px';
+    }
+  }
 
   // ── Stats ──
   if (el('statCompras'))    el('statCompras').textContent    = compras;
