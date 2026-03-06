@@ -322,7 +322,10 @@
 <nav>
   <a href="index.html" class="logo">
     <div class="logo-icon">💎</div>
-    <span class="logo-text">Gift<span>Latam</span></span>
+    <div style="display:flex;flex-direction:column;gap:1px">
+      <span class="logo-text">Gift<span>Latam</span></span>
+      <span style="font-family:'Inter',sans-serif;font-size:9px;color:#555;font-weight:500;letter-spacing:0.3px;white-space:nowrap">No lo entenderías 😏</span>
+    </div>
   </a>
   <div class="nav-center">
     <div class="nav-search" style="position:relative">
@@ -472,15 +475,6 @@
       <a href="publicar.html" class="btn-sell">Vender ahora →</a>
     </div>
 
-    <div class="section" id="como">
-      <div class="section-header"><span class="section-title">🔐 ¿Cómo funciona?</span></div>
-      <div class="how-grid">
-        <div class="how-card"><div class="how-num">1</div><div class="how-title">Elegís tu gift card</div><div class="how-desc">Buscás entre miles de opciones de las marcas más populares de Latam.</div></div>
-        <div class="how-card"><div class="how-num">2</div><div class="how-title">Pagás en cripto</div><div class="how-desc">USDT, BTC u otras criptos. Rápido, seguro y sin fronteras.</div></div>
-        <div class="how-card"><div class="how-num">3</div><div class="how-title">Recibís el código</div><div class="how-desc">El sistema entrega el código automáticamente. Sin esperas.</div></div>
-        <div class="how-card"><div class="how-num">4</div><div class="how-title">Confirmás y listo</div><div class="how-desc">Confirmás que el código funciona y el pago se libera al vendedor.</div></div>
-      </div>
-    </div>
 
   </div>
 </div>
@@ -488,10 +482,10 @@
 <footer>
   <div class="container">
     <div class="footer-grid">
-      <div class="footer-col"><div class="footer-col-title">Comprar</div><a href="detalle.html">Todas las gift cards</a><a href="detalle.html">Gaming</a><a href="detalle.html">Streaming</a><a href="explorar.html">Ver catálogo</a></div>
-      <div class="footer-col"><div class="footer-col-title">Vender</div><a href="publicar.html">Publicar gift card</a><a href="como-vender.html">Cómo vender</a><a href="comisiones.html">Comisiones</a></div>
-      <div class="footer-col"><div class="footer-col-title">Soporte</div><a href="ayuda.html">Centro de ayuda</a><a href="disputas.html">Centro de disputas</a><a href="tutorial.html">Tutorial</a></div>
-      <div class="footer-col"><div class="footer-col-title">GiftLatam</div><a href="nosotros.html">Sobre nosotros</a><a href="terminos.html">Términos y condiciones</a><a href="privacidad.html">Privacidad</a></div>
+      <div class="footer-col"><div class="footer-col-title">Explorar</div><a href="explorar.html">Todas las gift cards</a><a href="explorar.html?cat=gaming">Gaming</a><a href="explorar.html?cat=streaming">Streaming</a><a href="explorar.html?cat=retail">Retail</a></div>
+      <div class="footer-col"><div class="footer-col-title">Vendedores</div><a href="publicar.html">Publicar gift card</a><a href="panel.html">Mi panel</a><a href="transacciones.html">Mis transacciones</a></div>
+      <div class="footer-col"><div class="footer-col-title">Soporte</div><a href="ayuda.html">Centro de ayuda</a><a href="disputas.html">Abrir disputa</a><a href="/cdn-cgi/l/email-protection#dbbcb2bdafb7baafbab6aba9b49bbcb6bab2b7f5b8b4b6"><span class="__cf_email__" data-cfemail="82e5ebe4f6eee3f6e3eff2f0edc2e5efe3ebeeace1edef">[email&#160;protected]</span></a></div>
+      <div class="footer-col"><div class="footer-col-title">Legal</div><a href="terminos.html">Términos y condiciones</a><a href="privacidad.html">Privacidad</a></div>
     </div>
     <div class="footer-bottom">
       <span class="footer-copy">© 2026 GiftLatam. Todos los derechos reservados.</span>
@@ -523,7 +517,7 @@
   </div>
 </div>
 
-<script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
 async function loadOfertas() {
   var grid = document.getElementById('ofertasGrid');
   if (!grid) return;
@@ -720,16 +714,4 @@ async function mobileSearchAC(q) {
         '</a>';
       }).join('') + '<a href="explorar.html?q='+encodeURIComponent(q)+'" class="ac-item" style="text-decoration:none;justify-content:center;color:#00C853;font-weight:700;font-size:12px;border-top:1px solid #222">Ver todos los resultados →</a>';
       list.style.display='block';
-    } catch(e) { list.style.display='none'; }
-  }, 250);
-}
-
-document.addEventListener('click', function(e){
-  if (!e.target.closest('.search-bar-mobile')) {
-    var list = document.getElementById('acList');
-    if (list) list.style.display='none';
-  }
-});
-</script>
-</body>
-</html>
+    } catch(e) { list.style.displ
