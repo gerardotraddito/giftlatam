@@ -94,10 +94,15 @@
 </nav>
 
 <div class="search-wrap">
-  <div class="search-inner">
-    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-    <input type="text" id="searchInput" placeholder="Buscar Netflix, Steam, Spotify, PSN..." oninput="doSearch(this.value)">
-    <button class="clear-btn" id="clearBtn" onclick="clearSearch()">✕</button>
+  <div class="search-inner" style="position:relative;padding:0">
+    <input type="text" id="searchInput" placeholder="Buscar Netflix, Steam, Spotify, PSN..." autocomplete="off"
+      style="background:none;border:none;outline:none;color:#f0f0f0;font-size:15px;width:100%;font-family:inherit;padding:12px 44px 12px 16px"
+      oninput="doSearch(this.value)"
+      onkeydown="if(event.key==='Enter'){ var q=this.value.trim(); window.location.href=q?'explorar.html?q='+encodeURIComponent(q):'explorar.html'; }">
+    <button onclick="var q=document.getElementById('searchInput').value.trim();window.location.href=q?'explorar.html?q='+encodeURIComponent(q):'explorar.html';"
+      style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:#555;display:flex;align-items:center;padding:2px">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+    </button>
   </div>
 </div>
 
