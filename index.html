@@ -348,10 +348,13 @@
 <!-- BARRA DE BÚSQUEDA MOBILE -->
 <div class="search-bar-mobile">
   <div class="search-inner">
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-    <input type="text" placeholder="Buscar Netflix, Steam, Spotify..." id="searchInput" oninput="filterSearch(this.value)">
+    <input type="text" placeholder="Buscar Netflix, Steam, Spotify..." id="searchInput" autocomplete="off"
+      oninput="mobileSearchAC(this.value)"
+      onkeydown="if(event.key==='Enter') mobileBuscar(); if(event.key==='Escape') document.getElementById('acList').style.display='none';">
     <div class="ac-list" id="acList"></div>
-    <button onclick="clearSearch()" id="clearBtn" style="display:none;background:none;border:none;color:var(--gris);font-size:16px;cursor:pointer;padding:0">✕</button>
+    <button onclick="mobileBuscar()" style="background:none;border:none;cursor:pointer;color:var(--gris);display:flex;align-items:center;padding:0;flex-shrink:0">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+    </button>
   </div>
 </div>
 
@@ -678,6 +681,54 @@ document.addEventListener('DOMContentLoaded', function() {
   input.addEventListener('input', function(){ clearTimeout(_idxTimer); _idxTimer=setTimeout(function(){ idxDoSearch(input.value); },250); });
   input.addEventListener('keydown', function(e){ if(e.key==='Enter') idxBuscar(); if(e.key==='Escape') res.style.display='none'; });
   document.addEventListener('click', function(e){ if(!e.target.closest('.nav-search')) res.style.display='none'; });
+});
+</script>
+<script>
+var _mobileTimer = null;
+var LOGOS_M={xbox:'https://cdn.simpleicons.org/xbox/107C10',playstation:'https://cdn.simpleicons.org/playstation/003791',psn:'https://cdn.simpleicons.org/playstation/003791',steam:'https://cdn.simpleicons.org/steam/66c0f4',spotify:'https://cdn.simpleicons.org/spotify/1ED760',netflix:'https://cdn.simpleicons.org/netflix/E50914',nintendo:'https://cdn.simpleicons.org/nintendo/E60012',roblox:'https://cdn.simpleicons.org/roblox/E2231A',youtube:'https://cdn.simpleicons.org/youtube/FF0000',amazon:'https://cdn.simpleicons.org/amazon/FF9900',discord:'https://cdn.simpleicons.org/discord/5865F2',twitch:'https://cdn.simpleicons.org/twitch/9146FF'};
+var BG_M={steam:'rgba(102,192,244,0.15)',xbox:'rgba(16,124,16,0.18)',playstation:'rgba(0,55,145,0.18)',psn:'rgba(0,55,145,0.18)',spotify:'rgba(30,215,96,0.18)',netflix:'rgba(229,9,20,0.18)',nintendo:'rgba(230,0,18,0.18)',roblox:'rgba(226,35,26,0.18)',youtube:'rgba(255,0,0,0.18)',amazon:'rgba(255,153,0,0.18)',discord:'rgba(88,101,242,0.18)',twitch:'rgba(145,70,255,0.18)'};
+var EMOJI_M={steam:'🎮',xbox:'🎮',playstation:'🎮',psn:'🎮',nintendo:'🎮',spotify:'🎵',netflix:'🎬',youtube:'📺',amazon:'🛒',apple:'🍎',discord:'💬',twitch:'📡',roblox:'🎮'};
+
+function mobileBuscar() {
+  var q = (document.getElementById('searchInput').value||'').trim();
+  window.location.href = q ? 'explorar.html?q='+encodeURIComponent(q) : 'explorar.html';
+}
+
+async function mobileSearchAC(q) {
+  var list = document.getElementById('acList');
+  if (!q.trim()) { list.style.display='none'; return; }
+  clearTimeout(_mobileTimer);
+  _mobileTimer = setTimeout(async function() {
+    try {
+      var r = await sb.from('gift_cards').select('id,titulo,marca,precio_venta').eq('estado','activo').gt('cantidad',0).or('titulo.ilike.%'+q+'%,marca.ilike.%'+q+'%').limit(6);
+      var data = r.data||[];
+      if (!data.length) {
+        list.innerHTML = '<div class="ac-item" style="color:#666;justify-content:center">Sin resultados — <a href="explorar.html?q='+encodeURIComponent(q)+'" style="color:#00C853;margin-left:4px">ver todo</a></div>';
+        list.style.display='block';
+        return;
+      }
+      list.innerHTML = data.map(function(g){
+        var k=(g.marca||'').toLowerCase().trim().split(/[\s-]/)[0];
+        var bg=BG_M[k]||'rgba(0,200,83,0.1)';
+        var logo=LOGOS_M[k];
+        var em=EMOJI_M[k]||'🎁';
+        var img=logo?'<img src="'+logo+'" width="20" height="20" style="object-fit:contain">':em;
+        return '<a href="detalle.html?id='+g.id+'" class="ac-item" style="text-decoration:none;color:#f0f0f0">'+
+          '<div style="width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:17px;background:'+bg+';flex-shrink:0">'+img+'</div>'+
+          '<div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+(g.titulo||g.marca||'')+'</div><div style="font-size:11px;color:#666">'+(g.marca||'')+'</div></div>'+
+          '<div style="font-size:13px;font-weight:700;color:#00C853;flex-shrink:0">$'+parseFloat(g.precio_venta||0).toFixed(2)+'</div>'+
+        '</a>';
+      }).join('') + '<a href="explorar.html?q='+encodeURIComponent(q)+'" class="ac-item" style="text-decoration:none;justify-content:center;color:#00C853;font-weight:700;font-size:12px;border-top:1px solid #222">Ver todos los resultados →</a>';
+      list.style.display='block';
+    } catch(e) { list.style.display='none'; }
+  }, 250);
+}
+
+document.addEventListener('click', function(e){
+  if (!e.target.closest('.search-bar-mobile')) {
+    var list = document.getElementById('acList');
+    if (list) list.style.display='none';
+  }
 });
 </script>
 </body>
